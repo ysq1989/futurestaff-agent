@@ -33,7 +33,7 @@ User explicitly requires AI-system models rather than Platform's old model pool.
 Confirmed current wiring: DouyinService -> platformInference -> Platform
 `/desktop/v1/models` and `/desktop/v1/chat`.
 
-Read independent `ysq1989/FutureStaff-AI` default-ref `codex/tenant-statistics`
+Read independent `ysq1989/futurestaff-ai` default-ref `codex/tenant-statistics`
 README, SYSTEM_AI_CONTRACT_V1 and ADR-0001 using read-only GitHub connector.
 Public entry documented as https://ai.erplucky.com. AI model IDs are actual model
 names, not old Platform UUIDs. Contract distinguishes employee DSH Keys from

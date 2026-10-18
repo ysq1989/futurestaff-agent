@@ -16,7 +16,7 @@
 
 ## 2026-10-16 换机源码交接
 
-用户已授权保存后端/Web 与桌面客户端到独立 GitHub 仓库，并提交、推送现有开发成果。本仓库继续使用 `ysq1989/FutureStaff-Agent` 的 main；后端/Web 使用独立私有仓库 `ysq1989/FutureStaff-Agent-web`。本次不执行部署、发布、安装版更新、真实业务操作或数据迁移。范围、排除项和验证见 `docs/development-handoff.md`。
+用户已授权保存后端/Web 与桌面客户端到独立 GitHub 仓库，并提交、推送现有开发成果。本仓库继续使用 `ysq1989/futurestaff-agent` 的 main；后端/Web 使用独立私有仓库 `ysq1989/FutureStaff-Agent-web`。本次不执行部署、发布、安装版更新、真实业务操作或数据迁移。范围、排除项和验证见 `docs/development-handoff.md`。
 
 换机文档、源码检查与快照整理已完成；验证记录见 `tasks/DONE.md`。完整检查仍有已记录失败，本次不将历史功能任务重新标记为全部验收完成。推送结果以远端 main 提交核对为准。
 

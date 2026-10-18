@@ -317,7 +317,7 @@ Platform builtin templates run through local DSH presets. Platform source baaa9a
 
 ## 客户端开发源码换电脑迁移 — 2026-10-10
 
-- `ysq1989/futurestaff-dsh` 已重命名为 `ysq1989/FutureStaff-Agent`，保留客户端 Git 历史；本次保存既有未提交开发源码、测试、规格和任务文件，未把未完成的业务任务标记完成。
+- `ysq1989/futurestaff-dsh` 已重命名为 `ysq1989/futurestaff-agent`，保留客户端 Git 历史；本次保存既有未提交开发源码、测试、规格和任务文件，未把未完成的业务任务标记完成。
 - 新电脑操作见 `docs/development-handoff.md`；须新建检出并拉取两个固定版本子模块，不沿用此前误拉取的平台快照。
 - 工作区类型检查、测试和产品构建通过；稳定桌面构建与类型检查通过，114 个测试文件、1101 项测试通过（13 项跳过）；根目录64项测试通过，官方候选引用检查通过。
 - 完整 `npm run check` 在稳定/Beta 未声明源码差异处失败，9 个路径及影响已记录于交接说明；未修改门禁以掩盖失败。
@@ -444,7 +444,7 @@ this change. No goods imported/published. See `tasks/shop-recommendation-cards.m
 # 2026-10-16 双仓换机开发交接
 
 - 用户授权：两个目录均保存到独立 GitHub 仓库，并提交、推送现有成果。
-- 客户端沿用 `ysq1989/FutureStaff-Agent`，保留 Git 历史与固定子模块；后端/Web 另建私有 `ysq1989/FutureStaff-Agent-web`，排除敏感历史操作脚本与本机浏览器证据。
+- 客户端沿用 `ysq1989/futurestaff-agent`，保留 Git 历史与固定子模块；后端/Web 另建私有 `ysq1989/FutureStaff-Agent-web`，排除敏感历史操作脚本与本机浏览器证据。
 - 补充文档导航、克隆与依赖安装步骤、数据/凭据单独迁移清单。保存现有源码、脚本、测试、品牌和分项任务，无功能重写。
 - 验证：产品及 Stable 桌面构建、工作区/Stable 类型检查通过；Platform 299、GEO 12、根目录 64、嵌入页面 11 项通过。完整 check 的浏览器超时、桌面差异门禁及 package 版本断言失败均保留，详见 `docs/development-handoff.md`。
 - 交付性质：开发源码快照，不是可发布安装包；不部署、不改真实数据或线上凭据。

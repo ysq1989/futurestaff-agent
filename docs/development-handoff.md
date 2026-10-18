@@ -14,7 +14,7 @@ Windows 本机校验需要使用临时目录的完整路径，避免 `ADMINI~1` 
 
 ## 仓库与范围
 
-权威客户端仓库为 `https://github.com/ysq1989/FutureStaff-Agent.git`，由原 `futurestaff-dsh` 重命名而来，保留原 Git 历史。原先误建的同名平台快照仓库已删除。
+权威客户端仓库为 `https://github.com/ysq1989/futurestaff-agent.git`，由原 `futurestaff-dsh` 重命名而来，保留原 Git 历史。原先误建的同名平台快照仓库已删除。
 
 后端/Web 历史快照现单独保存于私有仓库 `https://github.com/ysq1989/FutureStaff-Agent-web.git`。本客户端仓库当前为公开，不能上传本机配置、业务资料或登录凭据。两个本机目录原来指向相同 origin，本次已拆分；平台权威身份服务仍属于独立 Platform，不由快照替代。
 
@@ -25,7 +25,7 @@ Windows 本机校验需要使用临时目录的完整路径，避免 `ADMINI~1` 
 ## 新电脑获取
 
 ```powershell
-git clone --recurse-submodules https://github.com/ysq1989/FutureStaff-Agent.git FutureStaff-Agent-client
+git clone --recurse-submodules https://github.com/ysq1989/futurestaff-agent.git FutureStaff-Agent-client
 cd FutureStaff-Agent-client
 git status --short --branch
 git submodule status
