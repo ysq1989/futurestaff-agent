@@ -1,6 +1,6 @@
 # 通用视频制作 Agent
 
-状态：功能与实际案例完成，正式客户端发布验收中。用户已授权开发、非 FutureStaff 免费模型案例、测试后发布体验。
+状态：已发布 Windows 3.1.0，官网完整下载与客户端签名/文件校验通过。用户已授权开发、非 FutureStaff 免费模型案例、测试后发布体验。
 
 基线：Agent main，开始时干净；Platform 仓已有 onboarding 等无关修改，完整保留。本次复用已有 Agent 管理接口添加受权配置，不部署 Platform 源码或修改 Schema。
 
@@ -19,4 +19,12 @@
 
 完整 `npm run check` 已退出0：全部产品工作区检查、Stable 117文件/1125通过、Beta 108文件/1032通过（各13项原有平台条件跳过）、根68项通过。fs-video39项无跳过。两版四格式Chrome实际播放至ended，帧递增、非黑、error=null；10场WordBoundary和字幕一致，音轨零削波，成片与master最低相关0.9972。证据在 `outputs/video-agent-case/playback-qa/verification.json`。
 
-安装物、实际客户端启动和发布收据待最后补齐，不能把源码及案例成功表述为已发布。
+## 发布验收
+
+- 发布源码：`5a3687a9ff`，main 已推送。安装器构建及自带校验退出0，运行时依赖闭包228个第一方节点闭合。
+- 安装器：`https://fsstory.net/desktop-updates/FutureStaff-Agent-3.1.0-x64-Setup.exe`，140007592 bytes，SHA-256 `17e1879c96dcb126e909a46d42531b6adc0e9b1940f11da0453df05822cbaa39`。
+- 实际 win-unpacked 客户端用隔离 user-data / Harness 启动，3.1.0 登录页、主侧栏和智能体入口正常显示；app.asar SHA-256 `be4f1cdab30f8d7175c927efab7550b38b2b8bd342e0b417e38ae9b63cb5dc38`。没有自动填写登录认证，也没有把这次启动验收表述为已在真实账号的原生聊天界面完整制片。真实成员 catalog/snapshot 和原生工具 Loader 分别验收通过。旧 dev 用户目录白屏状态保留，未删缓存或削弱安全配置；隔离打包客户端未复现。
+- 官方稳定源仍为 `https://fsstory.net/desktop-updates/stable.json`。使用既有树外私钥签名、公钥不变、confirmed-install；公开 manifest SHA-256 `cb0b8ff1886755779220af6f7b89bcbc88dd29e3932f3c4e35be7d8042352b74`。发布锁内核对旧3.0.7 feed hash并私下备份后原子切换，保留3.0.7回滚与既有3.0.5文件。
+- 从公开 HTTPS 完整下载3.1.0和3.0.7两包，实际客户端验证器核验签名、文件size及SHA-256；feed no-store，安装包immutable，READY/trust.json/previous-stable.json均404。证据：`outputs/video-agent-publish-receipt.json`、`outputs/video-agent-public-verification.json`、`outputs/video-agent-packaged-acceptance/launch.json`。
+- 用户入口：更新客户端并登录 → 新会话 → 选择智能体 → 通用视频制作。已有企业权限范围内可用；模型无付费fallback。首次制作需要联网准备约140MB免费组件，使用现有成员工作目录；当前成片范围是图文动效短视频，不承诺写实生成或任意外部素材导入。
+- 非 FutureStaff 案例和修订版：`outputs/video-agent-case/initial/video.mp4`、`outputs/video-agent-case/revised/video.mp4`；两次文本模型调用零计费，原创程序配乐、免费在线旁白及本机渲染。
