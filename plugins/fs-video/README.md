@@ -10,6 +10,8 @@ FutureStaff Agent 的本机视频制作模块。平台持久智能体“通用�
 
 免费文本模型仍由 FutureStaff AI/主体模型池管理。本次案例通过现成 `futurestaff` 路由完成两次实际 Agnes 文本生成，核对引擎消费记录均 quota=0。不要因为模型名称相同就永久假设零价，不自动切换付费模型。
 
+智能体对外只承担视频制作和修改，底层模型名不作为助手身份。平台创建可能继承默认技能；`scripts/focus-video-agent.mjs` 只针对已授权的既定视频 Agent，通过标准管理和带版本历史的文件接口收紧 Soul、角色说明与 Skill，并移除精确内容哈希匹配的无关技能副本，不改变其他 Agent 或平台默认技能。默认只检查，`--apply` 执行，成功或结果不明后的重跑只验证；回执放在受控的 `work/` 目录。快照变化后应选择该 Agent 新建会话，旧会话保持原版本，不静默迁移。原登记回执保留，内容版本不同不会被覆盖为新证据。
+
 工具采用固定 Canvas 模板和独立 FFmpeg 进程，无需 Remotion。配乐本机合成，不引用第三方音乐。FFmpeg、Python、edge-tts、字体及 Python 依赖的原始许可证保留在本机组件中：
 
 - [FFmpeg 许可证](https://ffmpeg.org/legal.html)，[Windows 构建及源代码信息](https://www.gyan.dev/ffmpeg/builds/)。
