@@ -8,7 +8,7 @@ import { validateBundledFutureStaffProfile } from '../desktop-shell/dsh-plugin-d
 const scriptRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const defaultOutput = path.join(scriptRoot, 'dist', 'desktop-profile')
 const profileName = 'futurestaff-alpha'
-const packages = ['fs-core', 'fs-platform-access', 'fs-product-hub-ui', 'fs-douyin-ui', 'fs-geo']
+const packages = ['fs-core', 'fs-platform-access', 'fs-product-hub-ui', 'fs-douyin-ui', 'fs-geo', 'fs-video']
 const supersededReleaseManifests = [
   // Verified intact 2.0.13 release Profile; upgrades branding, hints and access composition.
   '836818df6fef5c44ef751ca3bf07885fd253fdac46e9283af5fe32eee34c9680',
@@ -92,6 +92,11 @@ export async function verifyReleaseProfile(outputRoot, sourceRoot = scriptRoot) 
     'node_modules/@futurestaff/fs-geo/package.json',
     'node_modules/@futurestaff/fs-geo/lib/ui/index.html',
     'node_modules/@futurestaff/fs-geo/lib/005_ai_drafts.sql',
+    'node_modules/@futurestaff/fs-video/lib/index.js',
+    'node_modules/@futurestaff/fs-video/lib/runtime-lock.json',
+    'node_modules/@futurestaff/fs-video/lib/runtime-files.json',
+    'node_modules/@futurestaff/fs-video/lib/assets/renderer.html',
+    'node_modules/@futurestaff/fs-video/lib/assets/voice.py',
   ]
   for (const relative of required) {
     if (!files.includes(relative)) throw new Error(`release Profile is missing ${relative}`)

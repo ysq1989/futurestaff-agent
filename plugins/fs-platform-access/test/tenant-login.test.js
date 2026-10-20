@@ -174,3 +174,33 @@ test('GEO upgrades preserve local data and keep the old Host locked until curren
   assert.equal(await workspace.enter(session(b),user(v)),false);
   assert.equal(await new DesktopLoginWorkspace(profiles,'production',secrets,identity).enter(session(b),user(v)),true);
 });
+
+test('video upgrades preserve local data and keep the old Host locked until current-profile restart', async t => {
+  const root=await mkdtemp(path.join(os.tmpdir(),'fixture-video-workspaces-'));t.after(()=>rm(root,{recursive:true,force:true}));
+  const source=path.join(root,'futurestaff-alpha');await mkdir(source,{recursive:true});
+  await writeFile(path.join(source,'package.json'),JSON.stringify({name:'fixture',dependencies:{}}));
+  await writeFile(path.join(source,'cordis.patch.yml'),'[]\n');
+  for(const file of ['pnpm-workspace.yaml','pnpm-lock.yaml'])await writeFile(path.join(source,file),'fixture');
+  await mkdir(path.join(source,'node_modules'),{recursive:true});await writeFile(path.join(source,'node_modules','.modules.yaml'),'fixture');
+  for(const module of ['fs-core','fs-platform-access','fs-product-hub-ui','fs-douyin-ui','fs-video']){
+    const dir=path.join(source,'node_modules','@futurestaff',module);await mkdir(path.join(dir,'lib','ui'),{recursive:true});
+    await writeFile(path.join(dir,'package.json'),JSON.stringify({name:'@futurestaff/'+module}));
+    await writeFile(path.join(dir,'lib','index.js'),'export const fixture=true');
+    await writeFile(path.join(dir,'lib','ui','index.html'),'<main>Video code fixture</main>');
+  }
+  const identity=workspaceIdentity('production',b,v),name=workspaceName(identity),target=path.join(root,name);
+  const values=new Map(),secrets={available:async()=>true,has:async k=>values.has(k),read:async k=>values.get(k),write:async(k,val)=>values.set(k,val),delete:async k=>values.delete(k)};
+  let restarts=0;
+  const profiles={current:{name:'futurestaff-alpha',dir:source},list:()=>[{name,dir:target,webCapable:true}],select:async()=>{},restartCurrent:async()=>{restarts++}};
+  await new DesktopLoginWorkspace(profiles,'production',secrets).enter(session(b),user(v));
+  profiles.current={name,dir:target};
+  const data=path.join(root,'local-data');await mkdir(data);await writeFile(path.join(data,'video-user-data'),'preserve');
+  await writeFile(path.join(source,'package.json'),JSON.stringify({name:'fixture',dependencies:{'@futurestaff/fs-video':'0.1.0'}}));
+  const workspace=new DesktopLoginWorkspace(profiles,'production',secrets,identity);
+  assert.equal(await workspace.enter(session(b),user(v)),false);assert.equal(restarts,1);
+  assert.equal(await readFile(path.join(data,'video-user-data'),'utf8'),'preserve');
+  assert.ok(JSON.parse(await readFile(path.join(target,'package.json'),'utf8')).dependencies['@futurestaff/fs-video']);
+  assert.equal(await readFile(path.join(target,'node_modules','@futurestaff','fs-video','lib','ui','index.html'),'utf8'),'<main>Video code fixture</main>');
+  assert.equal(await workspace.enter(session(b),user(v)),false);
+  assert.equal(await new DesktopLoginWorkspace(profiles,'production',secrets,identity).enter(session(b),user(v)),true);
+});

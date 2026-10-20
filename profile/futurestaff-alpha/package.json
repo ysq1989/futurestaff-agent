@@ -16,6 +16,7 @@
     "@futurestaff/fs-platform-access": "PROFILE_INSTALLER_REPLACES_THIS",
     "@futurestaff/fs-product-hub-ui": "PROFILE_INSTALLER_REPLACES_THIS",
     "@futurestaff/fs-douyin-ui": "PROFILE_INSTALLER_REPLACES_THIS",
-    "@futurestaff/fs-geo": "PROFILE_INSTALLER_REPLACES_THIS"
+    "@futurestaff/fs-geo": "PROFILE_INSTALLER_REPLACES_THIS",
+    "@futurestaff/fs-video": "PROFILE_INSTALLER_REPLACES_THIS"
   }
 }

@@ -107,6 +107,17 @@ test('Host canonical workspace path resolves a redirected root without trusting 
   assert.deepEqual(bindings,[{session:'canonical-session',agent:agentId}])
 })
 
+test('Host cwd alias normalization never accepts a junction outside the Agent tree',async()=>{
+ const root=await mkdtemp(path.join(os.tmpdir(),'fs-agent-alias-'))
+ try{
+  const store=new AgentWorkspaceStore(root,identity),directory=await store.materialize(snapshot,new AbortController().signal)
+  const outside=path.join(root,'outside',agentId);await mkdir(outside,{recursive:true})
+  await symlink(path.join(directory,'workspace'),path.join(outside,'workspace'),process.platform==='win32'?'junction':'dir')
+  assert.equal(await resolveSessionAgent(store,'aliased',path.join(outside,'workspace')),undefined)
+  assert.equal(await store.binding('aliased'),undefined)
+ }finally{await rm(root,{recursive:true,force:true})}
+})
+
 test('snapshot transport rejects foreign tenants, oversized bodies and aborted credentials',async()=>{
   const abort=new AbortController(),credentials={...identity,accessToken:'synthetic',signal:abort.signal}
   const foreign=async()=>Response.json({contractVersion:'1.0.0',activeTenantId:'foreign',snapshot})

@@ -11,6 +11,7 @@
 | 业务系统与页面交互 | [交互契约](specs/agent-interaction-v1.md) |
 | GEO 云端与本地发布 | [规格](specs/geo-cloud-local-publishing.md)、[插件说明](../plugins/fs-geo/README.md) |
 | SHOP 装修工具 | [工具说明](shop-theme-tools.md) |
+| 通用视频制作 Agent | [契约](specs/video-production-agent-v1.md)、[制作模块](../plugins/fs-video/README.md) |
 | 发布与运行 | [部署说明](deployment.md)、[交接](development-handoff.md)中的验收限制 |
 | ADR | [架构决策目录](adr/) |
 | 当前与历史开发记录 | [CURRENT](../tasks/CURRENT.md)、[DONE](../tasks/DONE.md)、[分项任务目录](../tasks/) |

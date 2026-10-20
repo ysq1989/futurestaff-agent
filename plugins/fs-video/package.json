@@ -1,0 +1,10 @@
+{
+  "name":"@futurestaff/fs-video","version":"0.1.0","private":true,"type":"module",
+  "main":"lib/index.js","types":"lib/index.d.ts",
+  "exports":{".":{"types":"./lib/index.d.ts","default":"./lib/index.js"},"./host":{"types":"./lib/host.d.ts","default":"./lib/host.js"}},
+  "files":["lib","assets","scripts","README.md"],
+  "scripts":{"build":"node scripts/build.mjs","typecheck":"tsc -p tsconfig.json --noEmit","test":"npm run build && node --test test/*.test.mjs"},
+  "engines":{"node":">=22"},
+  "peerDependencies":{"@deepseek-ai/cordis":"^4.0.1","@deepseek-ai/dsh-tools":"0.1.2-rc.1","@deepseek-ai/dsh-host-webserver":"0.1.2-rc.1","@deepseek-ai/dsh-llm":"0.1.2-rc.1","@futurestaff/fs-core":"0.1.0","@futurestaff/fs-platform-access":"0.1.0"},
+  "devDependencies":{"@types/node":"^24.3.0","typescript":"^5.9.2"}
+}

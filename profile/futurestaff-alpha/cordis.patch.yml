@@ -67,6 +67,10 @@
     - id: futurestaff-geo
       name: '@futurestaff/fs-geo'
 
+    # FutureStaff video production local workspace v1
+    - id: futurestaff-video
+      name: '@futurestaff/fs-video'
+
     - id: mcp-selection-center
       name: '@deepseek-ai/dsh-mcp-client'
       disabled: !!js >-

@@ -691,7 +691,7 @@ describe('published package surface', () => {
 
   it('fixes the installed application identity', () => {
     expect(workspaceManifest.version).toBeUndefined()
-    expect(manifest.version).toBe('3.0.7')
+    expect(manifest.version).toBe('3.1.0')
     expect(manifest.build?.productName).toBe('FutureStaff Agent')
     expect(manifest.description).toBe('FutureStaff Agent: a secure desktop client for tenant-aware AI workflows')
     expect(manifest.build?.appId).toBe('net.fsstory.agent.desktop')

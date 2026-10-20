@@ -20,6 +20,7 @@ await cp(source, target, { recursive: true })
 const manifestPath = path.join(target, 'package.json')
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
 manifest.dependencies['@futurestaff/fs-geo'] = `file:${geoPlugin}`
+manifest.dependencies['@futurestaff/fs-video'] = `file:${path.join(root, 'plugins', 'fs-video').replaceAll('\\', '/')}`
 manifest.dependencies['@futurestaff/fs-core'] = `file:${corePlugin}`
 manifest.dependencies['@futurestaff/fs-platform-access'] = `file:${platformAccessPlugin}`
 manifest.dependencies['@futurestaff/fs-product-hub-ui'] = `file:${productHubUiPlugin}`

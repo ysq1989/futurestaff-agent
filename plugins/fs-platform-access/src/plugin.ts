@@ -4,6 +4,8 @@ import { roleRoot } from './market.js'
 import { RememberedLogin } from './remembered-login.js'
 import { DesktopLoginWorkspace, readWorkspaceIdentity, workspaceName, workspaceDirectory } from './workspace.js'
 import { mountAgents } from './agent-host.js'
+import { fetchAgentData, type AgentSnapshot } from './agents.js'
+import { createVideoWorkspaceResolver, type VideoWorkspaceResolver } from './video-workspace.js'
 import { mountErp } from './erp-host.js'
 import { mountShop } from './shop-host.js'
 import { mountAgentImages } from './agent-images-host.js'
@@ -136,6 +138,13 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     await initialized
     return access.authorizeTemplates()
   }) : undefined
+  if (identity && agents) ctx.provide('futurestaffVideoWorkspace', createVideoWorkspaceResolver({
+    identity,
+    authorize: async () => { await initialized; return access.authorizeTemplates() },
+    resolveBinding: agents.resolveBinding,
+    snapshot: async agentId => fetchAgentData(origin, await access.authorizeTemplates(), agentId) as Promise<AgentSnapshot>,
+    workspacePath: agentId => agents.store.workspacePath(agentId),
+  }))
   if (identity && agents) mountErp(ctx, origin, async () => { await initialized; return access.authorizeTemplates() },sessionId=>agents.authorizeBusiness(sessionId,'erp'))
   if (identity) mountMarket(ctx, origin, identity, roleRoot(identity), async () => {
     await initialized
@@ -466,5 +475,6 @@ declare module '@deepseek-ai/cordis' {
   interface Context {
     platformInference: PlatformInferenceService
     platformDevLogin: PlatformDevLoginService
+    futurestaffVideoWorkspace: VideoWorkspaceResolver
   }
 }

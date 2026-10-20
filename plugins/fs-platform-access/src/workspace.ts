@@ -100,6 +100,7 @@ export class DesktopLoginWorkspace implements LoginWorkspace {
       await writeFile(path.join(staging, 'cordis.patch.yml'), patch + workspaceProfilePatch(identity, this.dataRoot) + workspaceMarketPatch(identity, this.dataRoot))
       const modules = ['fs-core', 'fs-platform-access', 'fs-product-hub-ui', 'fs-douyin-ui']
       if (manifest.dependencies?.['@futurestaff/fs-geo']) modules.push('fs-geo')
+      if (manifest.dependencies?.['@futurestaff/fs-video']) modules.push('fs-video')
       for (const module of modules) {
         const from = path.join(source, 'node_modules', '@futurestaff', module)
         await realDirectory(from)
@@ -164,7 +165,28 @@ export class DesktopLoginWorkspace implements LoginWorkspace {
       }
       if (this.accepts(session, user)) this.geoRestartPending = true
     }
-    if (this.accepts(session, user) && !needsMarket && !needsGeo && !this.geoRestartPending) return true
+    const videoMarker = '# FutureStaff video production local workspace v1'
+    const needsVideo = !!sourceManifest.dependencies?.['@futurestaff/fs-video']
+      && (!targetManifest.dependencies?.['@futurestaff/fs-video'] || !existingPatch.includes(videoMarker))
+    if (needsVideo) {
+      const from = path.join(source, 'node_modules', '@futurestaff', 'fs-video')
+      await realDirectory(from)
+      const to = path.join(target, 'node_modules', '@futurestaff', 'fs-video')
+      await mkdir(to, { recursive: true }); await realDirectory(to)
+      await cp(path.join(from, 'lib'), path.join(to, 'lib'), { recursive: true, dereference: false })
+      await cp(path.join(from, 'package.json'), path.join(to, 'package.json'))
+      targetManifest.dependencies = { ...targetManifest.dependencies, '@futurestaff/fs-video': sourceManifest.dependencies['@futurestaff/fs-video'] }
+      const temporaryManifest = `${targetManifestPath}.${randomUUID()}.tmp`
+      await writeFile(temporaryManifest, JSON.stringify(targetManifest, null, 2)); await rename(temporaryManifest, targetManifestPath)
+      const currentPatch = await readFile(patchPath, 'utf8')
+      if (!currentPatch.includes(videoMarker)) {
+        const temporaryPatch = `${patchPath}.${randomUUID()}.tmp`
+        await writeFile(temporaryPatch, currentPatch + `\n${videoMarker}\n- insert:\n    - id: futurestaff-video\n      name: '@futurestaff/fs-video'\n`)
+        await rename(temporaryPatch, patchPath)
+      }
+      if (this.accepts(session, user)) this.geoRestartPending = true
+    }
+    if (this.accepts(session, user) && !needsMarket && !needsGeo && !needsVideo && !this.geoRestartPending) return true
     if (!this.profiles.list().some(item => item.name === name && item.webCapable && !item.problem)) throw new Error('WORKSPACE_PROFILE_UNAVAILABLE')
     await new PlatformSessionVault(this.secrets, this.environment, name).save({ session, user })
     if (this.geoRestartPending && this.profiles.current.name === name) {

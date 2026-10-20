@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "version": "20261020.1",
+  "platform": "win32-x64",
+  "sources": [
+    {
+      "url": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip",
+      "name": "python-3.11.9-embed-amd64.zip",
+      "kind": "python",
+      "destination": "python",
+      "sha256": "009d6bf7e3b2ddca3d784fa09f90fe54336d5b60f0e0f305c37f400bf83cfd3b",
+      "size": 11249023
+    },
+    {
+      "url": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-8.1.2-essentials_build.zip",
+      "name": "ffmpeg-8.1.2-essentials_build.zip",
+      "kind": "ffmpeg",
+      "destination": "bin",
+      "sha256": "db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec",
+      "size": 109728040
+    },
+    {
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/Variable/TTF/Subset/NotoSansSC-VF.ttf",
+      "name": "NotoSansSC.ttf",
+      "kind": "file",
+      "destination": "fonts/NotoSansSC.ttf",
+      "sha256": "d68bafcb48a2707749396aa12bbbd833cb70401f3a9a689fd2902c7e0d295964",
+      "size": 17773132
+    },
+    {
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE",
+      "name": "OFL.txt",
+      "kind": "file",
+      "destination": "fonts/OFL.txt",
+      "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+      "size": 4301
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/71/43/1947f06babed6b3f1d7f38b0c767f52df66bfb2bc10b468c4a7de9eceff2/aiohappyeyeballs-2.7.1-py3-none-any.whl",
+      "name": "aiohappyeyeballs-2.7.1-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "9243213661e29250eb41368e5daa826fc017156c3b8a11440826b2e3ed376472",
+      "size": 15038
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/0f/15/52b5e65f02b33686ae49f1518548ae4f5a7adaf31d9d3c54fa12a143137b/aiohttp-3.14.5-cp311-cp311-win_amd64.whl",
+      "name": "aiohttp-3.14.5-cp311-cp311-win_amd64.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "6f275c11d1aa6d4c458e05a68be084efe3c55a113d99e3f46a318098e52948fc",
+      "size": 512575
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/fb/76/641ae371508676492379f16e2fa48f4e2c11741bd63c48be4b12a6b09cba/aiosignal-1.4.0-py3-none-any.whl",
+      "name": "aiosignal-1.4.0-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e",
+      "size": 7490
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+      "name": "attrs-26.1.0-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+      "size": 67548
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl",
+      "name": "certifi-2026.10.19-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b",
+      "size": 136464
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/35/86/3b97d755992777d5a9ca0e45a8ec96cc9858b2d6dd8f65f3f688d60e8709/edge_tts-7.3.1-py3-none-any.whl",
+      "name": "edge_tts-7.3.1-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "2a3c79d6235a7a736d681233823ce5492e829b43eb47beae49aa181237a8f9a4",
+      "size": 38908
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/0a/f5/603d0d6a02cfd4c8f2a095a54672b3cf967ad688a60fb9faf04fc4887f65/frozenlist-1.8.0-cp311-cp311-win_amd64.whl",
+      "name": "frozenlist-1.8.0-cp311-cp311-win_amd64.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "ac913f8403b36a2c8610bbfd25b8013488533e71e62b4b4adce9c86c8cea905b",
+      "size": 44064
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+      "name": "idna-3.20-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "size": 69583
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/37/fd/1ed7b7d206ef7a6918ac3de515543ca4b49bc50131325ca1814c005daf3f/multidict-7.1.0-cp311-cp311-win_amd64.whl",
+      "name": "multidict-7.1.0-cp311-cp311-win_amd64.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "396ba9917fe489ec3a5942ae3e29e91324c8b9956f371f7e124c971c71379e7a",
+      "size": 93586
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/0a/8a/3db6a3543d8101263b4c52978b6276a04ead2caff2c5ab880d934f47bd89/propcache-0.5.4-cp311-cp311-win_amd64.whl",
+      "name": "propcache-0.5.4-cp311-cp311-win_amd64.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "e904d4d01f36bd6e197590be1533c44e06058771e0746dd073a8ebb3ef880858",
+      "size": 46268
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl",
+      "name": "tabulate-0.10.0-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3",
+      "size": 39814
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "name": "typing_extensions-4.16.0-py3-none-any.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "size": 45571
+    },
+    {
+      "url": "https://files.pythonhosted.org/packages/aa/9d/8cdceec66a9b940700cb45931741403f045b162afd79bcb93c41cadd0972/yarl-1.25.1-cp311-cp311-win_amd64.whl",
+      "name": "yarl-1.25.1-cp311-cp311-win_amd64.whl",
+      "kind": "wheel",
+      "destination": "python/Lib/site-packages",
+      "sha256": "d7306dee25b8a0e737363f347362b875094b4dc4e367311470656ae420fdbf8e",
+      "size": 102894
+    }
+  ]
+}

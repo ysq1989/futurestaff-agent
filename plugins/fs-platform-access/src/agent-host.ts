@@ -3,6 +3,7 @@ import type {} from '@deepseek-ai/dsh-host-webserver'
 import { AgentWorkspaceStore, fetchAgentData, type AgentCard, type AgentCredentials, type AgentSnapshot } from './agents.js'
 import type { WorkspaceIdentity } from './workspace.js'
 import path from 'node:path'
+import {lstat,realpath} from 'node:fs/promises'
 import type {BusinessSystem} from './business-scope.js'
 
 /** Session cwd comes from the Host SessionStore, never the renderer. */
@@ -11,7 +12,17 @@ export async function resolveSessionAgent(store: AgentWorkspaceStore, sessionId:
   if (path.basename(cwd) !== 'workspace') return undefined
   const agentId = path.basename(path.dirname(cwd))
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(agentId)) return undefined
-  if (path.resolve(cwd) !== path.resolve(await store.workspacePath(agentId))) return undefined
+  const expected=path.resolve(await store.workspacePath(agentId))
+  if (path.resolve(cwd) !== expected) {
+    // Windows can supply an ordinary 8.3 TEMP path for the same native workspace.
+    // Canonicalize existing Host paths, but never accept a junction as an alias.
+    const check=async(directory:string):Promise<void>=>{
+      const parent=path.dirname(directory);if(parent!==directory)await check(parent)
+      if((await lstat(directory)).isSymbolicLink())throw Error('AGENT_DIRECTORY_UNSAFE')
+    }
+    try{await check(cwd);if(path.resolve(await realpath(cwd))!==expected)return undefined}
+    catch{return undefined}
+  }
   await store.bind(sessionId, agentId)
   return store.binding(sessionId)
 }

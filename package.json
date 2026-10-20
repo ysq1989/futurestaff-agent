@@ -22,7 +22,7 @@
     "desktop:install": "npm run install:web -w @futurestaff/fs-geo && corepack yarn@4.18.0 --cwd desktop-shell install --immutable",
     "platform:mock:demo": "npm run build -w @futurestaff/fs-platform-access && node scripts/platform-mock-demo.mjs",
     "platform:mock:smoke": "node scripts/platform-mock-smoke.mjs",
-    "release:profile": "npm run build -w @futurestaff/fs-core && npm run build -w @futurestaff/fs-platform-access && npm run build -w @futurestaff/fs-product-hub-ui && npm run build -w @futurestaff/douyin-dm-mcp && npm run build -w @futurestaff/fs-douyin-ui && npm run build -w @futurestaff/fs-geo && node scripts/stage-release-profile.mjs",
+    "release:profile": "npm run build -w @futurestaff/fs-core && npm run build -w @futurestaff/fs-platform-access && npm run build -w @futurestaff/fs-product-hub-ui && npm run build -w @futurestaff/douyin-dm-mcp && npm run build -w @futurestaff/fs-douyin-ui && npm run build -w @futurestaff/fs-geo && npm run build -w @futurestaff/fs-video && node scripts/stage-release-profile.mjs",
     "profile:dump:release": "npm run release:profile && cross-env DSH_HOME=dist/desktop-profile NODE_OPTIONS=--import=./scripts/load-env.mjs dsh --profile futurestaff-alpha --dump-config",
     "desktop:stage": "node scripts/stage-desktop-release.mjs",
     "installer:windows": "node scripts/build-desktop-installer.mjs",

@@ -20,6 +20,11 @@ test('stages a relocatable built-only FutureStaff Profile', async () => {
     assert.ok(!files.some(file => file.startsWith('node_modules/@futurestaff/fs-product-hub-ui/ui/')))
     assert.ok(files.includes('node_modules/@futurestaff/fs-geo/lib/ui/index.html'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-geo/lib/005_ai_drafts.sql'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-video/lib/index.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-video/lib/runtime-lock.json'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-video/lib/runtime-files.json'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-video/lib/assets/renderer.html'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-video/lib/assets/voice.py'))
     assert.ok(files.includes('node_modules/.modules.yaml'))
     assert.ok(files.includes('pnpm-lock.yaml'))
     assert.ok(files.includes('pnpm-workspace.yaml'))
@@ -45,6 +50,7 @@ test('stages a relocatable built-only FutureStaff Profile', async () => {
       '@futurestaff/fs-product-hub-ui': '0.1.0',
       '@futurestaff/fs-douyin-ui': '0.1.0',
       '@futurestaff/fs-geo': '0.1.0',
+      '@futurestaff/fs-video': '0.1.0',
     })
     assert.ok(Object.values(profile.dependencies).every(value => !value.startsWith('file:')))
     // Exercise the packaged-only startup path on the actual staged product,
