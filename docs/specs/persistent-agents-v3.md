@@ -38,6 +38,16 @@ environments/{dev|production}/tenants/{tenantId}/users/{userId}/
 
 会话在首条消息前绑定 Agent ID 和版本，随后不可切换智能体或静默采用新配置；版本变化要求重新选择并新建会话。共享记忆与云端工具执行、云端会话同步没有新增适配，界面说明实际能力。
 
+## 智能体模型路由 1.1
+
+桌面选择和聊天显式使用 `snapshot?contractVersion=1.1.0`。平台响应包含 `modelPolicy.primaryModelId`、`modelPolicy.fallbackModelId` 和原 1.0 内容版本 `legacyVersion`；这些字段计入 1.1 的 `version`，不包含凭据。旧 1.0 接口及缓存格式仍可读，图片、Website、ERP 等既有业务调用继续使用原内容版本，不因聊天模型元数据升级而失配。
+
+宿主会话绑定分别保存业务 `version` 和聊天 `modelVersion`。已有 1.0 绑定只有在当前认证身份、Agent ID、原内容版本均与平台新快照一致时，才可首次固定 `modelVersion`，保持原绑定和缓存不变。首次固定使用写好后原子创建的独立私有元数据；并发不同版本只有一个能成功，已有模型版本不能被替换。后续模型或内容变化仍要求新建会话，历史记录和工程保留。
+
+新会话的默认选项是“智能体默认模型”。原生 Session 明确选择的模型 UUID 只影响该会话，不作为其他智能体或新会话的默认值，也不修改平台全局默认模型或清除用户已有设置文件。准备调用时仅冻结身份和取消信号；实际发送时先验证真实 Session、最新快照和版本，再授权 Agent 主模型或该会话明确选择的模型。主模型为空、不可用、跨租户或版本失配时停止，不自动尝试租户默认模型或备用模型。
+
+1.1 聊天请求同时携带 `agentContractVersion: "1.1.0"` 和 `modelSelection: "agent-default" | "session-explicit"`。服务端再次校验默认请求的模型必须是当前 Agent 主模型；显式选择仍受当前租户模型授权约束。默认别名的图片能力只是当前模型池的输入范围，发送前必须按实际绑定模型再次检查；不能据租户默认模型推断 Agent 的图片能力。旧客户端请求语义保留，本协议需要平台与桌面对应版本部署后才作为运行验收通过。
+
 ## 技术与风格
 
 客户端在 `plugins/fs-platform-access/`，复用 Cordis slots、原生 Workspace/Session 控制器及 React/CSS tokens，不修改固定 Harness。平台改动在 `backend/app/api/desktop_*` 与独立服务模块，复用权限和存储。无数据库 Schema 变更。

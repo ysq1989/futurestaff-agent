@@ -8,7 +8,7 @@
 - 真实平台Agent原本继承20份网站设计、电商上新、通用任务执行、技能创建/安装和部署等技能文件。仅针对既定视频Agent，使用标准带版本历史的文件管理API移除这些副本，更新Soul/欢迎语/角色说明以及专用Skill1.0.1。全局技能、其他Agent、记忆与视频工程未动。新快照3文件：Soul、memory、video-production Skill。
 - Agent仍为当前企业company/use、idle，既有免费主模型、无付费fallback，businessSystems=[]。新snapshot `ff3b9145e3018999bb816ff339a002b0eaeeafb7c164c3b51b9f80020e46a253`，Skill SHA `3106b184695f4306b0afac31b484f64d5b396d7b2f4a3823a6a448e6240959f2`。
 - 运营脚本精确限制Agent/Skill/owner和20份原文件SHA，任何人类更改会拒绝；使用标准expected_version_token和历史版本API。未知写入结果与已完成操作只校验，不盲重写。真实20份删除历史已核对；临时验证session已撤销。
-- 原桌面聊天后端已经按每次Agent权限和snapshot版本注入平台Soul/Skill；没有重复注入全量Prompt或修改DSH上游。视频专用范围来自Agent配置收紧，无需再替换3.1.0二进制。
+- 原桌面聊天后端已经按每次Agent权限和snapshot版本注入平台Soul/Skill；没有重复注入全量Prompt或修改DSH上游。视频专用范围来自Agent配置收紧。后续原生实测另外发现默认模型选择与Windows深路径问题，需3.1.1客户端修复。
 - focused及原provision脚本测试8项通过，完整`npm run check`退出0：Stable117文件/1125项、Beta108文件/1032项（各13项原有条件跳过），根72项通过。记录在`outputs/video-agent-focus-check.log`。生产变更证据：`work/video-agent-focus-20261021/focus-receipt.json`。
 - 真实标准后端聊天接口用新Agent snapshot和免费主模型回答“你能帮我做什么？”，HTTP200/stop，回复仅视频能力。平台审计admitted→completed，唯一新增账单479、1741输入/85输出、quota0。临时会话已撤销。证据`work/video-agent-focus-20261021/backend-capability-verification.json`；这是tools=[]的后端范围验证，不能代替原生界面的工具执行验收。
 
@@ -20,6 +20,10 @@
 
 ## 原生聊天状态
 
-3.1.0实际新版窗口已打开并留在登录入口。此前旧配置显示“登录已过期”，已请求用户本人完成登录；Computer Use安全规则禁止自动操作认证对话框，未点击登录、未读取密码或向客户端注入临时凭据。新目录的正常登录同样等待用户本人完成。
+用户已自行完成新版客户端登录。没有自动操作认证对话框、读取密码或注入临时凭据。
 
-待用户登录后新建视频Agent会话，以新snapshot绑定；先验证职责回答，再通过UI发送咖啡店制作需求、等待真实成片、播放，再通过UI提交一次修改并验证新旧版本。尚不能把服务器配置校验或既有样片当作本次原生聊天完成证据。
+已在真实GUI会话`session-c0dc95be-b6c6-405f-87d5-58c6d66dca5e`提问能力范围，回答仅视频能力。实际发现“平台默认模型”仍解析到企业全局默认模型，费用未知；没有将这一轮宣称免费。随后在原生菜单明确选择已验证免费的FutureStaff模型，再通过聊天提交虚构社区咖啡店“街角咖啡”柑橘冷萃竖屏视频需求。
+
+真实`video_project_create`成功创建工程`9c42e66a-b573-497f-8bbc-18b64d72a8c6`和初版`6f071da7-f982-4edc-9bf2-3371299801e0`。渲染任务`06e365ab-2b7d-416d-965b-43e11645ec7a`已实际执行：固定组件下载完成，但嵌入Python导入`_overlapped`时因Windows路径过长失败（Python绝对路径247字符，部分依赖超过260字符）。原项目和失败日志已保留，尚无本次成片，不能用旧样片或后端验证替代。
+
+修复进行中：默认模型改为先读取当前Agent主模型策略再授权、显式选择仅留当前会话；旧业务接口保持1.0版本兼容。Windows运行组件改为按可信成员身份隔离的短缓存，项目与产物仍遵守原成员工作目录。私有成片链接用同一已认证原生会话预览，保留普通浏览器访问限制。完成修复、检查并打包后，继续原聊天渲染、播放初版，再通过聊天修改和播放第二版。

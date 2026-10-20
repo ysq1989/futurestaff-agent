@@ -7,6 +7,7 @@ import type { PlatformProtectedSecrets } from './session-vault.js'
 import {businessToolAllowed,type BusinessSystem} from './business-scope.js'
 import {shopSelectionInstructions,shopSelectionTurnContext} from './shop-selection.js'
 import {shopThemeInstructions,normalizeThemeCatalogHistory,shopThemeCompletion,shopImageRecovery} from './shop-theme-guidance.js'
+import type { AgentModelPolicy } from './agents.js'
 
 export interface ChatCredentials {
   readonly accessToken: string
@@ -14,6 +15,15 @@ export interface ChatCredentials {
   readonly tenantId: string
   readonly modelId: string
   readonly signal: AbortSignal
+}
+export type ChatIdentity = Pick<ChatCredentials,'userId'|'tenantId'|'signal'>
+export interface ChatAgentBinding {
+  agentId:string
+  version:string
+  businessSystems?:BusinessSystem[]
+  modelPolicy?:AgentModelPolicy
+  identity?:Pick<ChatIdentity,'userId'|'tenantId'>
+  signal?:AbortSignal
 }
 
 const unavailable = () => new LlmError('平台聊天服务暂时不可用，请检查登录状态或联系管理员。', 'FUTURESTAFF_CHAT')
@@ -104,8 +114,9 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     private readonly fetcher: typeof fetch = fetch,
     private readonly origin: string = 'https://dev.fsstory.net',
     private readonly catalog: () => Promise<readonly PlatformModel[]> = async () => [],
-    private readonly agentBinding?: (sessionId: string) => Promise<{ agentId: string; version: string;businessSystems?:BusinessSystem[] } | undefined>,
+    private readonly agentBinding?: (sessionId: string) => Promise<ChatAgentBinding | undefined>,
     private readonly readImage?: ChatImageReader,
+    private readonly identitySnapshot?: () => Promise<ChatIdentity>,
   ) { super(); assertPlatformOrigin(origin) }
 
   dispose(): void { this.#lifetime.abort() }
@@ -116,7 +127,8 @@ export class FutureStaffChatAdapter extends LlmAdapter {
   override async listModels() {
     const models=await this.catalog()
     const modalities=(vision:boolean)=>vision?['text','image'] as const:['text'] as const
-    return [{ provider: 'futurestaff', id: 'default', name: '平台默认模型', inputModalities: modalities(models.find(x=>x.isDefault)?.supportsVision===true) },
+    // The alias is resolved only after a real Session is known. Its capability envelope must not copy the tenant default.
+    return [{ provider: 'futurestaff', id: 'default', name: '智能体默认模型', inputModalities: modalities(models.some(x=>x.supportsVision===true)) },
       ...models.map(model => ({ provider: 'futurestaff', id: model.modelId, name: model.displayName, inputModalities: modalities(model.supportsVision) }))]
   }
   override async resolveModel(provider: string, model: string) {
@@ -128,12 +140,23 @@ export class FutureStaffChatAdapter extends LlmAdapter {
   override async prepareCall(provider: string, model: string, signal?: AbortSignal) {
     const metadata = await this.resolveModel(provider, model)
     signal?.throwIfAborted()
-    const credentials = await this.#credentials(model)
-    return { model: metadata, stream: (options: GenerateOptions) => this.#stream(options, credentials) }
+    const identity = await this.#captureIdentity()
+    return { model: metadata, stream: (options: GenerateOptions) => {
+      if(options.provider!==provider||options.model!==model)throw new LlmError('模型调用配置已变化，请重新发起请求。','FUTURESTAFF_MODEL_BINDING')
+      const signals=[...(signal?[signal]:[]),...(options.signal?[options.signal]:[]),...(identity?[identity.signal]:[])]
+      return this.#stream({...options,...(signals.length?{signal:AbortSignal.any(signals)}:{})},identity)
+    } }
   }
   override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
+    const identity=await this.#captureIdentity()
     await this.resolveModel(options.provider, options.model)
-    yield* this.#stream(options, await this.#credentials(options.model))
+    yield* this.#stream({...options,...(identity?{signal:AbortSignal.any([identity.signal,...(options.signal?[options.signal]:[])])}:{})},identity)
+  }
+
+  async #captureIdentity():Promise<ChatIdentity|undefined>{
+    if(!this.identitySnapshot)return undefined
+    try{const value=await this.identitySnapshot();value.signal.throwIfAborted();return {userId:value.userId,tenantId:value.tenantId,signal:value.signal}}
+    catch{throw new LlmError('请在设置 → FutureStaff 检查登录与当前租户的可用模型；需要更换租户时，请退出并重新选择租户登录。','FUTURESTAFF_AUTH')}
   }
 
   async #credentials(model: string): Promise<ChatCredentials> {
@@ -173,32 +196,46 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     await pending
   }
 
-  async *#stream(options: GenerateOptions, credentials: ChatCredentials): AsyncIterable<StreamChunk> {
+  async *#stream(options: GenerateOptions, identity?:ChatIdentity): AsyncIterable<StreamChunk> {
     const previous=this.#callQueue
     let release!:()=>void
     const ticket=new Promise<void>(resolve=>{release=resolve})
     this.#callQueue=previous.then(()=>ticket,()=>ticket)
     try {
       await previous
-      credentials.signal.throwIfAborted();options.signal?.throwIfAborted();this.#lifetime.signal.throwIfAborted()
-      yield* this.#run(options,credentials)
+      identity?.signal.throwIfAborted();options.signal?.throwIfAborted();this.#lifetime.signal.throwIfAborted()
+      yield* this.#run(options,identity)
     } finally {release()}
   }
 
-  async *#run(options: GenerateOptions, credentials: ChatCredentials): AsyncIterable<StreamChunk> {
+  async *#run(options: GenerateOptions, identity?:ChatIdentity): AsyncIterable<StreamChunk> {
+    if(typeof options.sessionId!=='string'||!options.sessionId||options.sessionId.length>256)throw new LlmError('请在新建会话中使用平台聊天。','FUTURESTAFF_SESSION')
+    let agent:ChatAgentBinding|undefined
+    try {
+      agent = this.agentBinding && options.sessionId ? await this.agentBinding(options.sessionId) : undefined
+    } catch (error) {
+      identity?.signal.throwIfAborted()
+      if(error instanceof Error&&error.message==='AGENT_MODEL_VERSION_CHANGED')throw new LlmError('智能体配置已更新，请重新选择智能体并新建会话。原会话记录仍保留。','FUTURESTAFF_AGENT_VERSION')
+      throw new LlmError('智能体会话归属无法确认，请重新选择智能体并新建会话。', 'FUTURESTAFF_AGENT_BINDING')
+    }
+    if (this.agentBinding && !agent) throw new LlmError('请先选择智能体，再创建会话；历史会话保留在旧工作区。', 'FUTURESTAFF_AGENT_REQUIRED')
+    if(agent&&!agent.modelPolicy)throw new LlmError('此会话尚未绑定智能体模型配置，请重新选择智能体并新建会话。','FUTURESTAFF_AGENT_VERSION')
+    const selected=options.model==='default'&&agent?agent.modelPolicy!.primaryModelId:options.model
+    if(!selected)throw new LlmError('智能体尚未配置可用主模型，请联系管理员；不会自动切换到其他模型。','FUTURESTAFF_AGENT_MODEL')
+    identity?.signal.throwIfAborted();agent?.signal?.throwIfAborted();options.signal?.throwIfAborted()
+    const currentIdentity=await this.#captureIdentity()
+    if(identity&&((currentIdentity&&(currentIdentity.userId!==identity.userId||currentIdentity.tenantId!==identity.tenantId))
+      ||(agent?.identity&&(agent.identity.userId!==identity.userId||agent.identity.tenantId!==identity.tenantId))))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
+    // Model authorization comes after the trusted Session and policy, never from the tenant default for a bound Agent.
+    const credentials=await this.#credentials(selected)
+    if((identity&&(credentials.userId!==identity.userId||credentials.tenantId!==identity.tenantId))
+      ||(agent?.identity&&(credentials.userId!==agent.identity.userId||credentials.tenantId!==agent.identity.tenantId)))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
+    identity?.signal.throwIfAborted();agent?.signal?.throwIfAborted();credentials.signal.throwIfAborted();options.signal?.throwIfAborted()
     try { await this.#bind(options, credentials) } catch (error) {
       credentials.signal.throwIfAborted()
       if (error instanceof LlmError) throw error
       throw new LlmError('无法保存此会话的账号归属，请检查本机受保护存储。', 'FUTURESTAFF_STORAGE')
     }
-    let agent: { agentId: string; version: string;businessSystems?:BusinessSystem[] } | undefined
-    try {
-      agent = this.agentBinding && options.sessionId ? await this.agentBinding(options.sessionId) : undefined
-    } catch {
-      credentials.signal.throwIfAborted()
-      throw new LlmError('智能体会话归属无法确认，请重新选择智能体并新建会话。', 'FUTURESTAFF_AGENT_BINDING')
-    }
-    if (this.agentBinding && !agent) throw new LlmError('请先选择智能体，再创建会话；历史会话保留在旧工作区。', 'FUTURESTAFF_AGENT_REQUIRED')
     if(options.tools)options={...options,tools:options.tools.filter(tool=>businessToolAllowed(tool.name,agent?.businessSystems))}
     let themeRecovery:ReturnType<typeof shopImageRecovery>
     if(agent?.businessSystems?.includes('shop')&&!options.purpose){
@@ -224,13 +261,14 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     }
     const wireMessages=await messages(options,this.readImage,credentials.signal)
     const body = JSON.stringify({ requestId: randomUUID(), modelId: credentials.modelId,
-      ...(agent ? { agentId: agent.agentId, agentVersion: agent.version } : {}),
+      ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',
+        modelSelection:options.model==='default'?'agent-default':'session-explicit' } : {}),
       messages: wireMessages, tools: options.tools ?? [], maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
     if (Buffer.byteLength(body) > 9 * 1024 * 1024) throw new LlmError('会话内容过长，请新建会话。', 'FUTURESTAFF_LIMIT')
     const abort = new AbortController()
     const timeout = setTimeout(() => abort.abort(), 130_000)
     timeout.unref()
-    const signal = AbortSignal.any([credentials.signal, abort.signal, this.#lifetime.signal,
+    const signal = AbortSignal.any([credentials.signal, abort.signal, this.#lifetime.signal,...(agent?.signal?[agent.signal]:[]),
       ...(options.signal ? [options.signal] : [])])
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
     try {

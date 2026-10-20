@@ -4,6 +4,7 @@ import {mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import {VideoEngine} from '../lib/index.js'
+import {videoProcessFailure} from '../lib/runtime.js'
 const input={requestId:'create-001',title:'社区咖啡店新品',brief:'示例：咖啡店活动介绍',scenes:[{id:'hero',title:'春日新品',narration:'来喝一杯。',lines:['业务示例'],visual:'hero',durationSeconds:2}],voice:{provider:'none'}}
 async function fixture(t,options={}){const root=await mkdtemp(path.join(os.tmpdir(),'fs-video-'));t.after(()=>rm(root,{recursive:true,force:true}));const engine=new VideoEngine({workspaceRoot:root,ownerKey:'member-a-agent-a',...options});t.after(()=>engine.dispose());return{root,engine}}
 test('create idempotency, immutable revisions, reopen and optimistic conflict',async t=>{const{root,engine}=await fixture(t);const first=await engine.create(input);assert.equal((await engine.create(input)).projectId,first.projectId);await assert.rejects(engine.create({...input,title:'different'}),{code:'VIDEO_REQUEST_CONFLICT'});const original=await readFile(first.revisionPath,'utf8');const next=await engine.revise({requestId:'revise-001',projectId:first.projectId,baseRevisionId:first.revisionId,changes:{music:'gentle',scenes:[{...input.scenes[0],title:'慢慢喝一杯'}]}});assert.notEqual(first.revisionId,next.revisionId);assert.equal(await readFile(first.revisionPath,'utf8'),original);const reopened=new VideoEngine({workspaceRoot:root,ownerKey:'member-a-agent-a'});assert.equal((await reopened.get({projectId:first.projectId})).revisionId,next.revisionId);assert.equal((await reopened.get({projectId:first.projectId,revisionId:first.revisionId})).revision.title,input.title);await assert.rejects(engine.revise({requestId:'revise-002',projectId:first.projectId,baseRevisionId:first.revisionId,changes:{title:'stale'}}),{code:'VIDEO_REVISION_CONFLICT'})})
@@ -26,4 +27,17 @@ test('each accepted render keeps its original session runtime provider',async t=
  const job=await pending
  for(let i=0;i<100;i++){if((await engine.status({projectId:p.projectId,jobId:job.jobId})).status==='succeeded')break;await new Promise(r=>setTimeout(r,5))}
  assert.equal(first,1);assert.equal(second,0)
+})
+
+test('runtime import errors keep an actionable public code and private diagnostics without suggesting network or silent narration removal',async t=>{
+ const {engine}=await fixture(t,{executor:async()=>{throw videoProcessFailure('Traceback:\nImportError: DLL load failed while importing _overlapped: C:\\private-member\\python\\_overlapped.pyd')}})
+ const p=await engine.create(input),job=await engine.render({requestId:'render-import-failure',projectId:p.projectId,revisionId:p.revisionId})
+ let state
+ for(let i=0;i<100;i++){state=await engine.status({projectId:p.projectId,jobId:job.jobId});if(state.status==='failed')break;await new Promise(r=>setTimeout(r,5))}
+ assert.equal(state.error.code,'VIDEO_RUNTIME_IMPORT_FAILED')
+ assert.match(state.error.message,/组件未能加载/)
+ assert.doesNotMatch(state.error.message,/网络|无旁白|private-member/)
+ const diagnostics=await readFile(path.join(p.projectPath,'jobs',job.jobId,'error.log'),'utf8')
+ assert.match(diagnostics,/_overlapped/)
+ assert.equal((await engine.get({projectId:p.projectId})).revisionId,p.revisionId)
 })

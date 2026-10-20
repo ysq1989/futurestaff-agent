@@ -59,7 +59,7 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
         const body=JSON.parse(raw)
         if(suffix==='select'){
           if(Object.keys(body).join()!=='agentId'||typeof body.agentId!=='string')throw new Error('AGENT_REQUEST_INVALID')
-          const snapshot=await fetchAgentData(origin,credentials,body.agentId,fetcher) as AgentSnapshot
+          const snapshot=await fetchAgentData(origin,credentials,body.agentId,fetcher,'1.1.0') as AgentSnapshot
           const operation=()=>store.materialize(snapshot,credentials.signal)
           const pending=queue.then(operation,operation);queue=pending.catch(()=>{})
           const directory=await pending;credentials.signal.throwIfAborted()
@@ -79,13 +79,26 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
     }}),`futurestaff persistent agents ${suffix}`)
   }
   const resolvePolicyBinding=async(sessionId:string)=>{
-    const binding=await resolveBinding(sessionId);if(!binding)return undefined
-    const snapshot=await fetchAgentData(origin,await authorize(),binding.agentId,fetcher) as AgentSnapshot
-    return {...binding,...(snapshot.businessSystems?{businessSystems:snapshot.businessSystems}:{})}
+    let binding=await resolveBinding(sessionId);if(!binding)return undefined
+    const credentials=await authorize()
+    if(credentials.tenantId!==identity.tenantId||credentials.userId!==identity.userId)throw Error('AGENT_IDENTITY_MISMATCH')
+    const snapshot=await fetchAgentData(origin,credentials,binding.agentId,fetcher,'1.1.0') as AgentSnapshot
+    // Existing business APIs keep the legacy content version; chat additionally pins model policy.
+    if(snapshot.legacyVersion!==binding.version||!snapshot.modelPolicy)throw Error('AGENT_MODEL_VERSION_CHANGED')
+    if(!binding.modelVersion)binding=await store.pinModelVersion(sessionId,binding.agentId,binding.version,snapshot.version)
+    if(snapshot.version!==binding.modelVersion)throw Error('AGENT_MODEL_VERSION_CHANGED')
+    return {agentId:binding.agentId,version:snapshot.version,modelPolicy:snapshot.modelPolicy,
+      identity:{userId:identity.userId,tenantId:identity.tenantId},signal:credentials.signal,
+      ...(snapshot.businessSystems?{businessSystems:snapshot.businessSystems}:{})}
   }
   const authorizeBusiness=async(sessionId:string,system:BusinessSystem)=>{
-    const binding=await resolvePolicyBinding(sessionId)
-    if(!binding||binding.businessSystems&&!binding.businessSystems.includes(system))throw Error('AGENT_BUSINESS_SCOPE_DENIED')
+    const binding=await resolveBinding(sessionId)
+    if(!binding)throw Error('AGENT_BUSINESS_SCOPE_DENIED')
+    const credentials=await authorize()
+    if(credentials.tenantId!==identity.tenantId||credentials.userId!==identity.userId)throw Error('AGENT_IDENTITY_MISMATCH')
+    const snapshot=await fetchAgentData(origin,credentials,binding.agentId,fetcher) as AgentSnapshot
+    if(snapshot.version!==binding.version)throw Error('AGENT_VERSION_CHANGED')
+    if(snapshot.businessSystems&&!snapshot.businessSystems.includes(system))throw Error('AGENT_BUSINESS_SCOPE_DENIED')
     return binding
   }
   return {store, resolveBinding,resolvePolicyBinding,authorizeBusiness}

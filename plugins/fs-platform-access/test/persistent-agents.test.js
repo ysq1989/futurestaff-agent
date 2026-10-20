@@ -11,6 +11,7 @@ import { defaultDataRoot, memberDataDirectory } from '../lib/data-root.js'
 const identity = { environment:'production', tenantId:'10000000-0000-4000-8000-000000000001', userId:'20000000-0000-4000-8000-000000000001' }
 const agentId='30000000-0000-4000-8000-000000000001'
 const snapshot = { agentId, name:'签证助手', description:'收单', version:'a'.repeat(64), files:[{path:'soul.md',content:'Know intake'}] }
+const modelSnapshot={...snapshot,version:'b'.repeat(64),legacyVersion:snapshot.version,modelPolicy:{primaryModelId:'50000000-0000-4000-8000-000000000001',fallbackModelId:null}}
 
 test('data root is outside install directory and members/environments stay separate',()=>{
   assert.equal(defaultDataRoot('win32',{LOCALAPPDATA:'C:\\Users\\test\\AppData\\Local'}),path.win32.join('C:\\Users\\test\\AppData\\Local','FutureStaff Agent'))
@@ -139,8 +140,9 @@ test('Host routes create a named native workspace, keep credentials private, and
     return {...identity,accessToken:'synthetic-host-secret',signal:new AbortController().signal}
   },async(url,init)=>{
     assert.equal(init.headers.authorization,'Bearer synthetic-host-secret')
-    return Response.json({contractVersion:'1.0.0',activeTenantId:identity.tenantId,
-      ...(url.endsWith('/snapshot')?{snapshot}:{items:[]})})
+    const modern=String(url).endsWith('?contractVersion=1.1.0')
+    return Response.json({contractVersion:modern?'1.1.0':'1.0.0',activeTenantId:identity.tenantId,
+      ...(String(url).includes('/snapshot')?{snapshot:modern?modelSnapshot:snapshot}:{items:[]})})
   })
   const server=createServer((req,res)=>routes.get(req.url)?.(req,res))
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve))
@@ -156,6 +158,8 @@ test('Host routes create a named native workspace, keep credentials private, and
     assert.equal((await post('bind',{agentId,sessionId:'fake'})).status,409)
     live={header:{cwd:body.path}}
     assert.equal((await host.resolveBinding('real')).agentId,agentId)
+    assert.equal((await host.resolveBinding('real')).version,snapshot.version)
+    assert.equal((await host.resolvePolicyBinding('real')).version,modelSnapshot.version)
     assert.equal((await post('bind',{agentId,sessionId:'real'})).status,200)
     revoked=true
     assert.equal((await post('select',{agentId})).status,409)

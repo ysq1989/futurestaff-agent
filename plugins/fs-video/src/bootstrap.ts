@@ -130,6 +130,18 @@ interface RuntimePreparationOptions {
 }
 interface ActivePreparation {controller:AbortController;promise:Promise<RuntimeResult>;waiters:number;settled:boolean}
 
+/** Python extension lookup and Windows ZIP extraction still use MAX_PATH APIs.
+ * Budget the generated stage too, before creating directories or downloading.
+ */
+export function assertVideoRuntimePathBudget(cacheRoot:string,version:string,files:Record<string,string>,platform:string=process.platform):void {
+  if(platform!=='win32')return
+  const native=path.win32,relatives=Object.keys(files)
+  const installed=native.join(cacheRoot,version),stage=native.join(cacheRoot,'.preparing-'+'0'.repeat(36),'runtime')
+  const longest=(base:string)=>Math.max(...relatives.map(relative=>native.join(base,relative).length))
+  // Keep extension suffix lookup below 240 and extraction below MAX_PATH.
+  if(longest(installed)>200||longest(stage)>248)invalid('VIDEO_RUNTIME_PATH_TOO_LONG')
+}
+
 /** Independent instances coordinate through the same filesystem lock, including separate processes. */
 export function createVideoRuntimePreparer(options:RuntimePreparationOptions){
   const lock=validateVideoRuntimeLock(options.lock),expected=validateVideoRuntimeFiles(options.files)
@@ -165,6 +177,7 @@ export function createVideoRuntimePreparer(options:RuntimePreparationOptions){
   async function prepare(cacheRoot:string,signal:AbortSignal):Promise<RuntimeResult>{
     signal.throwIfAborted()
     if((options.platform??process.platform)!=='win32'||(options.architecture??process.arch)!=='x64')invalid('VIDEO_RUNTIME_PLATFORM_UNSUPPORTED')
+    assertVideoRuntimePathBudget(cacheRoot,lock.version,expected.files,options.platform??process.platform)
     await checkedVideoRuntimeTree(cacheRoot)
     const runtimeRoot=path.join(cacheRoot,lock.version),guard=await acquire(cacheRoot,runtimeRoot,signal)
     if(guard.ready)return {runtimeRoot}

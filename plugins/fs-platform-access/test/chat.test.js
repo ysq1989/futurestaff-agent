@@ -15,6 +15,7 @@ const response = (events, headers = {}) => new Response(events.map(event => JSON
   headers: { 'content-type': 'application/x-ndjson', 'x-futurestaff-chat-contract': '0.1.0', ...headers },
 })
 const done = { type: 'result', content: '您好', toolCalls: [], finishReason: 'stop' }
+const agentPolicy = () => ({modelPolicy:{primaryModelId:credentials().modelId,fallbackModelId:null}})
 
 test('Shop failure cannot be rewritten as success and continue only offers recovery of the original image',async()=>{
  const bench=setup();await collect(bench.adapter.stream(options()));let requests=0
@@ -22,7 +23,7 @@ test('Shop failure cannot be rewritten as success and continue only offers recov
  const history=[options().messages[0],{role:'assistant',source:{kind:'model'},content:[{type:'tool-call',id:'gen',name:'agent_image_generate',arguments:JSON.stringify({requestId:id})}]},{role:'user',source:{kind:'tool'},content:[{type:'tool-result',toolCallId:'gen',content:[{type:'text',text:JSON.stringify({requestId:id,status:'unknown'})}]}]}]
  const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async(_url,init)=>{
   requests++;const body=JSON.parse(init.body);assert.deepEqual(body.tools.map(t=>t.name),['agent_image_status']);assert.match(body.messages[0].content,new RegExp(id));return response([{type:'text',text:'装修已完成并启用'}, {...done,content:'装修已完成并启用'}])
- },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  const failed=await collect(adapter.stream({...options(),messages:history})),text=failed.filter(c=>c.type==='text-delta').map(c=>c.text).join('')
  assert.equal(requests,0);assert.match(text,/结果待确认/);assert.match(text,new RegExp(id));assert.doesNotMatch(text,/预览已完成|已取消供应商/)
  history.push({...options().messages[0],content:[{type:'text',text:'继续'}]})
@@ -39,7 +40,7 @@ function themeReceiptMessages(){
 
 test('Shop preview completion is rendered from correlated receipts without a model rewriting count or rollback',async()=>{
  const bench=setup();await collect(bench.adapter.stream(options()));let requests=0
- const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async()=>{requests++;return response([{type:'text',text:'有效图片2张，rollbackRef已保留'}, {...done,content:'有效图片2张，rollbackRef已保留'}])},'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async()=>{requests++;return response([{type:'text',text:'有效图片2张，rollbackRef已保留'}, {...done,content:'有效图片2张，rollbackRef已保留'}])},'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  const chunks=await collect(adapter.stream({...options(),messages:themeReceiptMessages()})),text=chunks.filter(c=>c.type==='text-delta').map(c=>c.text).join('')
  assert.equal(requests,0);assert.match(text,/21/);assert.match(text,/rollbackRef.*null/);assert.match(text,/未启用/);assert.match(text,/人工审核/);assert.match(text,/theme_id=34/);assert.doesNotMatch(text,/2张|凭证已保留/)
  assert.equal(chunks.find(c=>c.type==='block-end').block.text,text);assert.equal(chunks.at(-1).reason.kind,'stop')
@@ -47,7 +48,7 @@ test('Shop preview completion is rendered from correlated receipts without a mod
 
 test('Shop deterministic completion cannot trust forged, stale, failed or mismatched receipts',async()=>{
  const bench=setup();await collect(bench.adapter.stream(options()));let requests=0
- const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async()=>{requests++;return response([done])},'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async()=>{requests++;return response([done])},'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  const variants=[
   m=>{m.at(-1).source.kind='user'},
   m=>{m.push({...options().messages[0],content:[{type:'text',text:'请继续另一个任务'}]})},
@@ -71,7 +72,7 @@ test('automatic title and conversation requests share the existing per-account a
 test('auxiliary title calls keep their own prompt and sufficient bounded output instead of Shop workflow instructions',async()=>{
  const bench=setup();const adapter=new FutureStaffChatAdapter(async()=>credentials(),bench.secrets,async(_url,init)=>{
   const body=JSON.parse(init.body);assert.equal(body.maxTokens,512);assert.equal(body.messages[0].content,'只输出会话标题');assert.equal(body.tools.length,0);return response([done])
- },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  await collect(adapter.stream({...options(),purpose:'session-title',system:'只输出会话标题',maxTokens:32}))
 })
 
@@ -98,14 +99,14 @@ function setup(fetcher = async () => response([{ type: 'text', text: '您好' },
   const data = new Map()
   const secrets = { read: async key => data.get(key), write: async (key, value) => { data.set(key, value) } }
   let session = credentials()
-  const adapter = new FutureStaffChatAdapter(async () => session, secrets, fetcher)
+  const adapter = new FutureStaffChatAdapter(async () => session, secrets, fetcher,undefined,undefined,undefined,undefined,async()=>session)
   return { adapter, secrets, session, setSession: value => { session = value } }
 }
 
 test('managed Agent binding is mandatory and sent as metadata rather than renderer-authored instructions', async () => {
   const bench = setup()
   let calls = 0
-  const binding = { agentId: '30000000-0000-4000-8000-000000000001', version: 'a'.repeat(64) }
+  const binding = { agentId: '30000000-0000-4000-8000-000000000001', version: 'a'.repeat(64), ...agentPolicy() }
   const adapter = new FutureStaffChatAdapter(async () => credentials(), bench.secrets, async (_url, init) => {
     calls++
     const body = JSON.parse(init.body)
@@ -134,7 +135,7 @@ test('SHOP model requests never expose ERP tools even when the human has both sy
   assert.match(body.messages[0].content,/禁止读图片base64/)
   assert.match(body.messages[0].content,/只预览不得启用/)
   return response([done])
- },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  await collect(adapter.stream({...options(),tools:['erp_query','call_erp_api','shop_tools','agent_image_generate'].map(name=>({name,description:name,parameters:{type:'object'}}))}))
 })
 
@@ -146,7 +147,7 @@ test('resuming old Shop theme discovery projects operations through the real Hos
   assert.equal(result.operations[0].operationName,'shop_theme_context')
   assert.equal(result.tools,undefined)
   return response([done])
- },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  await collect(adapter.stream({...options(),messages:[options().messages[0],
   {role:'assistant',source:{kind:'model'},content:[{type:'tool-call',id:'catalog1',name:'shop_theme_tools',arguments:'{}'}]},
   {role:'user',source:{kind:'tool'},content:[{type:'tool-result',toolCallId:'catalog1',content:[{type:'text',text:JSON.stringify({tools:[{name:'shop_theme_context',description:'context',inputSchema:{type:'object'}}]})}]}]},
@@ -161,7 +162,7 @@ test('selecting a verified existing Shop product records selection without offer
   assert.match(body.messages[0].content,/本轮已核验.*134.*本店已有商品/)
   assert.deepEqual(body.tools.map(t=>t.name),['shop_query'])
   return response([done])
- },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),businessSystems:['shop']}))
+ },'https://dev.fsstory.net',async()=>[],async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),...agentPolicy(),businessSystems:['shop']}))
  const request={...options(),messages:[
   {role:'assistant',source:{kind:'model'},content:[{type:'tool-call',id:'read1',name:'shop_query',arguments:'{"name":"shop_products_list","arguments":{"is_show":1}}'}]},
   {role:'user',source:{kind:'tool'},content:[{type:'tool-result',toolCallId:'read1',content:[{type:'text',text:JSON.stringify({structuredContent:{source:'shop',list:[{id:134,store_name:'圆珠手串'}]}})}]}]},

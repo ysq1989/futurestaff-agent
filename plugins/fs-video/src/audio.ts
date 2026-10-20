@@ -1,7 +1,7 @@
 import {readFile,writeFile} from 'node:fs/promises'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
-import {command,digest,type ResolvedRuntime} from './runtime.js'
+import {command,digest,videoProcessFilePath,type ResolvedRuntime} from './runtime.js'
 import {VideoError,type Caption,type ProjectRevision,type VideoTimeline,type TimedScene} from './contracts.js'
 
 const SR=48000
@@ -24,8 +24,8 @@ export async function prepareAudio(revision:ProjectRevision,directory:string,run
   signal.throwIfAborted();const scene=revision.scenes[i]!,prefix=path.join(directory,'scene-'+String(i+1).padStart(2,'0'));let pcm:Int16Array=new Int16Array(),words:{offset:number;duration:number;text:string}[]=[]
   if(revision.voice.provider==='edge'&&scene.narration.trim()){
    const request=prefix+'.tts.json',audio=prefix+'.mp3';await writeFile(request,JSON.stringify({text:scene.narration,voice:revision.voice}),{mode:0o600})
-   const script=fileURLToPath(new URL('./assets/voice.py',import.meta.url));await command(runtime.pythonPath,[script,request,audio],{signal,timeoutMs:90000,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',...(runtime.pythonModulePath?{PYTHONPATH:runtime.pythonModulePath}:{})}})
-   const bytes=await command(runtime.ffmpegPath,['-v','error','-i',audio,'-f','s16le','-ar',String(SR),'-ac','1','-'],{signal,maxBytes:SR*2*maxDuration})
+   const script=fileURLToPath(new URL('./assets/voice.py',import.meta.url));await command(runtime.pythonPath,[script,request,audio].map(file=>videoProcessFilePath(file)),{signal,timeoutMs:90000,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',...(runtime.pythonModulePath?{PYTHONPATH:videoProcessFilePath(runtime.pythonModulePath)}:{})}})
+   const bytes=await command(runtime.ffmpegPath,['-v','error','-i',videoProcessFilePath(audio),'-f','s16le','-ar',String(SR),'-ac','1','-'],{signal,maxBytes:SR*2*maxDuration})
    pcm=new Int16Array(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));words=JSON.parse(await readFile(prefix+'.words.json','utf8'));sources.push({sceneId:scene.id,provider:'edge',voice:revision.voice,audioSha256:digest(await readFile(audio)),wordBoundaryMatches:clean(words.map(w=>w.text).join(''))===clean(scene.narration)})
   }
   const durationFrames=Math.ceil(Math.max(scene.durationSeconds??(revision.voice.provider==='none'?6:2),pcm.length/SR+.38)*30)

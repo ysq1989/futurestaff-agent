@@ -49,3 +49,7 @@
 4. 本轮无 Schema 变更，无迁移；不移动旧用户数据。回退保留原安装包和原路径，新根数据保留，不让旧程序误写新归属记录。
 
 本轮不新增共享记忆自动写回、云端会话同步、任意脚本下载执行或可点击数据迁移功能。它们需要各自受控契约和验收，不能从缓存 Skills 推定已实现。
+# 2026-10-21 private video preview review
+
+The product shell opens exact Host-issued `/_futurestaff/video/asset/<48hex>` links on its current loopback carrier in an owned native window. It reuses the authenticated Electron session and registers its renderer before loading; the existing access-header interceptor still strips credentials from other origins. External navigation, redirects, webviews and new windows are blocked. Closing the window, a failed load and shell-generation disposal remove renderer membership. The ordinary-browser access policy is unchanged. The source changes and tests were independently reviewed; native MP4 playback remains part of the coffee-case GUI acceptance recorded in `tasks/video-native-chat-20261021.md`.
+

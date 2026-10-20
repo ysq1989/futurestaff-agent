@@ -8,6 +8,27 @@ import {validateInstalledVideoRuntime} from './bootstrap.js'
 export interface VideoRuntime {runtimeRoot?:string;ffmpegPath?:string;ffprobePath?:string;pythonPath?:string;pythonModulePath?:string;browserExecutable?:string;fontPath?:string}
 export interface ResolvedRuntime {ffmpegPath:string;ffprobePath:string;pythonPath:string;pythonModulePath?:string;browserExecutable:string;fontPath?:string;runtimeRoot?:string}
 export const digest=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex')
+/** Convert only trusted absolute file arguments; never command flags or URLs. */
+export function videoProcessFilePath(file:string,platform:string=process.platform):string {
+ return platform==='win32'&&path.win32.isAbsolute(file)?path.win32.toNamespacedPath(file):file
+}
+/** Public job errors are actionable summaries; raw diagnostics stay in error.log. */
+export function videoProcessFailure(stderr:string):VideoError {
+ let code='VIDEO_PROCESS_FAILED',message='视频制作组件未完成，请检查本机任务诊断后重试；项目和版本已保留。'
+ if(/(?:ImportError:.*(?:DLL load failed|cannot import)|ModuleNotFoundError:|Fatal Python error:|Python path configuration:)/i.test(stderr)){
+  code='VIDEO_RUNTIME_IMPORT_FAILED';message='语音制作组件未能加载（Python 模块或 DLL），请更新运行组件后重试；项目和版本已保留。'
+ }else if(/(?:ClientConnectorError|ClientConnectorSSLError|NoAudioReceived|Cannot connect to host speech\.)/i.test(stderr)){
+  code='VIDEO_VOICE_SERVICE_UNAVAILABLE';message='在线语音服务暂时无法连接，请检查网络后重试；原脚本和版本已保留。'
+ }
+ const error=new VideoError(code,message)
+ if(stderr)error.stack+='\nProcess diagnostics (private):\n'+stderr.slice(-4000)
+ return error
+}
+export function videoRuntimeErrorMessage(code:string):string {
+ if(code==='VIDEO_RUNTIME_IMPORT_FAILED')return '免费制作组件未能加载，请更新客户端或重新准备运行组件后重试；脚本和版本已保留。'
+ if(code==='VIDEO_RUNTIME_PATH_TOO_LONG')return '免费制作组件缓存路径过长，请使用较短的 Windows 用户目录或联系管理员；脚本和版本已保留。'
+ return '免费制作组件准备失败，请检查网络或运行组件后重试；脚本和版本已保留。'
+}
 export async function resolveRuntime(input:VideoRuntime):Promise<ResolvedRuntime>{
  const root=input.runtimeRoot??process.env.FUTURESTAFF_VIDEO_RUNTIME_ROOT
  if(root){try{await validateInstalledVideoRuntime(root)}catch{throw new VideoError('VIDEO_RUNTIME_HASH_MISMATCH')}}
@@ -42,8 +63,8 @@ export async function command(file:string,args:string[],options:{signal?:AbortSi
   const done=()=>{clearTimeout(timer);options.signal?.removeEventListener('abort',abort)}
   const streamError=()=>{failed=true;stopProcess(child);done();reject(new VideoError('VIDEO_PROCESS_IO_FAILED'))}
   child.stdout.on('error',streamError);child.stderr.on('error',streamError)
-  child.once('error',e=>{done();reject(new VideoError('VIDEO_RUNTIME_UNAVAILABLE',e.message))})
-  child.once('close',code=>{done();if(options.signal?.aborted)return reject(new VideoError('VIDEO_CANCELLED'));if(failed)return reject(new VideoError('VIDEO_PROCESS_LIMIT'));if(code!==0)return reject(new VideoError('VIDEO_PROCESS_FAILED',Buffer.concat(stderr).toString('utf8').slice(-2000)));resolve(Buffer.concat(stdout))})
+  child.once('error',e=>{done();const error=new VideoError('VIDEO_RUNTIME_UNAVAILABLE','本机制作组件未能启动，请检查运行组件后重试。');error.stack+='\n'+e.message;reject(error)})
+  child.once('close',code=>{done();if(options.signal?.aborted)return reject(new VideoError('VIDEO_CANCELLED'));if(failed)return reject(new VideoError('VIDEO_PROCESS_LIMIT'));if(code!==0)return reject(videoProcessFailure(Buffer.concat(stderr).toString('utf8')));resolve(Buffer.concat(stdout))})
  })
 }
-export async function probe(file:string,runtime:ResolvedRuntime,signal?:AbortSignal){const input=process.platform==='win32'&&path.isAbsolute(file)?path.toNamespacedPath(file):file;return JSON.parse((await command(runtime.ffprobePath,['-v','error','-show_streams','-show_format','-of','json',input],{signal})).toString('utf8')) as {streams:Record<string,unknown>[];format:Record<string,unknown>}}
+export async function probe(file:string,runtime:ResolvedRuntime,signal?:AbortSignal){return JSON.parse((await command(runtime.ffprobePath,['-v','error','-show_streams','-show_format','-of','json',videoProcessFilePath(file)],{signal})).toString('utf8')) as {streams:Record<string,unknown>[];format:Record<string,unknown>}}

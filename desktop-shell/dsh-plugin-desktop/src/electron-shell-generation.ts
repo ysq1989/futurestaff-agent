@@ -1,4 +1,5 @@
 import { DesktopModuleWindow } from './module-window.ts'
+import { DesktopVideoWindow } from './video-window.ts'
 import { DesktopSystemViews } from './system-views.ts'
 import {
   app,
@@ -400,8 +401,10 @@ export class ElectronShellGeneration {
     window.webContents.on('did-fail-load', loadFailed)
     const rendererIds = new Set([window.webContents.id])
     const moduleWindow = new DesktopModuleWindow(spec.url, window.webContents.session, icon, rendererIds, message => { this.options.logError(message) })
+    const videoWindow = new DesktopVideoWindow(spec.url, window.webContents.session, icon, rendererIds, message => { this.options.logError(message) })
     window.webContents.setWindowOpenHandler(({ url }) => {
       if (moduleWindow.open(url)) return { action: 'deny' }
+      if (videoWindow.open(url)) return { action: 'deny' }
       try {
         const target = new URL(url)
         if (target.protocol === 'https:' || target.protocol === 'http:' || target.protocol === 'mailto:') {
@@ -420,6 +423,7 @@ export class ElectronShellGeneration {
     this.cleanupListeners = () => {
       systemViews?.dispose()
       moduleWindow.close()
+      videoWindow.close()
       app.off('activate', activate)
       if (platform.platform === 'darwin') app.off('did-become-active', activate)
       window.off('close', close)

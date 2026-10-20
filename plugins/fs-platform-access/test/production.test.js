@@ -46,10 +46,13 @@ test('chat lists only offered tenant models and binds the selected ID in Host', 
   const model = { modelId, displayName: '正式平台模型' }
   const adapter = new FutureStaffChatAdapter(async id => { requested.push(id); return {
     accessToken: 'host-token', tenantId: 'tenant', userId: 'user', modelId, signal: new AbortController().signal,
-  } }, { read: async () => undefined, write: async () => {} }, fetch, platformOrigin('production'), async () => [model])
+  } }, { read: async () => undefined, write: async () => {} }, async()=>new Response(JSON.stringify({type:'result',content:'ok',toolCalls:[],finishReason:'stop'})+'\n',
+    {headers:{'content-type':'application/x-ndjson','x-futurestaff-chat-contract':'0.1.0'}}), platformOrigin('production'), async () => [model])
   assert.deepEqual((await adapter.listModels()).map(m => m.id), ['default', modelId])
-  await adapter.prepareCall('futurestaff', modelId)
-  assert.deepEqual(requested, [modelId])
+  const prepared=await adapter.prepareCall('futurestaff', modelId)
+  assert.deepEqual(requested, [])
+  for await(const _ of prepared.stream({provider:'futurestaff',model:modelId,sessionId:'explicit-model-session',messages:[{role:'user',source:{kind:'user'},content:[{type:'text',text:'hello'}]}]})){}
+  assert.deepEqual(requested,[modelId])
   await assert.rejects(adapter.prepareCall('futurestaff', '30000000-0000-4000-8000-000000000099'))
   adapter.dispose()
   let service, tenant = 'tenant-a'
@@ -58,7 +61,7 @@ test('chat lists only offered tenant models and binds the selected ID in Host', 
     authorize: async id => { if (id !== modelId) throw new Error('denied') },
   })
   await service.saveSelection({ provider: 'futurestaff', model: modelId })
-  assert.equal(service.currentSelection().model, modelId)
+  assert.equal(service.currentSelection().model, 'default')
   tenant = 'tenant-b'; assert.equal(service.currentSelection().model, 'default')
   await assert.rejects(service.saveSelection({ provider: 'direct', model: modelId }))
 })

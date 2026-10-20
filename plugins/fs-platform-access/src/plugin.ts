@@ -177,7 +177,8 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
         const binding=await agents.resolveBinding(sessionId)
         if(!binding)throw Error('AGENT_BINDING_REQUIRED')
         return agents.store.workspacePath(binding.agentId)
-      }) : undefined)
+      }) : undefined,
+      async()=>{await initialized;return access.authorizeTemplates()})
     llmCtx.effect(() => {
       const unregister = llmCtx.llm.registerAdapter(['futurestaff'], adapter)
       return () => { adapter.dispose(); unregister() }

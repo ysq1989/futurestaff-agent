@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-16",
+  "reviewedAt": "2026-10-21",
   "review": "docs/specs/persistent-agents-v3-acceptance.md",
   "files": [
     {
@@ -11,8 +11,8 @@
     },
     {
       "path": "electron-shell-generation.ts",
-      "reason": "FutureStaff owns authenticated system views, exact module windows, renderer capability scopes and Windows workbench sizing.",
-      "stableSha256": "7a5c6ba8d12688b0e69ed6a474ec8ee143150bd231848a69aca2473c0c68c975",
+      "reason": "FutureStaff owns authenticated system views, exact module and private video preview windows, renderer capability scopes and Windows workbench sizing.",
+      "stableSha256": "08e42085571eef034d497d0bbccb34610d8f19a73dbc8493fa7efb63e011b488",
       "betaSha256": "5c930513cdc488893aabfffce7804dce66610f25df8c89da4823ec4693b68762"
     },
     {
@@ -85,6 +85,12 @@
       "path": "system-views.ts",
       "reason": "Product-only isolated authorized WebContentsView tabs with caller checks, revocation and private-address blocking. Reviewed Shop session POST allowlist, owner revocation, and image-only GET CDN proxy handling.",
       "stableSha256": "2d88261a62340c09ce6eedf16775ffff48bf3efd1a0f03025416561b9f855457",
+      "betaSha256": null
+    },
+    {
+      "path": "video-window.ts",
+      "reason": "Product-only private video preview reuses the authenticated native session; exact current-carrier capabilities, blocked external navigation and generation-owned renderer cleanup.",
+      "stableSha256": "0d0aca6f37b8424da74fb7572d604551466ea19fc8ba4218fa415d994413a165",
       "betaSha256": null
     }
   ]

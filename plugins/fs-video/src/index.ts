@@ -4,11 +4,11 @@ export type {VideoRuntime,ResolvedRuntime} from './runtime.js'
 export * from './host.js'
 
 import type { Context } from '@deepseek-ai/cordis'
-import path from 'node:path'
 import os from 'node:os'
 import { VideoEngine } from './engine.js'
-import { mountVideoTools } from './host.js'
+import { mountVideoTools, videoOwnerKey } from './host.js'
 import { ensureVideoRuntime } from './bootstrap.js'
+import { videoRuntimeCacheRoot } from './cache.js'
 
 export const name = 'futurestaff-video'
 export const inject = ['tools', 'webServer']
@@ -24,7 +24,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       workspace: videoCtx.futurestaffVideoWorkspace,
       deviceId,
       engineFactory: options => new VideoEngine(options),
-      prepareRuntime: (identity, signal) => ensureVideoRuntime(path.join(identity.workspacePath, '.futurestaff-video-runtime'), signal),
+      prepareRuntime: (identity, signal) => ensureVideoRuntime(videoRuntimeCacheRoot(videoOwnerKey(identity)), signal),
     })
   })
 }

@@ -10,7 +10,7 @@ const collect=async stream=>{for await(const _ of stream){}}
 const response=()=>new Response(JSON.stringify({type:'result',content:'ok',toolCalls:[],finishReason:'stop'})+'\n',{headers:{'content-type':'application/x-ndjson','x-futurestaff-chat-contract':'0.1.0'}})
 function adapter(models=[model],read=async()=>({dataUrl:'data:image/png;base64,AA==',path:'fashion-input/a.png'}),fetcher=async()=>response()){
  const values=new Map()
- return new FutureStaffChatAdapter(async()=>credentials(),{read:async key=>values.get(key),write:async(key,value)=>values.set(key,value)},fetcher,'https://platform.fsstory.net',async()=>models,async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64)}),read)
+ return new FutureStaffChatAdapter(async()=>credentials(),{read:async key=>values.get(key),write:async(key,value)=>values.set(key,value)},fetcher,'https://platform.fsstory.net',async()=>models,async()=>({agentId:'30000000-0000-4000-8000-000000000001',version:'a'.repeat(64),modelPolicy:{primaryModelId:model.modelId,fallbackModelId:null}}),read)
 }
 test('default and explicit models expose authoritative vision capability',async()=>{
  assert.deepEqual((await adapter().listModels()).map(x=>x.inputModalities),[['text','image'],['text','image']])
