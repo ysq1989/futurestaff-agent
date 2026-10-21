@@ -19,7 +19,7 @@ test('publisher package is pinned and rejects unverified transport before any ex
 });
 test('default GEO Host stops writes to the legacy local workspace without opening its database',()=>{
  let route;
- apply({effect:fn=>fn(),webServer:{register:value=>{route=value;return()=>{}}}});
+ apply({inject:()=>{},effect:fn=>fn(),webServer:{register:value=>{route=value;return()=>{}}}});
  let body;
  const response={setHeader:()=>{},end:value=>{body=value}};
  route.handler({},response);

@@ -36,6 +36,7 @@ interface ReleaseManifest {
   readonly supersedes?: readonly string[]
   readonly workspacePreviousFiles?: Record<string, string>
   readonly workspacePreviousInventories?: readonly Record<string, string>[]
+  readonly workspacePreviousGeoInventories?: readonly Record<string, string>[]
   readonly workspacePreviousVideoFiles?: Record<string, string>
   readonly files: Record<string, string>
 }
@@ -150,6 +151,15 @@ function readManifest(source: string): ReleaseManifest {
         || name.startsWith('node_modules/@futurestaff/fs-video/lib/'))
       || !safeRelativePath(name) || typeof digest !== 'string' || !/^[0-9a-f]{64}$/u.test(digest)))) {
     throw new Error('FutureStaff video workspace upgrade inventory is invalid')
+  }
+  if (value.workspacePreviousGeoInventories !== undefined && (!Array.isArray(value.workspacePreviousGeoInventories)
+    || value.workspacePreviousGeoInventories.length > 16
+    || value.workspacePreviousGeoInventories.some(files => files === null || typeof files !== 'object'
+      || Array.isArray(files) || Object.keys(files).length === 0 || Object.keys(files).length > MAX_WORKSPACE_FILES
+      || Object.entries(files).some(([name, digest]) =>
+        !name.startsWith('node_modules/@futurestaff/fs-geo/lib/')
+        || !safeRelativePath(name) || typeof digest !== 'string' || !/^[0-9a-f]{64}$/u.test(digest))))) {
+    throw new Error('FutureStaff GEO workspace upgrade inventories are invalid')
   }
   if (entries.length === 0 || entries.length > MAX_PROFILE_FILES
     || entries.some(([name, digest]) => !safeRelativePath(name) || !/^[0-9a-f]{64}$/u.test(digest))) {
@@ -310,6 +320,7 @@ export function installBundledFutureStaffProfile(
 }
 
 const PLATFORM_PREFIX = 'node_modules/@futurestaff/fs-platform-access/lib/'
+const GEO_PREFIX = 'node_modules/@futurestaff/fs-geo/lib/'
 const VIDEO_PREFIX = 'node_modules/@futurestaff/fs-video/'
 
 function realDirectory(directory: string): boolean {
@@ -381,7 +392,7 @@ interface WorkspaceCodeUpgrade {
   readonly profile: string
   readonly target: string
   readonly prefix: string
-  readonly package: 'fs-platform-access' | 'fs-video'
+  readonly package: 'fs-platform-access' | 'fs-video' | 'fs-geo'
   readonly previous: Record<string, string>
 }
 
@@ -394,6 +405,8 @@ function workspaceCodeUpgrades(homeDir: string, manifest: ReleaseManifest): Work
           : [manifest.workspacePreviousFiles, ...(manifest.workspacePreviousInventories ?? [])] },
       { package: 'fs-video' as const, prefix: VIDEO_PREFIX,
         inventories: manifest.workspacePreviousVideoFiles === undefined ? [] : [manifest.workspacePreviousVideoFiles] },
+      { package: 'fs-geo' as const, prefix: GEO_PREFIX,
+        inventories: manifest.workspacePreviousGeoInventories ?? [] },
     ]
     for (const item of candidates) {
       try {
@@ -413,7 +426,7 @@ function workspaceCodeUpgrades(homeDir: string, manifest: ReleaseManifest): Work
 /** Read-only plan using precisely the same validators as startup reconciliation. */
 export function planBundledFutureStaffProfile(options: BundledFutureStaffProfileOptions): {
   bundled: BundledFutureStaffProfileResult
-  workspaces: readonly { profile: string, package: 'fs-platform-access' | 'fs-video' }[]
+  workspaces: readonly { profile: string, package: 'fs-platform-access' | 'fs-video' | 'fs-geo' }[]
 } {
   if (!safeProfileDestination(options)) return { bundled: 'preserved', workspaces: [] }
   const source = resolve(options.resourcesPath, PROFILE_RESOURCE_DIRECTORY, 'profiles', PROFILE_NAME)

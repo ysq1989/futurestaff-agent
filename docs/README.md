@@ -13,6 +13,7 @@
 | 智能体发布与安装中心 | [规格](specs/agent-distribution-v1.md)、[阶段任务](../tasks/agent-distribution-20261021.md)、[本地验收与发布门禁](agent-distribution-acceptance-20261021.md) |
 | 业务系统与页面交互 | [交互契约](specs/agent-interaction-v1.md) |
 | GEO 云端与本地发布 | [规格](specs/geo-cloud-local-publishing.md)、[插件说明](../plugins/fs-geo/README.md) |
+| GEO 助手豆包采集 | [ADR-0021](adr/0021-geo-assistant-controlled-collection.md)、[服务端对接契约](specs/geo-assistant-web-collection-v1.md)、[安装版任务](../tasks/geo-assistant-client-20261021.md)；GEO 由另一个 AI 升级，本任务仅 Agent |
 | SHOP 装修工具 | [工具说明](shop-theme-tools.md) |
 | 通用视频制作 Agent | [契约](specs/video-production-agent-v1.md)、[制作模块](../plugins/fs-video/README.md) |
 | Windows 发布 | [软件内升级](specs/desktop-in-app-updates.md)、[发布契约](specs/desktop-update-publication.md)、[最新交付](../tasks/agent-laptop-handoff-20261021.md) |

@@ -10,6 +10,8 @@ import {GeoAgentBridge} from './agent-bridge.js';
 import {ToutiaoAccountProfiles} from './publication-accounts.js';
 import {authorizeGeo} from './authorization.js';
 import type { GeoDesktopService } from './service.js';
+import {mountGeoAssistant} from './assistant-host.js';
+export {mountGeoAssistant,geoToolSchemas,readAssistantResponse} from './assistant-host.js';
 
 export const inject=['webServer','platformDevLogin'];
 export const routePrefix='/_futurestaff/geo';
@@ -68,6 +70,7 @@ export function createGeoHandler(service:GeoDesktopService,assets:string){
  };
 }
 export function apply(ctx:Context){
+ ctx.inject(['tools','futurestaffGeoAssistantSession'],assistantCtx=>{mountGeoAssistant(assistantCtx);});
  const bridge=new GeoAgentBridge({authorize:()=>authorizeGeo(ctx.platformDevLogin),authorizeBrowser:input=>ctx.platformDevLogin.authorizeGeoBrowser(input),
   profiles:authorize=>new ToutiaoAccountProfiles(path.join(os.homedir(),'.futurestaff','geo-publishing','accounts'),authorize),
   lookupAccount:async input=>{

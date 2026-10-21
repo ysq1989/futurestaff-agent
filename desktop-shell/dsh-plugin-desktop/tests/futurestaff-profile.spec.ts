@@ -242,6 +242,46 @@ describe('bundled FutureStaff Profile', () => {
     } finally { rmSync(value.root, { recursive: true, force: true }) }
   })
 
+  it.each(['valid', 'custom', 'missing', 'linked-package'] as const)('reconciles only audited GEO code and preserves existing work: %s', mode => {
+    const value = fixture()
+    try {
+      const prefix = 'node_modules/@futurestaff/fs-geo/lib/'
+      const manifest = JSON.parse(readFileSync(join(value.source, 'release-manifest.json'), 'utf8'))
+      const oldCode = 'official old GEO', newCode = 'official new GEO'
+      manifest.workspacePreviousGeoInventories = [{ [prefix + 'index.js']: createHash('sha256').update(oldCode).digest('hex') }]
+      mkdirSync(join(value.source, prefix), { recursive: true })
+      writeFileSync(join(value.source, prefix, 'index.js'), newCode)
+      manifest.files[prefix + 'index.js'] = createHash('sha256').update(newCode).digest('hex')
+      writeFileSync(join(value.source, 'release-manifest.json'), JSON.stringify(manifest))
+      const identity = { environment: 'production', tenantId: '10000000-0000-4000-8000-000000000001', userId: '20000000-0000-4000-8000-000000000001' }
+      const name = 'fs-production-' + createHash('sha256').update(JSON.stringify(identity)).digest('hex')
+      const target = join(value.homeDir, 'profiles', name)
+      mkdirSync(join(target, 'node_modules/@futurestaff'), { recursive: true })
+      writeFileSync(join(target, 'futurestaff-workspace.json'), JSON.stringify(identity))
+      writeFileSync(join(target, 'private-history.json'), 'original work')
+      const module = join(target, 'node_modules/@futurestaff/fs-geo')
+      const actual = mode === 'linked-package' ? join(value.root, 'outside-geo') : module
+      if (mode !== 'missing') {
+        mkdirSync(join(actual, 'lib'), { recursive: true })
+        writeFileSync(join(actual, 'lib/index.js'), mode === 'custom' ? 'custom GEO' : oldCode)
+        if (mode === 'linked-package') symlinkSync(actual, module, process.platform === 'win32' ? 'junction' : 'dir')
+      }
+      expect(planBundledFutureStaffProfile(value).workspaces).toEqual(mode === 'valid' ? [{ profile: name, package: 'fs-geo' }] : [])
+      installBundledFutureStaffProfile(value)
+      expect(readFileSync(join(target, 'private-history.json'), 'utf8')).toBe('original work')
+      if (mode === 'missing') expect(existsSync(module)).toBe(false)
+      else expect(readFileSync(join(actual, 'lib/index.js'), 'utf8')).toBe(mode === 'valid' ? newCode : mode === 'custom' ? 'custom GEO' : oldCode)
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+  it('rejects a GEO upgrade inventory that includes another package', () => {
+    const value = fixture()
+    try {
+      const file = join(value.source, 'release-manifest.json'), manifest = JSON.parse(readFileSync(file, 'utf8'))
+      manifest.workspacePreviousGeoInventories = [{ 'node_modules/@futurestaff/fs-platform-access/lib/index.js': 'a'.repeat(64) }]
+      writeFileSync(file, JSON.stringify(manifest))
+      expect(() => planBundledFutureStaffProfile(value)).toThrow('GEO workspace upgrade inventories are invalid')
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
   it.each(['valid', 'custom', 'previous-release'] as const)('upgrades audited workspace Host and browser code together: %s', mode => {
     const value = fixture()
     try {

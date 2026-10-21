@@ -13,6 +13,8 @@ test('runtime requirement negotiation matches the desktop candidate and rejects 
  assert.equal(compatibleRequirements({minClientVersion:desktop.version,capabilities:['core.chat']}),true)
  assert.equal(compatibleRequirements({minClientVersion:'99.0.0',capabilities:['core.chat']}),false)
  assert.equal(compatibleRequirements({minClientVersion:'3.2.0',capabilities:['untrusted.plugin']}),false)
+ assert.equal(compatibleRequirements({minClientVersion:'3.3.0',capabilities:['core.chat','geo.collection','local.files']},'3.2.1'),false)
+ assert.equal(compatibleRequirements({minClientVersion:'3.3.0',capabilities:['core.chat','geo.collection','local.files']},'3.3.0'),true)
 })
 test('install, update, rollback, uninstall and reinstall preserve pinned sessions and both projects',async t=>{
  const root=await mkdtemp(path.join(os.tmpdir(),'fs-install-'));t.after(()=>rm(root,{recursive:true,force:true}));const store=new AgentInstallationStore(root,identity),a=release('one'),b=release('two'),signal=new AbortController().signal

@@ -138,6 +138,15 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     await initialized
     return access.authorizeTemplates()
   }) : undefined
+  if (identity && agents) ctx.provide('futurestaffGeoAssistantSession', {
+    authorize: async (sessionId:string, signal?:AbortSignal) => {
+      signal?.throwIfAborted()
+      const binding=await agents.authorizeBusiness(sessionId,'geo')
+      const snapshot=await agents.boundSnapshot(binding.agentId,binding.releaseVersion)
+      if(snapshot.version!==binding.version||!snapshot.files.some(file=>file.path==='skills/geo-assistant/SKILL.md'))throw Error('GEO_AGENT_CAPABILITY_REQUIRED')
+      return {agentId:binding.agentId,agentVersion:binding.version}
+    },
+  })
   if (identity && agents) ctx.provide('futurestaffVideoWorkspace', createVideoWorkspaceResolver({
     identity,
     authorize: async () => { await initialized; return access.authorizeTemplates() },
@@ -477,5 +486,6 @@ declare module '@deepseek-ai/cordis' {
     platformInference: PlatformInferenceService
     platformDevLogin: PlatformDevLoginService
     futurestaffVideoWorkspace: VideoWorkspaceResolver
+    futurestaffGeoAssistantSession: {authorize(sessionId:string,signal?:AbortSignal):Promise<{agentId:string;agentVersion:string}>}
   }
 }
