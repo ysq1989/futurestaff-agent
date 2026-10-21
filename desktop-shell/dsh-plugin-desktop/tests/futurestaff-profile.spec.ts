@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, symlinkSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -7,6 +7,7 @@ import {
   applyBundledFutureStaffBootstrapIdentity,
   bundledFutureStaffAutomaticSetup,
   installBundledFutureStaffProfile,
+  planBundledFutureStaffProfile,
   MAX_PROFILE_FILES,
   validateBundledFutureStaffProfile,
 } from '../src/futurestaff-profile.ts'
@@ -49,6 +50,162 @@ function fixture(fileCount = 0) {
 }
 
 describe('bundled FutureStaff Profile', () => {
+  it('preserves a dangling bundled Profile link instead of treating it as a first installation', () => {
+    const value = fixture()
+    try {
+      mkdirSync(join(value.homeDir, 'profiles'), { recursive: true })
+      const target = join(value.homeDir, 'profiles/futurestaff-alpha')
+      const missing = join(value.root, 'missing-external-profile')
+      symlinkSync(missing, target, process.platform === 'win32' ? 'junction' : 'dir')
+      expect(planBundledFutureStaffProfile(value)).toEqual({ bundled: 'preserved', workspaces: [] })
+      expect(installBundledFutureStaffProfile(value)).toBe('preserved')
+      expect(lstatSync(target).isSymbolicLink()).toBe(true)
+      expect(existsSync(missing)).toBe(false)
+      expect(existsSync(value.selectionStatePath)).toBe(false)
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+
+  it.each(['first-install', 'repair', 'upgrade'] as const)(
+    'preserves a linked profiles parent without writing outside the requested home: %s', mode => {
+      const value = fixture()
+      try {
+        const external = join(value.root, 'external-profiles')
+        mkdirSync(external)
+        const target = join(external, 'futurestaff-alpha')
+        if (mode !== 'first-install') {
+          cpSync(value.source, target, { recursive: true })
+          if (mode === 'upgrade') {
+            const oldFile = join(target, 'release-manifest.json')
+            const old = JSON.parse(readFileSync(oldFile, 'utf8'))
+            writeFileSync(join(target, 'package.json'), '{"name":"old-stock-profile"}')
+            old.files['package.json'] = createHash('sha256').update('{"name":"old-stock-profile"}').digest('hex')
+            writeFileSync(oldFile, JSON.stringify(old))
+            const currentFile = join(value.source, 'release-manifest.json')
+            const current = JSON.parse(readFileSync(currentFile, 'utf8'))
+            current.supersedes = [createHash('sha256').update(readFileSync(oldFile)).digest('hex')]
+            writeFileSync(currentFile, JSON.stringify(current))
+          }
+        }
+        mkdirSync(value.homeDir, { recursive: true })
+        const profiles = join(value.homeDir, 'profiles')
+        symlinkSync(external, profiles, process.platform === 'win32' ? 'junction' : 'dir')
+        writeFileSync(join(external, 'outside-sentinel.txt'), 'unchanged')
+        const previous = mode === 'first-install' ? undefined : readFileSync(join(target, 'release-manifest.json'), 'utf8')
+        expect(planBundledFutureStaffProfile(value)).toEqual({ bundled: 'preserved', workspaces: [] })
+        expect(installBundledFutureStaffProfile(value)).toBe('preserved')
+        expect(lstatSync(profiles).isSymbolicLink()).toBe(true)
+        expect(readFileSync(join(external, 'outside-sentinel.txt'), 'utf8')).toBe('unchanged')
+        if (previous === undefined) expect(existsSync(target)).toBe(false)
+        else expect(readFileSync(join(target, 'release-manifest.json'), 'utf8')).toBe(previous)
+        expect(existsSync(value.selectionStatePath)).toBe(false)
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
+  it('rejects a linked ancestor above a missing profiles directory', () => {
+    const value = fixture()
+    try {
+      const external = join(value.root, 'external-home')
+      mkdirSync(external)
+      symlinkSync(external, value.homeDir, process.platform === 'win32' ? 'junction' : 'dir')
+      expect(planBundledFutureStaffProfile(value)).toEqual({ bundled: 'preserved', workspaces: [] })
+      expect(installBundledFutureStaffProfile(value)).toBe('preserved')
+      expect(existsSync(join(external, 'profiles'))).toBe(false)
+      expect(existsSync(value.selectionStatePath)).toBe(false)
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+
+  it.each(['repair', 'upgrade'] as const)('preserves a linked bundled Profile root even with exact stock bytes: %s', mode => {
+    const value = fixture()
+    try {
+      const external = join(value.root, 'external-stock-profile')
+      cpSync(value.source, external, { recursive: true })
+      if (mode === 'upgrade') {
+        const oldFile = join(external, 'release-manifest.json')
+        const old = JSON.parse(readFileSync(oldFile, 'utf8'))
+        writeFileSync(join(external, 'package.json'), '{"name":"old-stock-profile"}')
+        old.files['package.json'] = createHash('sha256').update('{"name":"old-stock-profile"}').digest('hex')
+        writeFileSync(oldFile, JSON.stringify(old))
+        const currentFile = join(value.source, 'release-manifest.json')
+        const current = JSON.parse(readFileSync(currentFile, 'utf8'))
+        current.supersedes = [createHash('sha256').update(readFileSync(oldFile)).digest('hex')]
+        writeFileSync(currentFile, JSON.stringify(current))
+      }
+      mkdirSync(join(value.homeDir, 'profiles'), { recursive: true })
+      const target = join(value.homeDir, 'profiles/futurestaff-alpha')
+      symlinkSync(external, target, process.platform === 'win32' ? 'junction' : 'dir')
+      const previous = readFileSync(join(external, 'release-manifest.json'), 'utf8')
+      expect(planBundledFutureStaffProfile(value).bundled).toBe('preserved')
+      expect(installBundledFutureStaffProfile(value)).toBe('preserved')
+      expect(lstatSync(target).isSymbolicLink()).toBe(true)
+      expect(readFileSync(join(external, 'release-manifest.json'), 'utf8')).toBe(previous)
+      expect(existsSync(value.selectionStatePath)).toBe(false)
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+
+  it.each(['valid', 'custom-code', 'custom-package', 'extra-file', 'wrong-identity', 'linked-package', 'linked-child'] as const)(
+    'reconciles only the complete audited video package: %s', mode => {
+      const value = fixture()
+      try {
+        const prefix = 'node_modules/@futurestaff/fs-video/'
+        const manifest = JSON.parse(readFileSync(join(value.source, 'release-manifest.json'), 'utf8'))
+        manifest.workspacePreviousVideoFiles = {}
+        const previous = { 'package.json': '{"name":"@futurestaff/fs-video","version":"0.1.0"}', 'lib/index.js': 'old workspace cache' }
+        const current = { ...previous, 'lib/index.js': 'new short owner cache', 'lib/cache.js': 'new cache helper' }
+        for (const [file, contents] of Object.entries(current)) {
+          mkdirSync(join(value.source, prefix, file, '..'), { recursive: true })
+          writeFileSync(join(value.source, prefix, file), contents)
+          manifest.files[prefix + file] = createHash('sha256').update(contents).digest('hex')
+        }
+        for (const [file, contents] of Object.entries(previous)) {
+          manifest.workspacePreviousVideoFiles[prefix + file] = createHash('sha256').update(contents).digest('hex')
+        }
+        writeFileSync(join(value.source, 'release-manifest.json'), JSON.stringify(manifest))
+        const identity = { environment: 'production', tenantId: '10000000-0000-4000-8000-000000000001', userId: '20000000-0000-4000-8000-000000000001' }
+        const name = 'fs-production-' + createHash('sha256').update(JSON.stringify(identity)).digest('hex')
+        const target = join(value.homeDir, 'profiles', name)
+        const module = join(target, prefix)
+        const actual = mode === 'linked-package' ? join(value.root, 'outside-module') : module
+        mkdirSync(join(actual, 'lib'), { recursive: true })
+        if (mode === 'linked-package') {
+          mkdirSync(join(target, 'node_modules/@futurestaff'), { recursive: true })
+          symlinkSync(actual, module, process.platform === 'win32' ? 'junction' : 'dir')
+        }
+        const marker = JSON.stringify(mode === 'wrong-identity' ? { ...identity, environment: 'dev' } : identity)
+        writeFileSync(join(target, 'futurestaff-workspace.json'), marker)
+        writeFileSync(join(target, 'private-history.json'), 'unchanged private history')
+        for (const [file, contents] of Object.entries(previous)) writeFileSync(join(actual, file), contents)
+        if (mode === 'custom-code') writeFileSync(join(actual, 'lib/index.js'), 'custom code')
+        if (mode === 'custom-package') writeFileSync(join(actual, 'package.json'), 'custom package metadata')
+        if (mode === 'extra-file') writeFileSync(join(actual, 'lib/custom.js'), 'custom helper')
+        if (mode === 'linked-child') symlinkSync(join(actual, 'package.json'), join(actual, 'lib/linked.json'), 'file')
+        const before = readFileSync(join(actual, 'lib/index.js'), 'utf8')
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual(mode === 'valid' ? [{ profile: name, package: 'fs-video' }] : [])
+        expect(readFileSync(join(actual, 'lib/index.js'), 'utf8')).toBe(before)
+        expect(existsSync(join(value.homeDir, 'profiles/futurestaff-alpha'))).toBe(false)
+        installBundledFutureStaffProfile(value)
+        expect(readFileSync(join(actual, 'lib/index.js'), 'utf8')).toBe(mode === 'valid' ? current['lib/index.js'] : before)
+        expect(existsSync(join(actual, 'lib/cache.js'))).toBe(mode === 'valid')
+        expect(readFileSync(join(target, 'futurestaff-workspace.json'), 'utf8')).toBe(marker)
+        expect(readFileSync(join(target, 'private-history.json'), 'utf8')).toBe('unchanged private history')
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual([])
+        installBundledFutureStaffProfile(value)
+        expect(readFileSync(join(actual, 'lib/index.js'), 'utf8')).toBe(mode === 'valid' ? current['lib/index.js'] : before)
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
+  it.each(['node_modules/@futurestaff/another-package/lib/index.js', 'node_modules/@futurestaff/fs-video/node_modules/untrusted.js', 'node_modules/@futurestaff/fs-video/lib/../outside.js'])(
+    'rejects video inventories outside the fixed package namespace: %s', name => {
+      const value = fixture()
+      try {
+        const file = join(value.source, 'release-manifest.json')
+        const manifest = JSON.parse(readFileSync(file, 'utf8'))
+        manifest.workspacePreviousVideoFiles = { [name]: 'a'.repeat(64) }
+        writeFileSync(file, JSON.stringify(manifest))
+        expect(() => planBundledFutureStaffProfile(value)).toThrow('video workspace upgrade inventory is invalid')
+        expect(existsSync(value.homeDir)).toBe(false)
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
   it('installs the 301-file Profile size shipped by 3.0.6 without touching existing session data', () => {
     const value = fixture(301)
     try {

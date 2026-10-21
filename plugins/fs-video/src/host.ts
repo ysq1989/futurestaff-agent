@@ -57,7 +57,10 @@ const referenceId = { type: 'string', description: '先前工具返回的真实U
 const requestId = { type: 'string', description: '8至80位字母、数字、下划线或短横线；同一次操作重试保持相同编号。' }
 const text = (minLength: number, maxLength: number) => ({ type: 'string', description: `长度${minLength}至${maxLength}字，不含控制字符。` })
 const music = { type: 'string', enum: ['upbeat', 'gentle', 'none'] }
-const voice = object({ provider: { type: 'string', enum: ['edge', 'none'] }, name: text(1, 100), rate: text(1, 20), pitch: text(1, 20) }, ['provider'])
+const voice = object({ provider: { type: 'string', enum: ['edge', 'none'] }, name: text(1, 100),
+  rate: { type: 'string', description: '语速必须带正负号和百分号，范围-30%至+30%；例如-6%、+0%、+8%。' },
+  pitch: { type: 'string', description: '音高必须带正负号和Hz，范围-20Hz至+20Hz；自然音高写+0Hz，不能写0Hz。' },
+}, ['provider'])
 const scene = object({ id: identifier, title: text(1, 90), narration: text(0, 1200), lines: { type: 'array', description: '0至4条画面短句，每条最多100字。', items: text(1, 100) }, visual: { type: 'string', enum: ['hero', 'benefits', 'steps', 'offer', 'cta'] }, durationSeconds: { type: 'number', description: '2至30秒，整个视频最多180秒。' }, assetId: referenceId }, ['id', 'title', 'narration', 'lines', 'visual'])
 const scenes = { type: 'array', description: '1至12场，id不得重复，旁白合计不超过5000字。', items: scene }
 const aspectRatio = { type: 'string', enum: ['9:16', '16:9'] }
@@ -281,6 +284,36 @@ export function mountVideoTools(ctx: Context, options: VideoHostOptions): VideoH
       response.end()
     }
   } }), 'FutureStaff private video output')
+  // A raw MP4 navigation is not a reliable Electron document. This fixed,
+  // script-free shell reuses the exact asset grant and its native request gate.
+  ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: '/_futurestaff/video/preview', handler: async (request, response) => {
+    const abort = new AbortController()
+    request.once('aborted', () => abort.abort())
+    try {
+      if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress ?? '') || !['GET', 'HEAD'].includes(request.method ?? '')) fail('VIDEO_ASSET_UNAVAILABLE')
+      if (request.headers.origin && request.headers.origin !== `http://${request.headers.host}`) fail('VIDEO_ASSET_UNAVAILABLE')
+      const url = new URL(request.url ?? '', 'http://127.0.0.1'), token = url.pathname.slice('/_futurestaff/video/preview/'.length)
+      if (!/^[a-f0-9]{48}$/.test(token) || url.search) fail('VIDEO_ASSET_UNAVAILABLE')
+      const asset = await host.asset(token, abort.signal), source = '/_futurestaff/video/asset/' + token
+      asset.identity.signal.throwIfAborted()
+      const content = asset.type.startsWith('video/')
+        ? `<video controls playsinline preload="metadata" src="${source}"></video>`
+        : asset.type.startsWith('image/') ? `<img src="${source}" alt="视频封面">` : '<p>此文件可下载后查看。</p>'
+      // Only constant text and a validated 48-hex token enter HTML. Filenames,
+      // model output, subtitle bytes and uploaded HTML are never interpolated.
+      const html = Buffer.from(`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>视频预览</title><style>html,body{margin:0;height:100%;background:#111827;color:#fff;font-family:system-ui,sans-serif}body{display:flex;flex-direction:column}main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}video,img{display:block;width:100%;height:100%;max-height:100%;object-fit:contain}footer{flex:none;padding:12px 20px;text-align:center}a{color:#bde9ff}</style></head><body><main>${content}</main><footer><a href="${source}?download=1" download rel="noreferrer">下载文件</a></footer></body></html>`, 'utf8')
+      response.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8', 'content-length': String(html.length),
+        'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer',
+        'content-security-policy': "default-src 'none'; media-src 'self'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        'x-frame-options': 'DENY',
+      })
+      response.end(request.method === 'HEAD' ? undefined : html)
+    } catch {
+      if (!response.headersSent) response.writeHead(403, { 'cache-control': 'no-store' })
+      response.end()
+    }
+  } }), 'FutureStaff private video preview')
   ctx.effect(() => () => host.dispose(), 'FutureStaff video grants lifecycle')
   return host
 }

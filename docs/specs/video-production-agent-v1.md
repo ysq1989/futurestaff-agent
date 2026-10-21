@@ -13,3 +13,7 @@
 任务异步返回，只有完整渲染、ffprobe 与产物检查通过才成功。输出 H.264/AAC MP4、WebM 预览、封面、字幕及制作清单。预览以受身份绑定、短期 token 的回环地址服务，支持 Range；不上传公开素材，不自动发布社交渠道。历史项目与版本保留，可从新会话读取和修改。
 
 验收：输入与路径边界、租户/成员/Agent 隔离、版本变化、原生审批、取消、失败、幂等重试；真实免费模型生成社区咖啡店案例并生成修订；实际视频解码及音轨/字幕检查；可移植 Profile、已有成员工作区升级、完整 npm run check、安装包启动与正式更新源签名/回滚验证。
+
+2026-10-21 升级边界：3.1.1 必须同时更新已部署的产品 Profile 和成员代码。正式 3.1.0 安装器 SHA-256 为 `17e1879c96dcb126e909a46d42531b6adc0e9b1940f11da0453df05822cbaa39`，其 Profile 清单摘要为 `be87221cda912fc66162ef9daa5d5a31952c7891a18d51849ad0389516bb4be7`。`profile/workspace-upgrade-3.1.0.json` 保存该发布的准确库存：平台 lib 206 文件，视频完整包 35 文件。产品 Profile 仅在清单及全部托管文件仍匹配时升级；成员代码仅在目录名与身份标记一致、无链接、整个对应代码库存逐字节匹配时替换。任何修改或额外文件均保留，旧自定义 Profile 不加入允许列表。成员身份、审批、登录状态、会话、项目与成片不属于替换范围。
+
+运维复核可执行 `node scripts/reconcile-release-profile.mjs --resources ABSOLUTE_RESOURCES --home ABSOLUTE_HARNESS_HOME --selection-state ABSOLUTE_SELECTION_FILE`。默认仅输出与启动时相同校验逻辑产生的计划，不写用户目录；操作人员确认路径并停止旧应用 generation 后，显式加 `--apply` 调用标准 `installBundledFutureStaffProfile`。工具不会启动应用或渲染。fixture 覆盖正式库存升级、重复执行、修改、额外文件、错误身份及链接保护；原生聊天与安装包验收另记实际结果。

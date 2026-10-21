@@ -166,14 +166,18 @@ export async function stageReleaseProfile(options = {}) {
   for (const relative of files) fileHashes[relative] = await sha256(path.join(target, relative))
   const foundation = JSON.parse(await readFile(path.join(sourceRoot, 'desktop', 'foundation.json'), 'utf8'))
   const workspaceUpgrade = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-2.0.14.json'), 'utf8'))
+  // Exact inventories extracted from the signed/public 3.1.0 installer. Never
+  // infer an upgrade baseline from the machine currently running the builder.
+  const videoUpgrade = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.1.0.json'), 'utf8'))
   const releaseManifest = {
     schemaVersion: 1,
     profile: profileName,
     productVersion: profileManifest.version,
     dshVersion: '0.1.2-rc.1',
-    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? [])],
+    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? []), videoUpgrade.manifestDigest],
     workspacePreviousFiles: workspaceUpgrade.files,
-    workspacePreviousInventories: workspaceUpgrade.inventories ?? [],
+    workspacePreviousInventories: [...(workspaceUpgrade.inventories ?? []), videoUpgrade.platformFiles],
+    workspacePreviousVideoFiles: videoUpgrade.videoFiles,
     platformContract: foundation.platformContract,
     files: fileHashes,
   }

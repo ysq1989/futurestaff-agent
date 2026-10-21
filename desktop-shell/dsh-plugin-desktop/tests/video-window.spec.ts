@@ -16,6 +16,7 @@ vi.mock('electron', () => ({ BrowserWindow: native.BrowserWindow }))
 import { DesktopVideoWindow, localVideoPreviewUrl } from '../src/video-window.ts'
 const root = 'http://127.0.0.1:43120/?dsh-desktop-generation=fixture'
 const url = 'http://127.0.0.1:43120/_futurestaff/video/asset/' + 'ab'.repeat(24)
+const preview = url.replace('/asset/', '/preview/')
 describe('private native video preview', () => {
   beforeEach(() => { native.windows.length = 0; vi.clearAllMocks() })
   function fixture() {
@@ -23,7 +24,8 @@ describe('private native video preview', () => {
     return { ids, session, manager: new DesktopVideoWindow(root, session, {} as NativeImage, ids, vi.fn()) }
   }
   it('accepts only an exact capability on the active carrier', () => {
-    expect(localVideoPreviewUrl(root, url)).toBe(url)
+    expect(localVideoPreviewUrl(root, url)).toBe(preview)
+    expect(localVideoPreviewUrl(root, preview)).toBe(preview)
     for (const target of [url.replace('43120', '43121'), url.replace('127.0.0.1', 'localhost'),
       url.replace('http:', 'https:'), url + '?download=1', url + '#x', url + '/',
       url.replace('/video/asset/', '/other/'), url.replace('abab', 'ABAB'),
@@ -38,7 +40,7 @@ describe('private native video preview', () => {
     const window = native.windows[0]!
     expect(window.options).toMatchObject({ webPreferences: { session, contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
     expect(ids.has(window.webContents.id)).toBe(true)
-    expect(window.loadURL).toHaveBeenCalledWith(url)
+    expect(window.loadURL).toHaveBeenCalledWith(preview)
     window.isMinimized.mockReturnValue(true); manager.open(url)
     expect(native.windows).toHaveLength(1); expect(window.restore).toHaveBeenCalledOnce()
     expect(window.webContents.setWindowOpenHandler.mock.calls[0][0]({ url: 'https://evil.invalid/' })).toEqual({ action: 'deny' })

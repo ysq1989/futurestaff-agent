@@ -7,8 +7,9 @@ export function localVideoPreviewUrl(root: string, requested: string): string | 
     const carrier = new URL(root), target = new URL(requested)
     if (carrier.protocol !== 'http:' || carrier.hostname !== '127.0.0.1' || !carrier.port
       || target.origin !== carrier.origin || target.username || target.password || target.hash || target.search
-      || !/^\/_futurestaff\/video\/asset\/[a-f0-9]{48}$/.test(target.pathname)
+      || !/^\/_futurestaff\/video\/(?:asset|preview)\/[a-f0-9]{48}$/.test(target.pathname)
       || target.href !== requested) return undefined
+    target.pathname = target.pathname.replace('/video/asset/', '/video/preview/')
     return target.href
   } catch { return undefined }
 }
@@ -51,8 +52,10 @@ export class DesktopVideoWindow {
       if (this.windows.get(url) === window) this.windows.delete(url)
     }
     window.once('closed', forget)
-    void window.loadURL(url).catch(() => {
-      this.logError('dsh-plugin-desktop: private video preview failed to load')
+    void window.loadURL(url).catch((cause: unknown) => {
+      const code = cause instanceof Error && 'code' in cause && typeof cause.code === 'string'
+        && /^ERR_[A-Z_]+$/.test(cause.code) ? cause.code : 'unknown'
+      this.logError('dsh-plugin-desktop: private video preview failed to load (' + code + ')')
       forget()
       if (!window.isDestroyed()) window.destroy()
     })

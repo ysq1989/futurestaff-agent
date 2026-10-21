@@ -36,6 +36,7 @@ interface ReleaseManifest {
   readonly supersedes?: readonly string[]
   readonly workspacePreviousFiles?: Record<string, string>
   readonly workspacePreviousInventories?: readonly Record<string, string>[]
+  readonly workspacePreviousVideoFiles?: Record<string, string>
   readonly files: Record<string, string>
 }
 
@@ -140,6 +141,16 @@ function readManifest(source: string): ReleaseManifest {
       || !safeRelativePath(name) || !/^[0-9a-f]{64}$/u.test(digest)))) {
     throw new Error('FutureStaff workspace upgrade inventory is invalid')
   }
+  if (value.workspacePreviousVideoFiles !== undefined && (value.workspacePreviousVideoFiles === null
+    || typeof value.workspacePreviousVideoFiles !== 'object' || Array.isArray(value.workspacePreviousVideoFiles)
+    || Object.keys(value.workspacePreviousVideoFiles).length === 0
+    || Object.keys(value.workspacePreviousVideoFiles).length > MAX_WORKSPACE_FILES
+    || Object.entries(value.workspacePreviousVideoFiles).some(([name, digest]) =>
+      !(name === 'node_modules/@futurestaff/fs-video/package.json'
+        || name.startsWith('node_modules/@futurestaff/fs-video/lib/'))
+      || !safeRelativePath(name) || typeof digest !== 'string' || !/^[0-9a-f]{64}$/u.test(digest)))) {
+    throw new Error('FutureStaff video workspace upgrade inventory is invalid')
+  }
   if (entries.length === 0 || entries.length > MAX_PROFILE_FILES
     || entries.some(([name, digest]) => !safeRelativePath(name) || !/^[0-9a-f]{64}$/u.test(digest))) {
     throw new Error(`FutureStaff release Profile file inventory is invalid (${entries.length} files; limit ${MAX_PROFILE_FILES})`)
@@ -151,8 +162,17 @@ function manifestDigest(target: string): string {
   return createHash('sha256').update(readFileSync(join(target, RELEASE_MANIFEST))).digest('hex')
 }
 
+function profileEntryExists(target: string): boolean {
+  try { lstatSync(target); return true }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false
+    throw error
+  }
+}
+
 function isUpgradeableBundledProfile(target: string, current: ReleaseManifest): boolean {
   try {
+    if (!realDirectory(target)) return false
     if (!(current.supersedes ?? []).includes(manifestDigest(target))) return false
     const installed = readManifest(target)
     const actual = inventory(target).filter(file => file !== RELEASE_MANIFEST)
@@ -206,6 +226,7 @@ export function validateBundledFutureStaffProfile(source: string): number {
 
 function isRepairableLegacyProfile(target: string, current: ReleaseManifest): boolean {
   try {
+    if (!realDirectory(target)) return false
     const legacy = readManifest(target)
     const currentFiles = Object.keys(current.files).sort()
     const expectedLegacyFiles = currentFiles.filter(file => !DEPENDENCY_METADATA.has(file))
@@ -245,15 +266,16 @@ function copyVerifiedTree(source: string, target: string): void {
 export function installBundledFutureStaffProfile(
   options: BundledFutureStaffProfileOptions,
 ): BundledFutureStaffProfileResult {
+  if (!safeProfileDestination(options)) return 'preserved'
   const source = resolve(options.resourcesPath, PROFILE_RESOURCE_DIRECTORY, 'profiles', PROFILE_NAME)
   if (!existsSync(source)) return 'absent'
   const sourceManifest = verifySource(source)
   refreshBundledWorkspaceClients(options.homeDir, source, sourceManifest)
 
   const target = resolve(options.homeDir, 'profiles', PROFILE_NAME)
-  const repairLegacy = existsSync(target) && isRepairableLegacyProfile(target, sourceManifest)
-  const upgradeBundled = existsSync(target) && !repairLegacy && isUpgradeableBundledProfile(target, sourceManifest)
-  if (existsSync(target) && !repairLegacy && !upgradeBundled) return 'preserved'
+  const repairLegacy = profileEntryExists(target) && isRepairableLegacyProfile(target, sourceManifest)
+  const upgradeBundled = profileEntryExists(target) && !repairLegacy && isUpgradeableBundledProfile(target, sourceManifest)
+  if (profileEntryExists(target) && !repairLegacy && !upgradeBundled) return 'preserved'
   const profilesDir = dirname(target)
   mkdirSync(profilesDir, { recursive: true, mode: 0o700 })
   const staging = join(profilesDir, `.${basename(target)}.creating-${process.pid}-${randomUUID()}`)
@@ -271,7 +293,7 @@ export function installBundledFutureStaffProfile(
         rmSync(staging, { recursive: true, force: true })
         return 'preserved'
       }
-    } else if (existsSync(target)) {
+    } else if (profileEntryExists(target)) {
       throw new Error('FutureStaff release Profile appeared during installation')
     }
     renameSync(staging, target)
@@ -282,24 +304,55 @@ export function installBundledFutureStaffProfile(
     return repairLegacy ? 'repaired' : upgradeBundled ? 'upgraded' : 'installed'
   } catch (cause) {
     rmSync(staging, { recursive: true, force: true })
-    if (!existsSync(target) && existsSync(backup)) renameSync(backup, target)
+    if (!profileEntryExists(target) && profileEntryExists(backup)) renameSync(backup, target)
     throw cause
   }
 }
 
-/** Refresh only product-owned browser code; identity, Host code and user data stay in place. */
-function refreshBundledWorkspaceClients(homeDir: string, source: string, manifest: ReleaseManifest): void {
-  const files = ['node_modules/@futurestaff/fs-platform-access/lib/client.js',
-    'node_modules/@futurestaff/fs-platform-access/lib/client.js.map']
-    .filter(file => Object.hasOwn(manifest.files, file))
-  if (files.length === 0) return
-  const profiles = join(homeDir, 'profiles')
-  if (!existsSync(profiles)) return
-  const realDirectory = (directory: string): boolean => {
-    const info = lstatSync(directory)
-    return info.isDirectory() && !info.isSymbolicLink()
+const PLATFORM_PREFIX = 'node_modules/@futurestaff/fs-platform-access/lib/'
+const VIDEO_PREFIX = 'node_modules/@futurestaff/fs-video/'
+
+function realDirectory(directory: string): boolean {
+  const info = lstatSync(directory)
+  return info.isDirectory() && !info.isSymbolicLink()
+}
+
+/** Check all existing ancestors, including junctions above a missing leaf. */
+function safeDirectoryAncestors(directory: string): boolean {
+  let current = resolve(directory)
+  for (;;) {
+    try {
+      if (!realDirectory(current)) return false
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') return false
+    }
+    const parent = dirname(current)
+    if (parent === current) return true
+    current = parent
   }
-  if (!realDirectory(profiles)) return
+}
+
+function safeProfileDestination(options: BundledFutureStaffProfileOptions): boolean {
+  return safeDirectoryAncestors(resolve(options.homeDir, 'profiles'))
+    && safeDirectoryAncestors(dirname(resolve(options.selectionStatePath)))
+}
+
+function matchesCodeInventory(root: string, prefix: string, expected: Record<string, string>): boolean {
+  const library = join(root, prefix)
+  const packageName = prefix.split('/')[2]
+  if (![root, join(root, 'node_modules'), join(root, 'node_modules/@futurestaff'),
+    join(root, 'node_modules/@futurestaff', packageName!), library].every(realDirectory)) return false
+  const actual = inventory(library).map(file => prefix + file)
+  return actual.length === Object.keys(expected).length && actual.every(file =>
+    Object.hasOwn(expected, file)
+    && createHash('sha256').update(readFileSync(join(root, file))).digest('hex') === expected[file])
+}
+
+/** Only a canonical generated member Profile is eligible for code reconciliation. */
+function ownedWorkspaceProfiles(homeDir: string): { name: string, target: string }[] {
+  const profiles = join(homeDir, 'profiles')
+  if (!existsSync(profiles) || !realDirectory(profiles)) return []
+  const result: { name: string, target: string }[] = []
   for (const name of readdirSync(profiles)) {
     if (!/^fs-(dev|production)-[a-f0-9]{64}$/u.test(name)) continue
     const target = join(profiles, name)
@@ -315,50 +368,119 @@ function refreshBundledWorkspaceClients(homeDir: string, source: string, manifes
         || typeof identity.tenantId !== 'string' || !uuid.test(identity.tenantId)
         || typeof identity.userId !== 'string' || !uuid.test(identity.userId)) continue
       const canonical = { environment: identity.environment, tenantId: identity.tenantId, userId: identity.userId }
-      const expected = `fs-${identity.environment}-${createHash('sha256').update(JSON.stringify(canonical)).digest('hex')}`
+      const expected = 'fs-' + identity.environment + '-' + createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
       if (name !== expected) continue
-      const parents = ['node_modules', 'node_modules/@futurestaff',
-        'node_modules/@futurestaff/fs-platform-access', 'node_modules/@futurestaff/fs-platform-access/lib']
-      if (!parents.every(parent => realDirectory(join(target, parent)))) continue
-      if (manifest.workspacePreviousFiles !== undefined) {
-        const prefix = 'node_modules/@futurestaff/fs-platform-access/lib/'
-        const library = join(target, prefix.slice(0, -1))
-        const inventories = [manifest.workspacePreviousFiles, ...(manifest.workspacePreviousInventories ?? [])]
-        const actual = inventory(library).map(file => prefix + file)
-        // Replace the complete product code only when every installed byte
-        // matches the audited previous release. Customized packages are kept.
-        if (inventories.some(prior => actual.length === Object.keys(prior).length && actual.every(file =>
-          Object.hasOwn(prior, file) && createHash('sha256').update(readFileSync(join(target, file))).digest('hex') === prior[file]))) {
-          const temporary = `${library}.updating-${process.pid}-${randomUUID()}`
-          const backup = `${temporary}.backup`
-          try {
-            cpSync(join(source, prefix), temporary, { recursive: true })
-            renameSync(library, backup)
-            try { renameSync(temporary, library) }
-            catch (error) { renameSync(backup, library); throw error }
-            rmSync(backup, { recursive: true })
-          } finally { rmSync(temporary, { recursive: true, force: true }) }
+      if (!['node_modules', 'node_modules/@futurestaff'].every(parent => realDirectory(join(target, parent)))) continue
+      result.push({ name, target })
+    } catch { /* Noncanonical, linked or incomplete workspaces are preserved. */ }
+  }
+  return result
+}
+
+interface WorkspaceCodeUpgrade {
+  readonly profile: string
+  readonly target: string
+  readonly prefix: string
+  readonly package: 'fs-platform-access' | 'fs-video'
+  readonly previous: Record<string, string>
+}
+
+function workspaceCodeUpgrades(homeDir: string, manifest: ReleaseManifest): WorkspaceCodeUpgrade[] {
+  const result: WorkspaceCodeUpgrade[] = []
+  for (const workspace of ownedWorkspaceProfiles(homeDir)) {
+    const candidates = [
+      { package: 'fs-platform-access' as const, prefix: PLATFORM_PREFIX,
+        inventories: manifest.workspacePreviousFiles === undefined ? []
+          : [manifest.workspacePreviousFiles, ...(manifest.workspacePreviousInventories ?? [])] },
+      { package: 'fs-video' as const, prefix: VIDEO_PREFIX,
+        inventories: manifest.workspacePreviousVideoFiles === undefined ? [] : [manifest.workspacePreviousVideoFiles] },
+    ]
+    for (const item of candidates) {
+      try {
+        const packageRoot = join(workspace.target, 'node_modules/@futurestaff', item.package)
+        if (!realDirectory(packageRoot)) continue
+        const previous = item.inventories.find(files => matchesCodeInventory(workspace.target, item.prefix, files))
+        if (previous !== undefined && !matchesCodeInventory(workspace.target, item.prefix,
+          Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(item.prefix))))) {
+          result.push({ profile: workspace.name, target: workspace.target, prefix: item.prefix, package: item.package, previous })
         }
-        continue
+      } catch { /* Any extra file, changed byte or link preserves this package. */ }
+    }
+  }
+  return result
+}
+
+/** Read-only plan using precisely the same validators as startup reconciliation. */
+export function planBundledFutureStaffProfile(options: BundledFutureStaffProfileOptions): {
+  bundled: BundledFutureStaffProfileResult
+  workspaces: readonly { profile: string, package: 'fs-platform-access' | 'fs-video' }[]
+} {
+  if (!safeProfileDestination(options)) return { bundled: 'preserved', workspaces: [] }
+  const source = resolve(options.resourcesPath, PROFILE_RESOURCE_DIRECTORY, 'profiles', PROFILE_NAME)
+  if (!existsSync(source)) return { bundled: 'absent', workspaces: [] }
+  const manifest = verifySource(source)
+  const target = resolve(options.homeDir, 'profiles', PROFILE_NAME)
+  const bundled = !profileEntryExists(target) ? 'installed'
+    : isRepairableLegacyProfile(target, manifest) ? 'repaired'
+      : isUpgradeableBundledProfile(target, manifest) ? 'upgraded' : 'preserved'
+  return { bundled, workspaces: workspaceCodeUpgrades(options.homeDir, manifest)
+    .map(({ profile, package: name }) => ({ profile, package: name })) }
+}
+
+/** Refresh only exact audited product code; member identity and work files remain in place. */
+function refreshBundledWorkspaceClients(homeDir: string, source: string, manifest: ReleaseManifest): void {
+  for (const item of workspaceCodeUpgrades(homeDir, manifest)) {
+    const library = join(item.target, item.prefix.slice(0, -1))
+    const temporary = library + '.updating-' + process.pid + '-' + randomUUID()
+    const backup = temporary + '.backup'
+    const current = Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(item.prefix)))
+    try {
+      cpSync(join(source, item.prefix), temporary, { recursive: true })
+      // Both the copied new tree and the old code are checked again at the swap.
+      const temporaryFiles = inventory(temporary)
+      if (temporaryFiles.length !== Object.keys(current).length || temporaryFiles.some(file =>
+        createHash('sha256').update(readFileSync(join(temporary, file))).digest('hex') !== current[item.prefix + file])) {
+        throw new Error('FutureStaff copied workspace code is invalid')
       }
+      if (!matchesCodeInventory(item.target, item.prefix, item.previous)) continue
+      renameSync(library, backup)
+      try {
+        const backupFiles = inventory(backup)
+        if (backupFiles.length !== Object.keys(item.previous).length || backupFiles.some(file =>
+          createHash('sha256').update(readFileSync(join(backup, file))).digest('hex') !== item.previous[item.prefix + file])) {
+          renameSync(backup, library)
+          continue
+        }
+        renameSync(temporary, library)
+      } catch (error) {
+        if (!existsSync(library)) renameSync(backup, library)
+        throw error
+      }
+      rmSync(backup, { recursive: true })
+    } catch {
+      console.warn('futurestaff-profile: workspace code refresh skipped; existing files preserved')
+    } finally { rmSync(temporary, { recursive: true, force: true }) }
+  }
+  // Compatibility for old packages without an audited Host inventory. Modern
+  // release manifests always take the complete-inventory path above.
+  if (manifest.workspacePreviousFiles !== undefined) return
+  const files = [PLATFORM_PREFIX + 'client.js', PLATFORM_PREFIX + 'client.js.map']
+    .filter(file => Object.hasOwn(manifest.files, file))
+  for (const { target } of ownedWorkspaceProfiles(homeDir)) {
+    try {
+      if (!realDirectory(join(target, 'node_modules/@futurestaff/fs-platform-access'))
+        || !realDirectory(join(target, PLATFORM_PREFIX))) continue
       for (const file of files) {
         const destination = join(target, file)
         const old = lstatSync(destination)
         if (!old.isFile() || old.isSymbolicLink()) continue
         if (createHash('sha256').update(readFileSync(destination)).digest('hex') === manifest.files[file]) continue
-        const temporary = `${destination}.updating-${process.pid}-${randomUUID()}`
+        const temporary = destination + '.updating-' + process.pid + '-' + randomUUID()
         try {
           copyFileSync(join(source, file), temporary)
           renameSync(temporary, destination)
-        } finally {
-          rmSync(temporary, { force: true })
-        }
+        } finally { rmSync(temporary, { force: true }) }
       }
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        console.warn('futurestaff-profile: workspace client refresh skipped; existing files preserved')
-      }
-      // Older/custom layouts without the owned code slot are preserved.
-    }
+    } catch { /* Older/custom layouts without the owned code slot are preserved. */ }
   }
 }

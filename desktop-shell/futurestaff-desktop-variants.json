@@ -90,7 +90,7 @@
     {
       "path": "video-window.ts",
       "reason": "Product-only private video preview reuses the authenticated native session; exact current-carrier capabilities, blocked external navigation and generation-owned renderer cleanup.",
-      "stableSha256": "0d0aca6f37b8424da74fb7572d604551466ea19fc8ba4218fa415d994413a165",
+      "stableSha256": "33ad5c1178e55750caaea0462203d3b6d0bd101c35e051d175e2226e862742ee",
       "betaSha256": null
     }
   ]

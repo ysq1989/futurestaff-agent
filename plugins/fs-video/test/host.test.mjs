@@ -175,3 +175,64 @@ test('native tool registration includes a real approval gate and authenticated H
   f.setIdentity({ agentVersion: 'b'.repeat(64) })
   assert.equal((await fetch(url)).status, 403)
 })
+
+async function previewFixture(t,overrides={}) {
+  const f=await fixture(t,overrides),routes=[],cleanups=[]
+  const ctx={on:()=>{},effect:callback=>{const cleanup=callback();if(typeof cleanup==='function')cleanups.push(cleanup)},tools:{register:()=>()=>{}},webServer:{register:route=>{routes.push(route);return()=>{}}}}
+  const host=mountVideoTools(ctx,f.options)
+  const server=createServer((req,res)=>{
+    const route=routes.find(route=>req.url?.startsWith(route.path+'/'))
+    if(route)void route.handler(req,res);else{res.writeHead(404);res.end()}
+  })
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve))
+  t.after(async()=>{for(const cleanup of cleanups.reverse())await cleanup();await new Promise(resolve=>{server.close(resolve);server.closeAllConnections()})})
+  const origin='http://127.0.0.1:'+server.address().port
+  async function grant(field,filename,bytes){
+    const file=path.join(f.root,filename);await writeFile(file,bytes)
+    f.engine.status=async()=>({status:'succeeded',projectId,jobId,result:{[field]:file}})
+    const receipt=await host.execute('video_project_status',{projectId,jobId},'session',signal())
+    const asset=origin+receipt.links[field.replace('Path','Url')]
+    return {file,asset,preview:asset.replace('/asset/','/preview/')}
+  }
+  return {...f,host,routes,grant}
+}
+
+test('private HTML preview uses the same token, fixed no-script media markup, CSP and correct HEAD',async t=>{
+  const f=await previewFixture(t),video=await f.grant('videoPath','movie.mp4','0123456789')
+  assert.equal(f.routes.filter(r=>r.path==='/_futurestaff/video/preview').length,1)
+  const response=await fetch(video.preview),body=await response.text()
+  assert.equal(response.status,200)
+  assert.equal(response.headers.get('content-type'),'text/html; charset=utf-8')
+  assert.equal(response.headers.get('cache-control'),'no-store')
+  assert.equal(response.headers.get('referrer-policy'),'no-referrer')
+  assert.equal(response.headers.get('x-content-type-options'),'nosniff')
+  const csp=response.headers.get('content-security-policy')
+  for(const directive of ["default-src 'none'","media-src 'self'","img-src 'self'","style-src 'unsafe-inline'","frame-ancestors 'none'"])assert.ok(csp.includes(directive))
+  assert.match(body,/<video controls playsinline/)
+  assert.ok(body.includes('src="'+new URL(video.asset).pathname+'"'))
+  assert.doesNotMatch(body,/<script|\son\w+=|javascript:|file:\/\/|movie\.mp4/)
+  const head=await fetch(video.preview,{method:'HEAD'})
+  assert.equal(head.status,200);assert.equal(head.headers.get('content-length'),String(Buffer.byteLength(body)));assert.equal(await head.text(),'')
+  const partial=await fetch(video.asset,{headers:{Range:'bytes=2-5'}})
+  assert.equal(partial.status,206);assert.equal(await partial.text(),'2345')
+  const image=await f.grant('posterPath','poster.jpg','static jpeg bytes')
+  assert.match(await(await fetch(image.preview)).text(),/<img src="\/_futurestaff\/video\/asset\/[a-f0-9]{48}"/)
+  const text=await f.grant('subtitlesPath','untrusted.srt','<script>should never execute</script>')
+  const textBody=await(await fetch(text.preview)).text()
+  assert.match(textBody,/href="\/_futurestaff\/video\/asset\/[a-f0-9]{48}\?download=1"/)
+  assert.doesNotMatch(textBody,/should never execute|<script/)
+})
+
+test('preview rejects expired, changed owner, cross-origin, unsafe outputs and invalid requests just like assets',async t=>{
+  let now=1000
+  const f=await previewFixture(t,{now:()=>now}),v=await f.grant('videoPath','movie.mp4','0123456789')
+  assert.equal((await fetch(v.preview,{headers:{Origin:'https://untrusted.example'}})).status,403)
+  assert.equal((await fetch(v.preview,{method:'POST'})).status,403)
+  assert.equal((await fetch(v.preview+'?src=https://untrusted.example')).status,403)
+  assert.equal((await fetch(v.preview.replace(/[a-f0-9]{48}$/,'bad-token'))).status,403)
+  now+=600001;assert.equal((await fetch(v.preview)).status,403)
+  now=1000;f.setIdentity({agentVersion:'b'.repeat(64)});assert.equal((await fetch(v.preview)).status,403)
+  f.setIdentity({agentVersion:'a'.repeat(64)});assert.equal((await fetch(v.preview)).status,200)
+  await rm(v.file);await symlink(path.join(f.root,'missing-target.mp4'),v.file,process.platform==='win32'?'file':undefined)
+  assert.equal((await fetch(v.preview)).status,403)
+})

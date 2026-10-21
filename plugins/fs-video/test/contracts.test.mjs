@@ -7,4 +7,8 @@ test('strict defaults preserve V2 voice and original music choice',()=>{const va
 test('rejects model supplied ownership, executable code and unknown fields',()=>{for(const patch of [{tenantId:'foreign'},{workspaceRoot:'C:/'},{script:'process.exit()'},{ffmpegArgs:['-f']},{scenes:[{...scene,html:'<script>'}]}])assert.throws(()=>parseCreate({...input,...patch}),{code:'VIDEO_INPUT_INVALID'})})
 test('rejects excessive duration, scenes, narration and duplicate ids',()=>{for(const patch of [{scenes:Array(13).fill(scene)},{scenes:[scene,scene]},{scenes:[{...scene,durationSeconds:31}]},{scenes:[{...scene,narration:'字'.repeat(1201)}]}])assert.throws(()=>parseCreate({...input,...patch}),{code:'VIDEO_INPUT_INVALID'})})
 test('rejects SSML and unbounded voice configuration',()=>{for(const voice of [{name:'<voice>'},{rate:'+99%'},{pitch:'+99Hz'},{provider:'paid'}])assert.throws(()=>parseCreate({...input,voice}),{code:'VIDEO_INPUT_INVALID'})})
+test('natural zero pitch from a chat edit is canonicalized without relaxing voice bounds',()=>{
+ for(const pitch of ['0','0Hz','+0Hz'])assert.equal(parseCreate({...input,voice:{pitch,rate:'-6%'}}).voice.pitch,'+0Hz')
+ for(const pitch of ['21Hz','+21Hz','0;run','0Hz<script>'])assert.throws(()=>parseCreate({...input,voice:{pitch}}),{code:'VIDEO_INPUT_INVALID'})
+})
 test('revision and render references must be local UUIDs',()=>{assert.throws(()=>parseRevise({requestId:'revise-001',projectId:'../x',baseRevisionId:'x',changes:{title:'new'}}));assert.throws(()=>parseRender({requestId:'render-001',projectId:'x',revisionId:'x',command:'ffmpeg'}))})

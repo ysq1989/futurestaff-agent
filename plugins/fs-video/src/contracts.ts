@@ -31,7 +31,9 @@ export function parseVoice(value:unknown):Voice{
   const name=v.name===undefined?'zh-CN-XiaoxiaoNeural':text(v.name,1,100)
   // Only public built-in voices; no cloning, arbitrary SSML or custom endpoints.
   if(!/^[a-z]{2}-[A-Z]{2}-[A-Za-z0-9]+Neural$/.test(name))return fail()
-  const rate=v.rate===undefined?'+8%':text(v.rate,2,6),pitch=v.pitch===undefined?'+2Hz':text(v.pitch,3,7)
+  const rate=v.rate===undefined?'+8%':text(v.rate,2,6),rawPitch=v.pitch===undefined?'+2Hz':text(v.pitch,1,7)
+  // Models commonly express a natural pitch as zero; send the canonical Edge form.
+  const pitch=rawPitch==='0'||rawPitch==='0Hz'?'+0Hz':rawPitch
   if(!/^[+-]\d{1,2}%$/.test(rate)||Math.abs(parseInt(rate))>30||!/^[+-]\d{1,2}Hz$/.test(pitch)||Math.abs(parseInt(pitch))>20)return fail()
   return {provider:v.provider===undefined?'edge':choice(v.provider,['edge','none']),name,rate,pitch}
 }

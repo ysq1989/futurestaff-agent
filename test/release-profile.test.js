@@ -101,6 +101,16 @@ test('pins the release runtime and platform contract in the staged manifest', as
     assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
       files['node_modules/@futurestaff/fs-platform-access/lib/api.js'] ===
         '6cdf5f8951ff2c4ed5631ba341f139aa49839ec641cb66b19e27ba4b5810105a'))
+    const baseline = JSON.parse(await readFile(path.join(root, 'profile/workspace-upgrade-3.1.0.json'), 'utf8'))
+    assert.equal(baseline.manifestDigest, 'be87221cda912fc66162ef9daa5d5a31952c7891a18d51849ad0389516bb4be7')
+    assert.ok(result.releaseManifest.supersedes.includes(baseline.manifestDigest))
+    assert.equal(Object.keys(baseline.platformFiles).length, 206)
+    assert.equal(Object.keys(baseline.videoFiles).length, 35)
+    assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
+      JSON.stringify(files) === JSON.stringify(baseline.platformFiles)))
+    assert.deepEqual(result.releaseManifest.workspacePreviousVideoFiles, baseline.videoFiles)
+    assert.equal(baseline.videoFiles['node_modules/@futurestaff/fs-video/lib/index.js'],
+      '11c5d79f5f32dfb0a9abcbc09cb792dab3177ebdc5ad934097ad5b09cb049263')
   } finally {
     await rm(temporary, { recursive: true, force: true })
   }
