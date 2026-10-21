@@ -1,0 +1,67 @@
+{
+  "version": "3.2.1",
+  "sourceCommit": "9b82cfa6d9efb529b02a89386aed57ee87b5e87a",
+  "manifestSha256": "00650507c0c03b42f503858f04e36e78df929783b97e0657e49330ec45bd0b25",
+  "manifestSignatureVerified": true,
+  "originalTrustPreserved": true,
+  "rollbackVersion": "3.2.0",
+  "privateKeyUploaded": false,
+  "artifacts": [
+    {
+      "url": "https://fsstory.net/desktop-updates/FutureStaff-Agent-3.2.1-x64-Setup.exe",
+      "bytes": 140046290,
+      "sha256": "b100a4650ff4f00dac259ef9e9f53ff243980eb3d31b9ff7c472b4dd2f541043",
+      "fullHttpsDownloadVerified": true
+    },
+    {
+      "url": "https://fsstory.net/desktop-updates/FutureStaff-Agent-3.2.0-x64-Setup.exe",
+      "bytes": 140037670,
+      "sha256": "5698e2b7809bb871218c8391b5cf1fb5164ebfba228d4ff8a651f1a40d698e54",
+      "fullHttpsDownloadVerified": true
+    }
+  ],
+  "installed": {
+    "available": true,
+    "remembered": true,
+    "durationMs": 5,
+    "phase": "ready",
+    "originalTenant": true,
+    "applications": 8,
+    "models": 2,
+    "loginOverlay": false
+  },
+  "restart": {
+    "available": true,
+    "remembered": true,
+    "phase": "ready",
+    "originalTenant": true,
+    "applications": 8,
+    "models": 2,
+    "loginOverlay": false
+  },
+  "nativeFault": {
+    "available": true,
+    "remembered": false,
+    "version": "3.2.1",
+    "packagedArtifactColdStartRecovered": true,
+    "writerLocksLeft": 0,
+    "recoveryEvents": 2
+  },
+  "nativeWrite": {
+    "nativeDpapiRead": true,
+    "ciphertextPreservedAtBoot": true,
+    "writeAfterRecovery": true
+  },
+  "existingWorkspace": {
+    "existingWorkspaceFiles": 465,
+    "missing": 0,
+    "changed": 0
+  },
+  "dataAfterInstallation": {
+    "existingWorkspaceAndStorageFiles": 466,
+    "allPreservedByteIdentically": true
+  },
+  "debugCleanup": {
+    "temporaryDebuggerClosed": true
+  }
+}

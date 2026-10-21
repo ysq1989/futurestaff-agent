@@ -1,11 +1,12 @@
 # 开发文档导航
 
-整理日期：2026-10-21。当前正式版 **3.2.0**（签名更新源已同步 **3.2.0**，回滚版 **3.1.1**），后续 Agent 开发转到笔记本，台式机负责其他系统。本仓库是桌面客户端；Python 后端/Web 历史快照另存于私有仓库 `ysq1989/FutureStaff-Agent-web`，不能在两份检出之间直接 pull。
+整理日期：2026-10-21。当前正式版 **3.2.1**（签名更新源已同步 **3.2.1**，回滚版 **3.2.0**），后续 Agent 开发转到笔记本，台式机负责其他系统。本仓库是桌面客户端；Python 后端/Web 历史快照另存于私有仓库 `ysq1989/FutureStaff-Agent-web`，不能在两份检出之间直接 pull。
 
 | 目的 | 入口 |
 | --- | --- |
 | 新电脑开始 | [换机开发交接](development-handoff.md)、[项目 README](../README.md) |
-| 当前发布及验收 | [3.1.1 交付与笔记本接手](../tasks/agent-laptop-handoff-20261021.md)、[原生视频验收](../tasks/video-native-chat-20261021.md) |
+| 密码与登录修复 | [3.2.1凭据锁恢复及原生验收](../tasks/desktop-credential-lock-20261021.md) |
+| 历史视频发布及验收 | [3.1.1 交付与笔记本接手](../tasks/agent-laptop-handoff-20261021.md)、[原生视频验收](../tasks/video-native-chat-20261021.md) |
 | 开发约束 | [开发规范](development.md)、[架构](architecture.md) |
 | 桌面底座与子模块 | [桌面基础](desktop-foundation.md) |
 | 持久智能体 3.0 | [规格](specs/persistent-agents-v3.md)、[验收边界](specs/persistent-agents-v3-acceptance.md) |
