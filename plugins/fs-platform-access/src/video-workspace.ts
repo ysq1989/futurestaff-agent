@@ -14,9 +14,9 @@ export interface VideoWorkspaceResolver {
 export function createVideoWorkspaceResolver(options: {
   identity: WorkspaceIdentity
   authorize(): Promise<{tenantId:string;userId:string;signal:AbortSignal}>
-  resolveBinding(sessionId:string): Promise<{agentId:string;version:string}|undefined>
-  snapshot(agentId:string): Promise<{agentId:string;version:string;files:{path:string;content:string}[]}>
-  workspacePath(agentId:string): Promise<string>
+  resolveBinding(sessionId:string): Promise<{agentId:string;version:string;releaseVersion?:string}|undefined>
+  snapshot(agentId:string,releaseVersion?:string): Promise<{agentId:string;version:string;files:{path:string;content:string}[]}>
+  workspacePath(agentId:string,releaseVersion?:string): Promise<string>
 }): VideoWorkspaceResolver {
   return Object.freeze({async authorize(sessionId:string,signal?:AbortSignal) {
     if(typeof sessionId!=='string'||!sessionId||sessionId.length>256)throw Error('VIDEO_SESSION_REQUIRED')
@@ -26,10 +26,10 @@ export function createVideoWorkspaceResolver(options: {
     if(credentials.tenantId!==options.identity.tenantId||credentials.userId!==options.identity.userId)throw Error('VIDEO_IDENTITY_CHANGED')
     const binding=await options.resolveBinding(sessionId)
     if(!binding)throw Error('VIDEO_AGENT_BINDING_REQUIRED')
-    const snapshot=await options.snapshot(binding.agentId)
+    const snapshot=await options.snapshot(binding.agentId,binding.releaseVersion)
     if(snapshot.agentId!==binding.agentId||snapshot.version!==binding.version)throw Error('VIDEO_AGENT_VERSION_CHANGED')
     if(!snapshot.files.some(file=>file.path==='skills/video-production/SKILL.md'))throw Error('VIDEO_AGENT_CAPABILITY_REQUIRED')
-    const workspacePath=await options.workspacePath(binding.agentId)
+    const workspacePath=await options.workspacePath(binding.agentId,binding.releaseVersion)
     if(!path.isAbsolute(workspacePath))throw Error('VIDEO_WORKSPACE_INVALID')
     const combined=signal?AbortSignal.any([credentials.signal,signal]):credentials.signal
     combined.throwIfAborted()

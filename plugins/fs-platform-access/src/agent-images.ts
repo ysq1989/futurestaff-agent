@@ -3,7 +3,7 @@ import {createHash} from 'node:crypto'
 import type {ShopThemeService} from './shop.js'
 import {garmentReference,saveFashionImage,inspectGarmentFile} from './fashion-files.js'
 import {garmentPreservationPrompt,modelGarmentReference,createSourceDetail,readSourceDetail,type DetailRegion} from './fashion-fidelity.js'
-export type ImageIdentity={accessToken:string;signal:AbortSignal;agentId:string;version:string;workspacePath?:string}
+export type ImageIdentity={accessToken:string;signal:AbortSignal;agentId:string;version:string;releaseVersion?:string;workspacePath?:string}
 const uuid=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i
 export function imageRequestUuid(sessionId:string,agentId:string,input:string):string{
  if(uuid.test(input))return input.toLowerCase()
@@ -15,10 +15,10 @@ export class AgentImageService {
  constructor(private origin:string,private authorize:(sessionId:string)=>Promise<ImageIdentity>,private shop:ShopThemeService,private fetcher=globalThis.fetch){}
  private async request(sessionId:string,suffix:string,init:RequestInit={},signal?:AbortSignal,expected?:ImageIdentity){
   const identity=await this.authorize(sessionId);identity.signal.throwIfAborted()
-  if(expected&&(identity.agentId!==expected.agentId||identity.version!==expected.version||identity.workspacePath!==expected.workspacePath))throw Error('AGENT_IMAGE_SESSION_CHANGED')
+  if(expected&&(identity.agentId!==expected.agentId||identity.version!==expected.version||identity.releaseVersion!==expected.releaseVersion||identity.workspacePath!==expected.workspacePath))throw Error('AGENT_IMAGE_SESSION_CHANGED')
   const combined=AbortSignal.any([identity.signal,...expected?[expected.signal]:[],...signal?[signal]:[]])
   combined.throwIfAborted()
-  const response=await this.fetcher(new URL('/desktop/v1/agents/'+identity.agentId+suffix,this.origin),{...init,redirect:'error',headers:{'content-type':'application/json',Authorization:'Bearer '+identity.accessToken},signal:combined})
+  const response=await this.fetcher(new URL('/desktop/v1/agents/'+identity.agentId+suffix+(suffix==='/image-tools'&&identity.releaseVersion?'?agentReleaseVersion='+identity.releaseVersion:''),this.origin),{...init,redirect:'error',headers:{'content-type':'application/json',Authorization:'Bearer '+identity.accessToken},signal:combined})
   if(!response.ok){
    const reasons:Record<string,string>={'Image tool not enabled for this Agent':'IMAGE_TOOL_UNAVAILABLE','Image tool unavailable':'IMAGE_TOOL_UNAVAILABLE','Agent unavailable':'AGENT_UNAVAILABLE','Agent version changed':'AGENT_VERSION_CHANGED','Image request not found':'IMAGE_REQUEST_NOT_FOUND','Fashion images require the current subject free model':'FREE_MODEL_REQUIRED'}
    let reason='';try{reason=reasons[(await response.json()).detail]||''}catch{}
@@ -30,7 +30,7 @@ export class AgentImageService {
  async generate(sessionId:string,input:{requestId:string;tool:string;prompt:string;size:string;references?:string[];freeOnly?:boolean},signal?:AbortSignal,expected?:ImageIdentity){
   const identity=expected||await this.authorize(sessionId)
   const requestId=imageRequestUuid(sessionId,identity.agentId,input.requestId)
-  try{return await (await this.request(sessionId,'/image-requests',{method:'POST',body:JSON.stringify({...input,requestId,agentVersion:identity.version})},signal,identity)).response.json()}
+  try{return await (await this.request(sessionId,'/image-requests',{method:'POST',body:JSON.stringify({...input,requestId,agentVersion:identity.version,...(identity.releaseVersion?{agentReleaseVersion:identity.releaseVersion}:{})})},signal,identity)).response.json()}
   catch(error){const message=error instanceof Error?error.message:'';if(message.startsWith('AGENT_IMAGE_REQUEST_DENIED')&&!/DENIED: 5\d\d/.test(message))throw error;throw Error('AGENT_IMAGE_RESULT_UNCONFIRMED: requestId='+requestId+'，查询原请求，禁止重新生图。')}
  }
  async status(sessionId:string,requestId:string,signal?:AbortSignal){
@@ -94,13 +94,13 @@ export class AgentImageService {
   const reference=await garmentReference(identity.workspacePath,input.imagePath)
   const requestId=imageRequestUuid(sessionId,identity.agentId,input.requestId)
   let receipt
-  try{receipt=await (await this.request(sessionId,'/fashion-image-requests',{method:'POST',body:JSON.stringify({requestId,agentVersion:identity.version,action:input.action,reference})},signal,identity)).response.json()}
+  try{receipt=await (await this.request(sessionId,'/fashion-image-requests',{method:'POST',body:JSON.stringify({requestId,agentVersion:identity.version,...(identity.releaseVersion?{agentReleaseVersion:identity.releaseVersion}:{}),action:input.action,reference})},signal,identity)).response.json()}
   catch(error){identity.signal.throwIfAborted();signal?.throwIfAborted();const message=error instanceof Error?error.message:'';if(message.startsWith('AGENT_IMAGE_REQUEST_DENIED')&&!/DENIED: 5\d\d/.test(message))throw error;throw Error('AGENT_IMAGE_RESULT_UNCONFIRMED: requestId='+requestId+'，查询原请求，禁止重新抠图。')}
   return input.action==='remove_background'?this.deliver(sessionId,receipt,signal,identity):receipt
  }
  async fashionDownload(sessionId:string,input:{requestId:string;folder?:'website-output'},signal?:AbortSignal,expected?:ImageIdentity){
   const identity=await this.authorize(sessionId),requestId=imageRequestUuid(sessionId,identity.agentId,input.requestId)
-  if(expected&&(identity.agentId!==expected.agentId||identity.version!==expected.version||identity.workspacePath!==expected.workspacePath))throw Error('AGENT_IMAGE_SESSION_CHANGED')
+  if(expected&&(identity.agentId!==expected.agentId||identity.version!==expected.version||identity.releaseVersion!==expected.releaseVersion||identity.workspacePath!==expected.workspacePath))throw Error('AGENT_IMAGE_SESSION_CHANGED')
   expected?.signal.throwIfAborted()
   const local=await readSourceDetail(identity.workspacePath,requestId)
   if(local){identity.signal.throwIfAborted();signal?.throwIfAborted();const current=await this.authorize(sessionId);if(current.agentId!==identity.agentId||current.version!==identity.version||current.workspacePath!==identity.workspacePath||(expected&&expected.agentId!==identity.agentId))throw Error('AGENT_IMAGE_SESSION_CHANGED');return local}

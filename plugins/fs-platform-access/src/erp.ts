@@ -29,16 +29,16 @@ function allow(g:Grant,action:string){if(g.policy.enabled!==true||!Array.isArray
 export class ErpService {
  private views:InteractionRegistry<ErpView,Saved>
  readonly erpOrigin:string
- constructor(private origin:string,private authorize:()=>Promise<Identity>,private fetcher:typeof fetch=fetch,private now=()=>Date.now(),private authorizeSession?:(sessionId:string)=>Promise<void|{agentId:string;version:string}>){
+ constructor(private origin:string,private authorize:()=>Promise<Identity>,private fetcher:typeof fetch=fetch,private now=()=>Date.now(),private authorizeSession?:(sessionId:string)=>Promise<void|{agentId:string;version:string;releaseVersion?:string}>){
   this.views=new InteractionRegistry('erp',{now,invalidError:'ERP_VIEW_EXPIRED'})
   if(!['https://platform.fsstory.net','https://platform-dev.fsstory.net','https://dev.fsstory.net'].includes(origin))throw Error('ERP_ORIGIN_INVALID')
   this.erpOrigin=origin==='https://platform.fsstory.net'?'https://erp.fsstory.net':'https://erp-dev.fsstory.net'
  }
  private async grant(signal?:AbortSignal,sessionId?:string):Promise<Grant>{
-  let binding:void|{agentId:string;version:string}=undefined
+  let binding:void|{agentId:string;version:string;releaseVersion?:string}=undefined
   if(this.authorizeSession){if(!sessionId)throw Error('ERP_SESSION_REQUIRED');binding=await this.authorizeSession(sessionId)}
   const original=await this.authorize();const identity={...original,signal:signal?AbortSignal.any([original.signal,signal]):original.signal};identity.signal.throwIfAborted()
-  const response=await this.fetcher(this.origin+'/api/application-settings/v1/futurestaff-erp/agent/token',{method:'POST',headers:{Authorization:'Bearer '+identity.accessToken,'Content-Type':'application/json'},...(binding?{body:JSON.stringify({agentId:binding.agentId,agentVersion:binding.version})}:{}),signal:identity.signal})
+  const response=await this.fetcher(this.origin+'/api/application-settings/v1/futurestaff-erp/agent/token',{method:'POST',headers:{Authorization:'Bearer '+identity.accessToken,'Content-Type':'application/json'},...(binding?{body:JSON.stringify({agentId:binding.agentId,agentVersion:binding.version,...(binding.releaseVersion?{agentReleaseVersion:binding.releaseVersion}:{})})}:{}),signal:identity.signal})
   if(!response.ok)throw Error(response.status===403?'ERP_PERMISSION_DENIED':'ERP_AUTH_REQUIRED')
   const t=object(await response.json())
   if(t.tenantId!==identity.tenantId||t.memberId!==identity.userId||t.tokenType!=='Bearer'||t.expiresIn!==60||t.audience!==(this.erpOrigin==='https://erp.fsstory.net'?'futurestaff-erp-prod':'futurestaff-erp-dev')||typeof t.accessToken!=='string')throw Error('ERP_IDENTITY_MISMATCH')

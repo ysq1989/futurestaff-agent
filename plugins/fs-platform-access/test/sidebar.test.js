@@ -4,6 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createAccountSidebar, sidebarIdentity, sidebarVersion } from '../lib/client/sidebar.js'
 import { apply } from '../lib/client/index.js'
+import { FutureStaffSettingsRoot } from '../lib/client/settings-page.js'
 
 const snapshot = { phase: 'ready', user: { userId: 'fixture-user', displayName: '测试用户' },
   activeTenantId: 'active-subject', tenants: [
@@ -62,4 +63,20 @@ test('product sidebar preserves the native child slot declarations and navigatio
   assert.equal(original.children, children)
   assert.equal(original.inject, inject)
   assert.notEqual(original.component, OriginalSidebar)
+})
+
+test('full-page settings replaces only the standard shell and retains live section and onboarding injection', () => {
+  const children = { 'settings.section': { kind: 'list', scope: 'root' }, 'settings.onboarding': { kind: 'list', scope: 'root' } }
+  const inject = () => ({ reconnect: () => {}, hooks: { sections: {}, onboardingSteps: {} } })
+  const Original = () => null
+  const standard = { options: {}, locale: 'settings', children, inject, component: Original }
+  const custom = { options: { priority: -50 }, locale: 'custom', component: Original }
+  apply({ inject: (_services, callback) => callback({ effect: () => {} }), slots: {
+    inject: (_name, register) => register(), subscribe: () => () => {},
+    entries: name => name === 'sidebar.settings' ? [standard, custom] : [], register: () => () => {},
+  } })
+  assert.equal(standard.component, FutureStaffSettingsRoot)
+  assert.equal(standard.children, children)
+  assert.equal(standard.inject, inject)
+  assert.equal(custom.component, Original)
 })

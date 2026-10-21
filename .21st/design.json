@@ -45,6 +45,11 @@
   },
   "decisions": [
     {
+      "id": "full-page-settings",
+      "decision": "Settings occupies the application content area as a page, following the user's Codex reference: searchable left category navigation, independent right content scrolling, top utility actions and an explicit return-to-workbench button. Preserve FutureStaff light/dark tokens, live section registrations, onboarding and native window controls. No backdrop or modal settings shell. Reuse existing controls and settings slots; 21st Settings Sidebar Layout was consulted as metadata inspiration.",
+      "date": "2026-10-21"
+    },
+    {
       "id": "neutral-workbench-frame",
       "decision": "2026-10-11 UI refinement supersedes the saturated blue-system-directory appearance in the desktop shell. Use neutral sidebar surfaces, approved FutureStaff mark, a separate active-subject row, semantic line icons, sparse blue selection and one compact system toolbar. Reuse native semantic controls; preserve keyboard tabs, account menus, session renewal and embedded view isolation. Palette source: plugins/fs-platform-access/src/client/appearance.ts. Product Hub approval surfaces retain their own existing context.",
       "date": "2026-10-11"

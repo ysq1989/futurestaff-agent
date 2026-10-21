@@ -9,6 +9,7 @@
 | 开发约束 | [开发规范](development.md)、[架构](architecture.md) |
 | 桌面底座与子模块 | [桌面基础](desktop-foundation.md) |
 | 持久智能体 3.0 | [规格](specs/persistent-agents-v3.md)、[验收边界](specs/persistent-agents-v3-acceptance.md) |
+| 智能体发布与安装中心 | [规格](specs/agent-distribution-v1.md)、[阶段任务](../tasks/agent-distribution-20261021.md)、[本地验收与发布门禁](agent-distribution-acceptance-20261021.md) |
 | 业务系统与页面交互 | [交互契约](specs/agent-interaction-v1.md) |
 | GEO 云端与本地发布 | [规格](specs/geo-cloud-local-publishing.md)、[插件说明](../plugins/fs-geo/README.md) |
 | SHOP 装修工具 | [工具说明](shop-theme-tools.md) |

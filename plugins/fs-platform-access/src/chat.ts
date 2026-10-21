@@ -18,6 +18,7 @@ export interface ChatCredentials {
 }
 export type ChatIdentity = Pick<ChatCredentials,'userId'|'tenantId'|'signal'>
 export interface ChatAgentBinding {
+  releaseVersion?:string
   agentId:string
   version:string
   businessSystems?:BusinessSystem[]
@@ -261,7 +262,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     }
     const wireMessages=await messages(options,this.readImage,credentials.signal)
     const body = JSON.stringify({ requestId: randomUUID(), modelId: credentials.modelId,
-      ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',
+      ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',...(agent.releaseVersion?{agentReleaseVersion:agent.releaseVersion}:{}),
         modelSelection:options.model==='default'?'agent-default':'session-explicit' } : {}),
       messages: wireMessages, tools: options.tools ?? [], maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
     if (Buffer.byteLength(body) > 9 * 1024 * 1024) throw new LlmError('会话内容过长，请新建会话。', 'FUTURESTAFF_LIMIT')

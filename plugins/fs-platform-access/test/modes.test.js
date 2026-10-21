@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { modePresentation, visibleModes } from '../lib/client/modes.js'
 import { apply } from '../lib/client/index.js'
 
-test('all mode surfaces retain their original store injection, identity and locale registration', () => {
+test('obsolete preset surfaces are hidden while original injection and registration are preserved', () => {
   const original = () => null, inject = () => ({ load: () => {} }), children = { composer: {} }
   const names = ['conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section']
   const originals = names.map(name => ({ component: original, locale: 'settings.agentPreset', inject, children, options: {
@@ -24,8 +24,7 @@ test('all mode surfaces retain their original store injection, identity and loca
     assert.equal(entry.children, children)
     assert.notEqual(entry.component, original)
     const element = entry.component({ t: key => key })
-    assert.equal(element.type, original)
-    assert.equal(element.props.t('presetPtcName'), '任务模式')
+    assert.equal(element, null)
   }
   assert.equal(modes[2].options.id, 'agent-presets')
   assert.equal(modes[2].options.order, 20)

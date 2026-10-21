@@ -73,24 +73,27 @@ export async function fetchAgentData(origin: string, credentials: AgentCredentia
 async function realDirectory(directory:string):Promise<void>{
   const info=await lstat(directory);if(!info.isDirectory()||info.isSymbolicLink())throw new Error('AGENT_DIRECTORY_UNSAFE')
 }
-async function ensureTree(directory:string):Promise<void>{
+export async function ensureTree(directory:string):Promise<void>{
   const parent=path.dirname(directory)
   if(parent!==directory)await ensureTree(parent)
   try{await realDirectory(directory)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e;await mkdir(directory);await realDirectory(directory)}
 }
-async function existingTree(directory:string):Promise<void>{
+export async function existingTree(directory:string):Promise<void>{
   const parent=path.dirname(directory)
   if(parent!==directory)await existingTree(parent)
   await realDirectory(directory)
 }
-async function atomicJson(file:string,value:unknown):Promise<void>{
+export async function atomicJson(file:string,value:unknown):Promise<void>{
+  return atomicBytes(file,Buffer.from(JSON.stringify(value)))
+}
+export async function atomicBytes(file:string,value:Uint8Array):Promise<void>{
   try{if((await lstat(file)).isSymbolicLink())throw new Error('AGENT_FILE_UNSAFE')}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
   const temporary=`${file}.${randomUUID()}.tmp`
-  await writeFile(temporary,JSON.stringify(value),{flag:'wx',mode:0o600});await rename(temporary,file)
+  try{await writeFile(temporary,value,{flag:'wx',mode:0o600});await rename(temporary,file)}finally{await unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e})}
 }
 export class AgentWorkspaceStore {
-  constructor(readonly root:string,readonly identity:WorkspaceIdentity){if(!path.isAbsolute(root))throw error();id(identity.tenantId);id(identity.userId)}
-  directory(agentId:string):string{return path.join(this.root,'agents',id(agentId))}
+  constructor(readonly root:string,readonly identity:WorkspaceIdentity,readonly releaseVersion?:string){if(!path.isAbsolute(root))throw error();id(identity.tenantId);id(identity.userId);if(releaseVersion&&!/^[a-f0-9]{64}$/.test(releaseVersion))throw error()}
+  directory(agentId:string):string{const base=path.join(this.root,'agents',id(agentId));return this.releaseVersion?path.join(base,'releases',this.releaseVersion):base}
   /** Match the native registry's canonical paths, including Windows app virtualization. */
   async workspacePath(agentId:string):Promise<string>{
     const directory=path.join(this.directory(agentId),'workspace')
@@ -139,14 +142,15 @@ export class AgentWorkspaceStore {
     return path.join(this.root,'agent-session-bindings',`${createHash('sha256').update(sessionId).digest('hex')}.json`)
   }
   private modelPinFile(sessionId:string):string{return this.bindingFile(sessionId).slice(0,-5)+'.model.json'}
-  async binding(sessionId:string):Promise<{agentId:string;version:string;modelVersion?:string}|undefined>{
+  async binding(sessionId:string):Promise<{agentId:string;version:string;modelVersion?:string;releaseVersion?:string}|undefined>{
     const file=this.bindingFile(sessionId)
     try{
       await existingTree(path.dirname(file));if((await lstat(file)).isSymbolicLink())throw error()
       const value=JSON.parse(await readFile(file,'utf8'))
       if(value.sessionId!==sessionId||JSON.stringify(value.identity)!==JSON.stringify(this.identity)
         ||typeof value.version!=='string'||! /^[a-f0-9]{64}$/.test(value.version)
-        ||(value.modelVersion!==undefined&&(typeof value.modelVersion!=='string'||!/^[a-f0-9]{64}$/.test(value.modelVersion))))throw error()
+        ||(value.modelVersion!==undefined&&(typeof value.modelVersion!=='string'||!/^[a-f0-9]{64}$/.test(value.modelVersion)))
+        ||(value.releaseVersion!==undefined&&(typeof value.releaseVersion!=='string'||!/^[a-f0-9]{64}$/.test(value.releaseVersion))))throw error()
       let modelVersion=value.modelVersion
       try{
         const pinFile=this.modelPinFile(sessionId)
@@ -157,7 +161,7 @@ export class AgentWorkspaceStore {
           ||(modelVersion!==undefined&&modelVersion!==pin.modelVersion))throw error()
         modelVersion=pin.modelVersion
       }catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
-      return {agentId:id(value.agentId),version:value.version,...(modelVersion?{modelVersion}:{})}
+      return {agentId:id(value.agentId),version:value.version,...(modelVersion?{modelVersion}:{}),...(value.releaseVersion?{releaseVersion:value.releaseVersion}:{})}
     }catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return undefined;throw e}
   }
   /** Upgrade only matching legacy content; an immutable first-writer claim never replaces an existing policy. */
@@ -178,11 +182,11 @@ export class AgentWorkspaceStore {
   }
   async bind(sessionId:string,agentId:string):Promise<void>{
     const snapshot=await this.snapshot(agentId);const existing=await this.binding(sessionId)
-    if(existing){if(existing.agentId!==id(agentId))throw new Error('AGENT_SESSION_MISMATCH');return}
+    if(existing){if(existing.agentId!==id(agentId)||existing.releaseVersion!==this.releaseVersion)throw new Error('AGENT_SESSION_MISMATCH');return}
     const file=this.bindingFile(sessionId);await ensureTree(path.dirname(file))
     // Exclusive creation protects against simultaneous attempts to bind different Agents.
     await writeFile(file,JSON.stringify({sessionId,identity:this.identity,agentId:id(agentId),version:snapshot.legacyVersion??snapshot.version,
-      ...(snapshot.modelPolicy?{modelVersion:snapshot.version}:{})}),{flag:'wx',mode:0o600})
+      ...(snapshot.modelPolicy?{modelVersion:snapshot.version}:{}),...(this.releaseVersion?{releaseVersion:this.releaseVersion}:{})}),{flag:'wx',mode:0o600})
     const directory=path.join(this.directory(agentId),'sessions',path.basename(file,'.json'))
     for(const suffix of ['attachments','drafts','outputs'])await ensureTree(path.join(directory,suffix))
   }

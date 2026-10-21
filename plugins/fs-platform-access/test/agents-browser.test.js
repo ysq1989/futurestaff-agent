@@ -43,8 +43,8 @@ test('real browser selects persistent agents, isolates sessions, preserves files
   let slow=false
   const server=createServer(async(req,res)=>{
     try{
-      if(req.url==='/_futurestaff/agents/catalog'){res.setHeader('content-type','application/json');return res.end(JSON.stringify({items:cards.map(c=>({...c,path:path.join(store.directory(c.agentId),'workspace')})),dataDirectory:store.root}))}
-      if(req.url==='/_futurestaff/agents/select'){
+      if(req.url==='/_futurestaff/agents/distribution'){res.setHeader('content-type','application/json');return res.end(JSON.stringify({items:cards.map(c=>({...c,installedVersion:'a'.repeat(64),path:path.join(store.directory(c.agentId),'workspace')})),dataDirectory:store.root}))}
+      if(req.url==='/_futurestaff/agents/open-installed'){
         let body='';for await(const chunk of req)body+=chunk
         const card=cards.find(c=>c.agentId===JSON.parse(body).agentId)
         if(slow)await sleep(500)

@@ -5,6 +5,8 @@ import type { WorkspaceIdentity } from './workspace.js'
 import path from 'node:path'
 import {lstat,realpath} from 'node:fs/promises'
 import type {BusinessSystem} from './business-scope.js'
+import { AgentInstallationStore, downloadAgentRelease, decodeRelease } from './agent-distribution.js'
+import { mountAgentDistribution } from './agent-distribution-host.js'
 
 /** Session cwd comes from the Host SessionStore, never the renderer. */
 export async function resolveSessionAgent(store: AgentWorkspaceStore, sessionId: string, cwd: string | undefined) {
@@ -31,11 +33,29 @@ export async function resolveSessionAgent(store: AgentWorkspaceStore, sessionId:
 export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIdentity, root: string,
   authorize: () => Promise<AgentCredentials>, fetcher=globalThis.fetch) {
   const store=new AgentWorkspaceStore(root,identity)
+  const installations=new AgentInstallationStore(root,identity)
+  mountAgentDistribution(ctx,origin,installations,authorize,fetcher)
   let queue:Promise<unknown>=Promise.resolve()
   const resolveBinding = (sessionId: string) => {
     const operation = async () => {
       const sessions = ctx.get('sessions') as unknown as { get(id:string): {header:{cwd?:string}}|undefined } | undefined
-      return resolveSessionAgent(store, sessionId, sessions?.get(sessionId)?.header.cwd)
+      const cwd=sessions?.get(sessionId)?.header.cwd
+      const old=await store.binding(sessionId)
+      if(old?.releaseVersion){
+        const runtime=installations.runtime(old.releaseVersion)
+        if(!cwd||path.resolve(cwd)!==await runtime.workspacePath(old.agentId))throw Error('AGENT_SESSION_MISMATCH')
+        return old
+      }
+      if(cwd){
+        const relative=path.relative(path.join(root,'agents'),cwd).split(path.sep)
+        if(relative.length===4&&relative[1]==='releases'&&relative[3]==='workspace'&&/^[a-f0-9]{64}$/.test(relative[2]??'')){
+          const agentId=relative[0]!,version=relative[2]!,runtime=installations.runtime(version)
+          if(path.resolve(cwd)!==await runtime.workspacePath(agentId))throw Error('AGENT_SESSION_MISMATCH')
+          await installations.read(agentId,version)
+          await runtime.bind(sessionId,agentId);return store.binding(sessionId)
+        }
+      }
+      return resolveSessionAgent(store, sessionId, cwd)
     }
     const pending = queue.then(operation, operation); queue = pending.catch(() => {})
     return pending
@@ -82,12 +102,14 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
     let binding=await resolveBinding(sessionId);if(!binding)return undefined
     const credentials=await authorize()
     if(credentials.tenantId!==identity.tenantId||credentials.userId!==identity.userId)throw Error('AGENT_IDENTITY_MISMATCH')
-    const snapshot=await fetchAgentData(origin,credentials,binding.agentId,fetcher,'1.1.0') as AgentSnapshot
+    const snapshot=binding.releaseVersion
+      ? decodeRelease(await downloadAgentRelease(origin,credentials,binding.agentId,binding.releaseVersion,fetcher),binding.agentId,binding.releaseVersion).snapshot
+      : await fetchAgentData(origin,credentials,binding.agentId,fetcher,'1.1.0') as AgentSnapshot
     // Existing business APIs keep the legacy content version; chat additionally pins model policy.
     if(snapshot.legacyVersion!==binding.version||!snapshot.modelPolicy)throw Error('AGENT_MODEL_VERSION_CHANGED')
     if(!binding.modelVersion)binding=await store.pinModelVersion(sessionId,binding.agentId,binding.version,snapshot.version)
     if(snapshot.version!==binding.modelVersion)throw Error('AGENT_MODEL_VERSION_CHANGED')
-    return {agentId:binding.agentId,version:snapshot.version,modelPolicy:snapshot.modelPolicy,
+    return {agentId:binding.agentId,version:snapshot.version,modelPolicy:snapshot.modelPolicy,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),
       identity:{userId:identity.userId,tenantId:identity.tenantId},signal:credentials.signal,
       ...(snapshot.businessSystems?{businessSystems:snapshot.businessSystems}:{})}
   }
@@ -97,9 +119,18 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
     const credentials=await authorize()
     if(credentials.tenantId!==identity.tenantId||credentials.userId!==identity.userId)throw Error('AGENT_IDENTITY_MISMATCH')
     const snapshot=await fetchAgentData(origin,credentials,binding.agentId,fetcher) as AgentSnapshot
-    if(snapshot.version!==binding.version)throw Error('AGENT_VERSION_CHANGED')
+    if(binding.releaseVersion){
+      const released=decodeRelease(await downloadAgentRelease(origin,credentials,binding.agentId,binding.releaseVersion,fetcher),binding.agentId,binding.releaseVersion).snapshot
+      if(released.legacyVersion!==binding.version||(released.businessSystems&&!released.businessSystems.includes(system)))throw Error('AGENT_BUSINESS_SCOPE_DENIED')
+    }else if(snapshot.version!==binding.version)throw Error('AGENT_VERSION_CHANGED')
     if(snapshot.businessSystems&&!snapshot.businessSystems.includes(system))throw Error('AGENT_BUSINESS_SCOPE_DENIED')
     return binding
   }
-  return {store, resolveBinding,resolvePolicyBinding,authorizeBusiness}
+  const boundSnapshot=async(agentId:string,releaseVersion?:string)=>{
+    const c=await authorize()
+    if(!releaseVersion)return fetchAgentData(origin,c,agentId,fetcher) as Promise<AgentSnapshot>
+    const snapshot=decodeRelease(await downloadAgentRelease(origin,c,agentId,releaseVersion,fetcher),agentId,releaseVersion).snapshot
+    return {...snapshot,version:snapshot.legacyVersion!}
+  }
+  return {store,installations,boundSnapshot,resolveBinding,resolvePolicyBinding,authorizeBusiness}
 }

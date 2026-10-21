@@ -22,11 +22,11 @@ export function EmbeddedSystemPage({ appId, title, visible }: { appId: string; t
       const element = area.current
       if (!live || !element) return
       const frame = element.getBoundingClientRect()
-      const overlays = [...document.querySelectorAll('.fs-sidebar-account[data-open="true"],[role="dialog"][aria-modal="true"]')].filter(overlay => {
+      const overlays = [...document.querySelectorAll('.fs-sidebar-account[data-open="true"],[role="dialog"][aria-modal="true"],.fs-settings-page')].filter(overlay => {
         const rect = overlay.getBoundingClientRect(), style = getComputedStyle(overlay)
         return !overlay.closest('[hidden]') && rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
       })
-      if (overlays.some(overlay => overlay.matches('[role="dialog"][aria-modal="true"]'))) {
+      if (overlays.some(overlay => overlay.matches('[role="dialog"][aria-modal="true"],.fs-settings-page'))) {
         await bridge.request({ action: 'hide', appId }); return
       }
       let { x, width } = frame

@@ -142,8 +142,8 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     identity,
     authorize: async () => { await initialized; return access.authorizeTemplates() },
     resolveBinding: agents.resolveBinding,
-    snapshot: async agentId => fetchAgentData(origin, await access.authorizeTemplates(), agentId) as Promise<AgentSnapshot>,
-    workspacePath: agentId => agents.store.workspacePath(agentId),
+    snapshot: agents.boundSnapshot,
+    workspacePath: (agentId,releaseVersion) => (releaseVersion?agents.installations.runtime(releaseVersion):agents.store).workspacePath(agentId),
   }))
   if (identity && agents) mountErp(ctx, origin, async () => { await initialized; return access.authorizeTemplates() },sessionId=>agents.authorizeBusiness(sessionId,'erp'))
   if (identity) mountMarket(ctx, origin, identity, roleRoot(identity), async () => {
@@ -176,7 +176,7 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
         await access.authorizeChat()
         const binding=await agents.resolveBinding(sessionId)
         if(!binding)throw Error('AGENT_BINDING_REQUIRED')
-        return agents.store.workspacePath(binding.agentId)
+        return (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)
       }) : undefined,
       async()=>{await initialized;return access.authorizeTemplates()})
     llmCtx.effect(() => {
@@ -262,9 +262,9 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
   })
   ctx.provide('platformDevLogin', service)
   if (identity && agents) {
-    mountWebsite(ctx,origin,async sessionId=>{await initialized;await agents.authorizeBusiness(sessionId,'web');const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,workspacePath:await agents.store.workspacePath(binding.agentId)}})
+    mountWebsite(ctx,origin,async sessionId=>{await initialized;await agents.authorizeBusiness(sessionId,'web');const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)}})
     const shop=mountShop(ctx, async () => { const target=await service.resolveSystemApplication('shop');return {owner:target.owner,signal:target.signal,origin:new URL(target.url).origin} },sessionId=>agents.authorizeBusiness(sessionId,'shop'))
-    mountAgentImages(ctx,origin,async sessionId=>{await initialized;const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,workspacePath:await agents.store.workspacePath(binding.agentId)}},shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
+    mountAgentImages(ctx,origin,async sessionId=>{await initialized;const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)}},shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
   }
   ctx.effect(() => () => { access.dispose(); close() }, 'futurestaff-platform-access: login and callback lifecycle')
   ctx.effect(() => ctx.webServer.register({

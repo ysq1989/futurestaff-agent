@@ -47,9 +47,9 @@ function useCatalog(controller:Controller){
   useEffect(()=>{
     const abort=new AbortController();setError('')
     if(!owner){setCatalog({owner:'',items:[],directory:''});return()=>abort.abort()}
-    void request('catalog',undefined,abort.signal).then(body=>{
+    void request('distribution',undefined,abort.signal).then(body=>{
       if(!Array.isArray(body.items)||typeof body.dataDirectory!=='string')throw new Error('智能体目录版本不兼容。')
-      if(!abort.signal.aborted)setCatalog({owner,items:body.items,directory:body.dataDirectory})
+      if(!abort.signal.aborted)setCatalog({owner,items:body.items.filter((item:{installedVersion?:string|null})=>!!item.installedVersion),directory:body.dataDirectory})
     }).catch(reason=>{if(!abort.signal.aborted)setError(reason.message)})
     return()=>abort.abort()
   },[owner,revision])
@@ -101,14 +101,14 @@ export function createAgentBrowser(controller:Controller,_Legacy:ComponentType<B
     </div>
   }
 }
-export function createAgentHome(controller:Controller){
+export function createAgentHome(controller:Controller,openCenter?:()=>void){
   return function AgentHome(props:{createWorkspace(input:{path:string}):Promise<Workspace>;onPick(id:string):void|Promise<void>}){
     const {items,error:catalogError,refresh,owner}=useCatalog(controller)
     const operation=useOperationSignal(owner);const[busy,setBusy]=useState(false);const[error,setError]=useState('')
     useEffect(()=>{setBusy(false);setError('')},[owner])
     const choose=async(agent:DesktopAgentCard)=>{
       const signal=operation.current.signal;setBusy(true);setError('')
-      try{const selected=await request('select',{agentId:agent.agentId},signal);signal.throwIfAborted()
+      try{const selected=await request('open-installed',{agentId:agent.agentId},signal);signal.throwIfAborted()
         const workspace=await props.createWorkspace({path:selected.path});signal.throwIfAborted();await props.onPick(workspace.workspaceId)
       }catch(reason){if(!signal.aborted)setError(reason instanceof Error?reason.message:'智能体会话创建失败。')}
       finally{if(!signal.aborted)setBusy(false)}
@@ -117,7 +117,8 @@ export function createAgentHome(controller:Controller){
       <div className="fs-agents-header"><div><h1>开始新会话</h1><p>选择一个智能体，使用它的知识和技能开始工作。</p></div><button type="button" onClick={refresh} disabled={busy}>刷新</button></div>
       <Choices items={items} busy={busy} choose={agent=>{void choose(agent)}}/>
       {busy&&<p role="status">正在准备智能体会话…</p>}
-      {!items.length&&!catalogError&&<p role="status">当前主体暂无可用智能体，请在平台端创建或授权。</p>}
+      {!items.length&&!catalogError&&<p role="status">尚未安装智能体，请先前往智能体中心安装。</p>}
+      {openCenter&&<button type="button" onClick={openCenter} disabled={busy}>打开智能体中心</button>}
       {(error||catalogError)&&<p role="alert" className="fs-agents-error">{error||catalogError}</p>}
     </div></section>
   }
@@ -126,8 +127,8 @@ export interface AgentConversationProps extends Record<string,unknown>{
   useSessions<T>(select:(state:SessionList)=>T):T
   selectWorkspace(id:string):Promise<void>
 }
-export function createAgentConversation(controller:Controller,navigation:ReturnType<typeof createAgentNavigation>,createWorkspace:BrowserProps['createWorkspace'],Original:ComponentType<Record<string,unknown>>){
-  const Home=createAgentHome(controller)
+export function createAgentConversation(controller:Controller,navigation:ReturnType<typeof createAgentNavigation>,createWorkspace:BrowserProps['createWorkspace'],Original:ComponentType<Record<string,unknown>>,openCenter?:()=>void){
+  const Home=createAgentHome(controller,openCenter)
   function Managed(props:AgentConversationProps){
     const selecting=useSyncExternalStore(navigation.subscribe,navigation.getSnapshot,navigation.getSnapshot)
     const identity=useSyncExternalStore(controller.subscribe,controller.getSnapshot,controller.getSnapshot)
@@ -139,7 +140,7 @@ export function createAgentConversation(controller:Controller,navigation:ReturnT
     return typeof props.useSessions==='function'&&typeof props.selectWorkspace==='function'?<Managed {...props}/>:createElement(Original,props)
   }
 }
-export function createAgentPicker(controller:Controller){
+export function createAgentPicker(controller:Controller,openCenter?:()=>void){
   return function AgentPicker(props:PickerProps){
     const {items,error:catalogError,refresh,owner}=useCatalog(controller)
     const operation=useOperationSignal(owner,props.open)
@@ -154,7 +155,7 @@ export function createAgentPicker(controller:Controller){
     const choose=async(agent:DesktopAgentCard)=>{
       const signal=operation.current.signal;setBusy(true);setError('')
       try{
-        const selected=await request('select',{agentId:agent.agentId},signal);signal.throwIfAborted()
+        const selected=await request('open-installed',{agentId:agent.agentId},signal);signal.throwIfAborted()
         const workspace=await props.createWorkspace({path:selected.path});signal.throwIfAborted()
         props.onPick(workspace.workspaceId);props.onClose()
       }catch(reason){if(!signal.aborted)setError(reason instanceof Error?reason.message:'智能体工作区创建失败。')}
@@ -175,6 +176,7 @@ export function createAgentPicker(controller:Controller){
         <p>使用平台配置的知识、技能与长期记忆开始对话。</p>
         <Choices items={items} busy={busy} choose={agent=>{void choose(agent)}}/>
         {!items.length&&!catalogError&&<p role="status">暂无已授权智能体。</p>}
+        {openCenter&&<button type="button" onClick={()=>{props.onClose();openCenter()}}>打开智能体中心</button>}
         {(error||catalogError)&&<p role="alert" className="fs-agents-error">{error||catalogError}</p>}
         <button type="button" disabled={busy} onClick={refresh}>刷新智能体</button>
       </div>

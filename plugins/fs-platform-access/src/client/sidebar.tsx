@@ -42,8 +42,8 @@ export const sidebarCss = `
 .fs-sidebar-footer{position:relative;flex-shrink:0;border-top:1px solid var(--border-default);padding-top:10px}.fs-sidebar-user{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px!important}.fs-sidebar-user-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fs-sidebar-version{display:block;text-align:left;color:var(--text-tertiary);font-size:11px;padding:8px;border-top:1px solid var(--border-default);margin-top:4px}
 .fs-sidebar-account{--text-secondary:var(--fs-popup-muted);--text-tertiary:var(--fs-popup-muted);--bg-hover:var(--fs-popup-hover);position:absolute;bottom:100%;left:0;right:0;z-index:20;color:var(--text-primary)}.fs-sidebar-account[data-open=true]{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:6px;box-shadow:0 8px 24px var(--fs-shadow)}
-/* Keep the native settings modal and onboarding mounted; hide only its trigger row. */
-.fs-sidebar-account[data-open=false]>.fs-sidebar-settings>div:not([data-slot]):first-child,.fs-sidebar-account[data-open=false]>.fs-sidebar-settings>[data-slot="sidebar.settings"]>div:first-child{display:none}.fs-sidebar-exit{width:100%;text-align:left;color:var(--error)!important;padding:8px!important}
+/* Keep the settings page and onboarding mounted; hide only the trigger row. */
+.fs-sidebar-account[data-open=false] .fs-settings-trigger-row,.fs-sidebar-account[data-open=false]>.fs-sidebar-settings>div:not([data-slot]):first-child,.fs-sidebar-account[data-open=false]>.fs-sidebar-settings>[data-slot="sidebar.settings"]>div:first-child{display:none}.fs-sidebar-exit{width:100%;text-align:left;color:var(--error)!important;padding:8px!important}
 .fs-sidebar[data-collapsed=true]{padding:12px 8px}.fs-sidebar[data-collapsed=true] .fs-sidebar-brand{justify-content:center}.fs-sidebar[data-collapsed=true] .fs-sidebar-tabs{flex-direction:column}.fs-sidebar[data-collapsed=true] .fs-sidebar-name{display:none}
 .fs-sidebar-section-label{display:flex;justify-content:space-between;align-items:center;padding:2px 8px 8px;font-size:11px;color:var(--text-secondary);letter-spacing:.08em}.fs-sidebar-section-label span{letter-spacing:0}
 .fs-sidebar-menu .fs-sidebar-system{display:flex;align-items:center;gap:10px;flex-shrink:0;width:100%;min-height:52px;padding:8px 10px;text-align:left;border:1px solid transparent;border-radius:7px}
@@ -110,11 +110,11 @@ export function createAccountSidebar(controller: SidebarAccountController,pages?
       if (!accountOpen) return
       const pointer = (event: PointerEvent) => {
         // Native settings dialogs are portals or fixed descendants; let them own dismissal.
-        if (document.querySelector('[role="dialog"]')) return
+        if (document.querySelector('[role="dialog"],.fs-settings-page')) return
         if (!footer.current?.contains(event.target as Node)) setAccountOpen(false)
       }
       const key = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) {
+        if (event.key === 'Escape' && !document.querySelector('[role="dialog"],.fs-settings-page')) {
           setAccountOpen(false); userButton.current?.focus()
         }
       }
@@ -166,6 +166,7 @@ export function createAccountSidebar(controller: SidebarAccountController,pages?
         {snapshot.phase==='error' && <p role="status">系统授权读取失败，请在账号设置中重新连接。</p>}
       </section>
       <footer className="fs-sidebar-footer" ref={footer}>
+        {pages?.has('agents')&&authenticated&&<button type="button" className="fs-sidebar-system" aria-label="打开智能体中心" title="智能体中心" onClick={()=>pages.open('agents')}><span className="fs-system-icon" aria-hidden="true"><SystemIcon id="hub"/></span>{!collapsed&&<span>智能体中心</span>}</button>}
         <div className="fs-sidebar-account" data-open={accountOpen}>
           <div className="fs-sidebar-subject" title={identity.tenantName} hidden={!accountOpen}><SubjectLogo name={identity.tenantName} url={identity.logoUrl}/><span className="fs-sidebar-name"><small>当前主体</small>{identity.tenantName}</span></div>
           <div key={snapshot.activeTenantId ?? 'signed-out'} className="fs-sidebar-settings">{renderSlot('sidebar.settings', { wide: true })}</div>

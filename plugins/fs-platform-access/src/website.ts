@@ -7,10 +7,10 @@ export class WebsiteService {
   const identity=await this.authorize(sessionId)
   identity.signal.throwIfAborted()
   let response:Response
-  try{response=await this.fetcher(new URL('/desktop/v1/agents/'+identity.agentId+'/'+suffix,this.origin),{
+  try{response=await this.fetcher(new URL('/desktop/v1/agents/'+identity.agentId+'/'+suffix+(body===undefined&&identity.releaseVersion?'?agentReleaseVersion='+identity.releaseVersion:''),this.origin),{
    method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+identity.accessToken,'content-type':'application/json'},
    redirect:'error',signal:AbortSignal.any([identity.signal,AbortSignal.timeout(90000)]),
-   ...(body===undefined?{}:{body:JSON.stringify({...body as object,agentVersion:identity.version})})
+   ...(body===undefined?{}:{body:JSON.stringify({...body as object,agentVersion:identity.version,...(identity.releaseVersion?{agentReleaseVersion:identity.releaseVersion}:{})})})
   })}catch{identity.signal.throwIfAborted();throw Error('WEBSITE_RESULT_UNCONFIRMED: 查询原请求，禁止换 requestId 重复提交。')}
   if(!response.ok){await response.body?.cancel();throw Error('WEBSITE_REQUEST_DENIED: '+response.status)}
   const text=await response.text();if(text.length>1024*1024)throw Error('WEBSITE_RESULT_INVALID')

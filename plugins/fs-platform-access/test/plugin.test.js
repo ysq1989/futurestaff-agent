@@ -107,13 +107,12 @@ test('client registers Settings access and a mandatory login gate', () => {
 
   applyClient({ slots,inject:(_services,callback)=>callback({effect:()=>{}}) })
 
-  assert.deepEqual(slotNames, ['sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
+  assert.deepEqual(slotNames, ['sidebar.settings', 'sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
   assert.deepEqual(registrations, [
     { name: 'sidebar.brand.mark', priority: -100 },
     { name: 'sidebar.brand.name', priority: -100 },
     { name: 'conversation.hero.brand.mark', priority: -100 },
     { name: 'conversation.chat.node', key: 'context', priority: -100 },
-    { name: 'settings.section', id: 'futurestaff-agent-market', order: -9, label: 'Agent 市场' },
     { name: 'settings.section', id: 'futurestaff-access', order: -10, label: 'FutureStaff' },
     { name: 'shell.overlay', id: 'futurestaff-login-gate', order: -100 },
     { name: 'tool.call.toolview', key: 'call_erp_api' },
@@ -150,8 +149,8 @@ test('client registers Settings access and a mandatory login gate', () => {
   assert.equal(context.type, OriginalContext)
   assert.equal(context.props.node.data.provenance.label, 'FutureStaff 系统提示词')
   assert.equal(context.props.node.data.source.plugin, 'FutureStaff 系统提示词')
-  const settings = components[5]()
-  const gate = components[6]()
+  const settings = components[4]()
+  const gate = components[5]()
   assert.equal(settings.props.controller, gate.props.controller)
   const second = []
   applyClient({ inject:(_services,callback)=>callback({effect:()=>{}}),slots: {
@@ -160,7 +159,7 @@ test('client registers Settings access and a mandatory login gate', () => {
     entries: () => [{ options: { key: 'context' }, component: OriginalContext }],
     register: (_options, component) => { if (_options.priority === 1) return () => {}; second.push(component); return () => {} },
   } })
-  assert.notEqual(settings.props.controller, second[5]().props.controller)
+  assert.notEqual(settings.props.controller, second[4]().props.controller)
 })
 
 test('client panel styles cover narrow screens, keyboard focus and reduced motion', async () => {

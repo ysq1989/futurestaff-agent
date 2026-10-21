@@ -16,14 +16,14 @@ import { decodePlatformDevAccessSnapshot } from '../dev-access.js'
 import { mountPlatformAccessPanel } from '../view.js'
 import { installAppearance } from './appearance.js'
 import { LoginBackground, loginBackgroundCss } from './login-background.js'
-import { modePresentation } from './modes.js'
 import { createAccountSidebar } from './sidebar.js'
+import { FutureStaffSettingsRoot } from './settings-page.js'
 import { SystemPages, SystemMain } from './system-pages.js'
 export { SystemPages, SystemMain } from './system-pages.js'
 export { InteractionWindow, InteractionTable, interactionCss, type InteractionColumn } from './interaction.js'
 import { watchSlotComponents } from './slot-components.js'
 import { LoginPreferences } from '../login-preferences.js'
-import { AgentMarketSection } from './market.js'
+import { createAgentCenter } from './agent-center.js'
 import { createAgentBrowser, createAgentPicker, createAgentConversation, createAgentNavigation, type AgentConversationProps } from './agents.js'
 import type { RememberedLoginHint } from '../remembered-login.js'
 
@@ -477,11 +477,17 @@ export function apply(ctx: ClientContext): void {
     return () => { icon.remove(); style.remove(); for (const { link } of saved) document.head.append(link); if (document.title === 'FutureStaff Agent') document.title = title }
   }, 'futurestaff: product browser identity')
   installAppearance(ctx)
+  ctx.slots.inject('sidebar.settings', () => watchSlotComponents(ctx.slots, 'sidebar.settings',
+    entry => entry.locale === 'settings' && (entry.options.priority ?? 0) === 0,
+    () => FutureStaffSettingsRoot))
   // One store per plugin instance: settings actions must immediately relock the
   // workspace on logout/tenant changes, including while the gate renders null.
   const controller = new PlatformDevClientController()
   const pages = new SystemPages()
   const agentNavigation=createAgentNavigation()
+  const newAgentSession=()=>{pages.select('sessions');agentNavigation.begin();(ctx.get('sessions') as unknown as {clear():void}).clear()}
+  const openAgentCenter=()=>pages.open('agents')
+  ctx.inject([],local=>local.effect(()=>pages.register({id:'agents',title:'智能体中心',component:createAgentCenter(controller,newAgentSession)}),'futurestaff agent center'))
   const createWorkspace=(input:{path:string})=>{
     const service=ctx.get('workspaces') as unknown as {create(value:{path:string}):Promise<{workspaceId:string;path:string;sessionIds:readonly string[]}>}
     return service.create(input)
@@ -491,7 +497,7 @@ export function apply(ctx: ClientContext): void {
     component => createAgentBrowser(controller, component as Parameters<typeof createAgentBrowser>[1],agentNavigation)))
   ctx.slots.inject('conversation.hero.workspace', () => watchSlotComponents(ctx.slots, 'conversation.hero.workspace',
     entry => (entry.options.priority ?? 0) === 0,
-    () => createAgentPicker(controller)))
+    () => createAgentPicker(controller,openAgentCenter)))
   if (typeof ctx.provide === 'function') ctx.provide('platformClientSession', controller)
   if (typeof ctx.provide === 'function') ctx.provide('platformSystemPages', pages)
   ctx.slots.inject('sidebar', () => watchSlotComponents(ctx.slots, 'sidebar',
@@ -514,7 +520,7 @@ export function apply(ctx: ClientContext): void {
     entry => (entry.options.priority ?? 0) === 0,
     component => {
       const Original=brandConversation(component as ComponentType<BrandedConversationProps>)
-      const Conversation=createAgentConversation(controller,agentNavigation,createWorkspace,Original as unknown as ComponentType<Record<string,unknown>>)
+      const Conversation=createAgentConversation(controller,agentNavigation,createWorkspace,Original as unknown as ComponentType<Record<string,unknown>>,openAgentCenter)
       return function FutureStaffMain(props:BrandedConversationProps){return createElement(SystemMain,{pages,chat:createElement(Conversation,props as unknown as AgentConversationProps)})}
     }))
   ctx.slots.inject('conversation.view', () => watchSlotComponents(ctx.slots, 'conversation.view',
@@ -523,7 +529,7 @@ export function apply(ctx: ClientContext): void {
   for (const name of ['conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section'] as const) {
     ctx.slots.inject(name, () => watchSlotComponents(ctx.slots, name,
       entry => entry.locale === 'settings.agentPreset' && (entry.options.priority ?? 0) === 0,
-      component => modePresentation(component as ComponentType<Record<string, unknown>>, name === 'conversation.hero.agentPreset')))
+      () => () => null))
   }
   ctx.slots.inject('conversation.chat.node', () => {
     const original = ctx.slots.entries('conversation.chat.node')
@@ -532,9 +538,6 @@ export function apply(ctx: ClientContext): void {
     return ctx.slots.register({ name: 'conversation.chat.node', key: 'context', priority: -100 },
       contextRenderer(original as ComponentType<ChatNodeViewProps<'context'>>))
   })
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section', id: 'futurestaff-agent-market', order: -9, label: 'Agent 市场',
-  }, AgentMarketSection))
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section', id: 'futurestaff-access', order: -10, label: 'FutureStaff',
   }, () => createElement(FutureStaffPlatformAccessSection, { controller })))

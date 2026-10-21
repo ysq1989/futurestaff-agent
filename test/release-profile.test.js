@@ -111,6 +111,12 @@ test('pins the release runtime and platform contract in the staged manifest', as
     assert.deepEqual(result.releaseManifest.workspacePreviousVideoFiles, baseline.videoFiles)
     assert.equal(baseline.videoFiles['node_modules/@futurestaff/fs-video/lib/index.js'],
       '11c5d79f5f32dfb0a9abcbc09cb792dab3177ebdc5ad934097ad5b09cb049263')
+    const previousDesktop = JSON.parse(await readFile(path.join(root, 'profile/workspace-upgrade-3.1.1.json'), 'utf8'))
+    assert.equal(previousDesktop.installerSha256, '749c80826f2fea74a22459c7880354f0edf4d5129cfca4ae94d4838aabc01a4b')
+    assert.equal(previousDesktop.manifestDigest, 'fab5a10f2aa4eba35e12545669c3693971734d3868fd9fa86257cbb2e27366e4')
+    assert.equal(Object.keys(previousDesktop.platformFiles).length, 206)
+    assert.ok(result.releaseManifest.supersedes.includes(previousDesktop.manifestDigest))
+    assert.ok(result.releaseManifest.workspacePreviousInventories.some(files => JSON.stringify(files) === JSON.stringify(previousDesktop.platformFiles)))
   } finally {
     await rm(temporary, { recursive: true, force: true })
   }

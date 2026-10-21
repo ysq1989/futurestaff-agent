@@ -20,7 +20,7 @@ export function systemTitle(id: string, fallback: string): string {
   const appId = id.startsWith('cloud:') ? id.slice(6) : id
   return catalog.find(item => item.id === directoryId(appId))?.title ?? fallback
 }
-const internalApplications = new Set(['agent', 'platform', 'wecom_album'])
+const internalApplications = new Set(['agent', 'agents', 'platform', 'wecom_album'])
 export interface DirectoryItem { id: string; title: string; description: string; pageId?: string; url: string | null }
 
 export function systemDirectory(snapshot: PlatformAccessSnapshot, pages: readonly { id: string; title: string }[]): DirectoryItem[] {

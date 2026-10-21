@@ -163,7 +163,7 @@ describe('bundled FutureStaff Profile', () => {
         const identity = { environment: 'production', tenantId: '10000000-0000-4000-8000-000000000001', userId: '20000000-0000-4000-8000-000000000001' }
         const name = 'fs-production-' + createHash('sha256').update(JSON.stringify(identity)).digest('hex')
         const target = join(value.homeDir, 'profiles', name)
-        const module = join(target, prefix)
+        const module = join(target, 'node_modules', '@futurestaff', 'fs-video')
         const actual = mode === 'linked-package' ? join(value.root, 'outside-module') : module
         mkdirSync(join(actual, 'lib'), { recursive: true })
         if (mode === 'linked-package') {
