@@ -1,5 +1,7 @@
 # Server container deployment
 
+This page describes the earlier server-container runtime. The current Windows client is 3.1.1; its signed update feed, acceptance and laptop handoff are recorded in [the release handoff](../tasks/agent-laptop-handoff-20261021.md). Do not use the Docker commands below to update the desktop installer or the separate Platform service.
+
 ## Prerequisites
 
 - Linux server with Docker Engine and Docker Compose v2.

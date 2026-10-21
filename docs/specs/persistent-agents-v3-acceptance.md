@@ -1,5 +1,7 @@
 # Agent 3.0 本地验收与发行条件
 
+当前说明（2026-10-21）：本页保留最初开发切片的验收和限制。当前正式版本为 3.1.1，Agent 模型策略 1.1、真实原生咖啡制作和修订双版本播放均已部署验收，见 [最新交付](../../tasks/agent-laptop-handoff-20261021.md)；换机路径见 [笔记本交接](../development-handoff.md)。下文 2026-10-11 的目录、版本及未授权状态均为历史。
+
 2026-10-11。开发版本 `3.0.0-rc.1`。源码在客户端 `D:/项目/FutureStaff-Agent-client` 和平台 `D:/项目/FutureStaff-platform`；当前任务目录 `D:/项目/FutureStaff Agent` 为旧平台快照，未作为客户端修改。两仓均保持 `main`，保留之前的系统嵌入/SSO、GEO、UI、商城、身份等工作；没有提交、推送、部署、安装版更新或真实数据迁移。
 
 ## 已验证的功能
@@ -51,5 +53,5 @@
 本轮不新增共享记忆自动写回、云端会话同步、任意脚本下载执行或可点击数据迁移功能。它们需要各自受控契约和验收，不能从缓存 Skills 推定已实现。
 # 2026-10-21 private video preview review
 
-The product shell opens exact Host-issued `/_futurestaff/video/asset/<48hex>` links on its current loopback carrier in an owned native window. It reuses the authenticated Electron session and registers its renderer before loading; the existing access-header interceptor still strips credentials from other origins. External navigation, redirects, webviews and new windows are blocked. Closing the window, a failed load and shell-generation disposal remove renderer membership. The ordinary-browser access policy is unchanged. The source changes and tests were independently reviewed; native MP4 playback remains part of the coffee-case GUI acceptance recorded in `tasks/video-native-chat-20261021.md`.
+The product shell accepts exact Host-issued `/_futurestaff/video/asset/<48hex>` links on its current loopback carrier and loads the corresponding fixed HTML preview in an owned native window. It reuses the authenticated Electron session and registers its renderer before loading; the existing access-header interceptor still strips credentials from other origins. External navigation, redirects, webviews and new windows are blocked. Closing the window, a failed load and shell-generation disposal remove renderer membership. The ordinary-browser access policy is unchanged. Source tests, both complete native coffee-case playbacks, and the installed 3.1.1 cold-start playback passed; see [the native acceptance](../../tasks/video-native-chat-20261021.md).
 

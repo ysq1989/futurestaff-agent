@@ -2,9 +2,9 @@
 
 新电脑开发请先阅读[换机交接](docs/development-handoff.md)与[文档导航](docs/README.md)。本仓库只保存桌面客户端；后端/Web 快照另存于私有仓库 `ysq1989/FutureStaff-Agent-web`。
 
-当前源码版本：`3.0.7`。安装版 Profile 启动修复与发布状态见[修复记录](tasks/profile-startup-hotfix-307.md)。下方 3.0 升级说明保留为历史设计背景。
+当前正式版本：**3.1.1**，回滚安装包 **3.1.0** 保留。视频 Agent 的真实原生聊天制作、修改、双版本完整播放和免费模型验收已通过，详见 [最新交付](tasks/agent-laptop-handoff-20261021.md)。更新源仍为 `https://fsstory.net/desktop-updates/stable.json`。
 
-2026-10-17：3.0.7 修复包已发布至现有签名升级源，实际安装版首启到登录页及公网完整下载校验通过，保留 3.0.5 回退包，见上述修复记录。本机后续开发目录为 `D:/项目/FutureStaff/FutureStaff Agent`；安装依赖后运行 `npm run desktop:dev`，开发 Profile 和桌面数据分别保存在该目录 `.dsh/desktop-development`、`.dsh/desktop-dev-user-data`。
+2026-10-21 起，Agent 在笔记本开发、验证和打包，台式机负责其他 FutureStaff 系统。笔记本从 main 新检出，按交接文档安装依赖并使用 `npm run desktop:dev`；旧目录及数据保留。下方 3.0 升级说明和早期模块范围作为历史设计背景，当前接手状态以 [CURRENT](tasks/CURRENT.md) 为准。
 
 ## Agent 3.0 升级（2026-10-11）
 
@@ -16,7 +16,7 @@ The GitHub repository was renamed from `ysq1989/futurestaff-dsh` to `ysq1989/fut
 
 FutureStaff's upgrade-friendly extension layer for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). This repository does **not** fork or patch DSH Core. It composes the official Web bundles in a custom Profile and mounts out-of-tree plugins beside them.
 
-## Scope
+## Initial foundation scope (historical)
 
 - **M0:** boot the official DSH Web surface through `futurestaff-alpha`.
 - **M1:** mount `fs-core`, expose validated FutureStaff identity context, and standardize Tool execution metadata.
@@ -31,19 +31,17 @@ FutureStaff's upgrade-friendly extension layer for [DeepSeek Harness](https://gi
 
 ## Quick start
 
-Requirements: Node.js 22+, npm, Corepack/Yarn, and pnpm (DSH uses pnpm for plugin management; `pnpm dlx` also avoids npm's slow prerelease dependency resolution).
+Requirements: Node.js `^22.19.0 || >=24.0.0`, npm, Corepack/Yarn 4.18.0, and pnpm (DSH uses pnpm for plugin management).
 
-```bash
-npm install
+```powershell
+npm ci
 npm run desktop:install
-cp .env.example .env
 npm run check
-npm run profile:install
-npm run profile:dump
-npm run dev -- --port 3080 --no-open
+npm run release:profile
+npm run desktop:dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env` instead of `cp`. The installer stages the committed Profile under `$DSH_HOME/profiles/futurestaff-alpha`; source files remain in this repository.
+Run desktop development on the laptop. The launcher uses checkout-local `.dsh/desktop-development` and `.dsh/desktop-dev-user-data`; member work files retain the existing ownership policy. Sign in normally. The root `.env.example` is an older Web/Runner template: do not copy its `DSH_*` variables into the graphical launcher. See the handoff for clean-clone setup and data boundaries.
 
 If Windows Application Control blocks DSH's native `sharp` module, run the Docker setup on a Docker-capable host. The Profile can still be verified with `npm run profile:dump`.
 
@@ -54,6 +52,7 @@ If Windows Application Control blocks DSH's native `sharp` module, run the Docke
 | `npm run build` | Build the product workspaces and embedded desktop shell |
 | `npm run check` | Type-check, test, and build the product and embedded desktop shell |
 | `npm run desktop:install` | Install the embedded desktop Yarn workspace immutably |
+| `npm run desktop:dev` | Start the built graphical client with isolated development state on the laptop |
 | `npm run desktop:verify` | Verify the embedded desktop source, product identity, upstream gitlink, and fail-closed defaults |
 | `npm run platform:mock:demo` | Open the loopback B01a login, tenant, and authorized-app panel against A's local Mock |
 | `npm run platform:mock:smoke` | Exercise the pinned platform Mock without starting the graphical shell |

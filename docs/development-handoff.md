@@ -1,105 +1,62 @@
-# FutureStaff Agent 换电脑开发交接
+# FutureStaff Agent 笔记本开发交接
 
-2026-10-17 安装版补充：当前源码及签名升级源为 3.0.7。3.0.6 因 Profile 文件数上限进入恢复模式，已修复并在 staging/afterPack 调用实际启动校验。3.0.7 正式打包客户端以隔离目录首启到登录页，最终 EXE 内主程序及 Profile 与受测资源一致；旧 Profile 升级、自定义代码和会话保留、公网完整下载及签名校验均通过，详见 [修复记录](../tasks/profile-startup-hotfix-307.md)。以下 3.0.6 开发登录及发布描述为此前验证结果，未覆盖出问题的安装版首启。
+更新：2026-10-21。Agent 客户端后续由笔记本开发；台式机负责其他 FutureStaff 系统。本次交接收尾后，不在台式机安装依赖、运行开发客户端或打包 Agent，除非用户另有明确安排。台式机原目录和运行数据保留。
 
-首次交接：2026-10-10；换机核对更新：2026-10-16。文档入口见 [开发文档导航](README.md)。
+## 当前基线
 
-2026-10-17 本机更新：权威 main 已同步至 `D:/项目/FutureStaff/FutureStaff Agent`，旧 `D:/项目/futurestaff-dsh` 仅保留为历史迁移来源。此前旧目录停留在 2026-10-10 的 2.0.21，不能继续作为版本基线。使用 `npm run desktop:dev` 构建并启动当前 3.0.6 客户端，开发 Profile、Harness 会话和 Electron 状态保存在新目录 `.dsh/` 下；智能体工作文件仍遵循既有成员目录策略，本次不迁移。本机 `.env` 不设置上游禁止的 `DSH_*` 启动变量，启动器从进程环境传入。
+| 项目 | 已确认状态 |
+| --- | --- |
+| 权威仓库 | `https://github.com/ysq1989/futurestaff-agent.git`，只使用 `main` |
+| 正式版本 | Windows x64 **3.1.1**，回滚安装包 **3.1.0** 保留 |
+| 发行源码 | `1a7450cf51`，标签 `deploy/desktop/3.1.1-1a7450cf51` |
+| 更新源 | `https://fsstory.net/desktop-updates/stable.json`，既有签名信任不变 |
+| 配套平台 | Platform `85cb673` 已发布，支持 Agent 模型策略协商 1.1；旧 1.0 兼容 |
+| 实际案例 | 同一原生聊天制作咖啡店初稿并修改一次，两版均完整播放，历史版本保留 |
 
-Windows 本机校验需要使用临时目录的完整路径，避免 `ADMINI~1` 短路径与 Host 的规范路径比较失败。只在执行检查的 PowerShell 进程内设置 `$env:TEMP = node -e "process.stdout.write(require('node:fs').realpathSync.native(require('node:os').tmpdir()))"` 和 `$env:TMP = $env:TEMP`，不改系统环境或测试断言。GEO 固定发布源码使用仓库 `.gitattributes` 指定的 LF 字节，保持原 SHA-256 清单校验。
+发行摘要、免费账单核验、原生验收和已知范围见 [3.1.1 交付记录](../tasks/agent-laptop-handoff-20261021.md)。3.0.6/3.0.7 的换机过程移至 [历史交接](development-handoff-20261017.md)，不要据旧日期恢复旧版本。
 
-新目录验证：根工作区类型检查通过；初次组合检查因上述换行及临时短路径夹具退出，修正环境后按失败与未执行范围补齐检查。GEO 12 项、平台 299 项、产品构建、完整桌面门禁和根目录 64 项全部通过；Stable 117 文件/1119 项、Beta 108 文件/1032 项通过，各保留 13 项原有平台条件跳过。实际启动构建后的 3.0.6 到新版登录页，开发窗口保留，未代用户登录或执行业务操作。证据保存在本机 `.local-checks/v306-*.log`，不上传原始运行日志。
+## 笔记本准备与启动
 
-软件内签名升级源已于 2026-10-17 补齐至 3.0.6，外部签名及两个安装包完整摘要均已验证，3.0.5 回退包保留；详见[升级源发布记录](../tasks/in-app-update-306-20261016.md)。以下 2026-10-16 关于尚未切换 feed 的说明保留为当时历史状态。
+在笔记本新建检出目录，路径由该机器自行选择；不要在旧平台快照目录直接拉取客户端历史。客户端仓库为公开仓，Python 后端/Web 历史快照 `ysq1989/FutureStaff-Agent-web` 不是当前 Platform 权威仓。
 
-## 仓库与范围
-
-权威客户端仓库为 `https://github.com/ysq1989/futurestaff-agent.git`，由原 `futurestaff-dsh` 重命名而来，保留原 Git 历史。原先误建的同名平台快照仓库已删除。
-
-后端/Web 历史快照现单独保存于私有仓库 `https://github.com/ysq1989/FutureStaff-Agent-web.git`。本客户端仓库当前为公开，不能上传本机配置、业务资料或登录凭据。两个本机目录原来指向相同 origin，本次已拆分；平台权威身份服务仍属于独立 Platform，不由快照替代。
-
-本次提交保存当前客户端开发工作树，包括抖音模块、主体隔离与推理适配、系统页面导航、桌面模块窗口、测试、规格和任务记录。提交不是软件发布，也不表示各任务的真实网站验收或待办已经完成。
-
-2026-10-16 的换机提交另保存现有 ERP/SHOP 助手、图片与选品流程、Website SSO、主体/会话侧栏、GEO 云端入口和本地发布开发成果，以及相关脚本、测试、品牌与任务记录。每个功能的完成程度以分项任务为准，不能将开发快照视为全部功能已验收。
-
-## 新电脑获取
+需要 Node.js `^22.19.0 || >=24.0.0`、npm、Corepack/Yarn 4.18.0 和 pnpm。锁文件、`desktop-shell/vendor/`、补丁及固定子模块均保留，不更新上游提交。
 
 ```powershell
-git clone --recurse-submodules https://github.com/ysq1989/futurestaff-agent.git FutureStaff-Agent-client
-cd FutureStaff-Agent-client
-git status --short --branch
-git submodule status
-```
-
-必须新建检出目录。不要在此前误拉取的平台快照目录中直接执行 `git pull`，它们不是同一份 Git 历史。
-
-需要 Node.js 22+（以各工程 `engines` 为准）、npm、Corepack/Yarn 和 pnpm。按 README 安装根工程与桌面工程依赖，再执行 `npm run check`。不要手动复制 `node_modules` 或构建输出。
-
-桌面工程当前要求 Node.js `^22.19.0 || >=24.0.0`，Yarn 固定为 `4.18.0`。在克隆目录中执行：
-
-```powershell
+git clone --recurse-submodules https://github.com/ysq1989/futurestaff-agent.git FutureStaff-Agent
+Set-Location FutureStaff-Agent
+git switch main
+git pull --ff-only
+git submodule update --init --recursive
 npm ci
 npm run desktop:install
-# 仅在新机尚无 .env 时复制，随后按需配置，不覆盖现有文件。
-Copy-Item .env.example .env
 npm run check
+npm run release:profile
+npm run desktop:dev
 ```
 
-桌面安装命令同时安装 GEO Web 源码依赖并执行桌面 Yarn immutable 安装。仓库中的 `desktop-shell/vendor/`、锁文件、补丁和固定子模块是可重建依赖的一部分，必须保留；不要因它们属于第三方就删掉。需要进入本机开发 Profile 时再执行 `npm run profile:install`，然后 `npm run dev -- --port 3080 --no-open`。默认端口与数据目录须先确认没有正在使用的实例。
+`check` 编译并验证产品与桌面；`release:profile` 生成桌面启动器要读取的内置 Profile。图形客户端统一从仓库根运行 `npm run desktop:dev`；`npm run dev` 是 Alpha Web 入口。根 `.env.example` 含早期 Web/Runner 配置，不要把其中 `DSH_*` 变量直接照搬到图形启动环境。桌面启动器自行传入进程级目录配置；平台账号在客户端正常登录，使用已有平台模型不需要新增 OpenAI Key。
 
-两个上游子模块均固定提交，不能自动更新到最新分支：
+开发数据位于检出目录的 `.dsh/desktop-development` 与 `.dsh/desktop-dev-user-data`。产品成员工作目录继续遵守当前环境、主体、用户和 Agent 的归属策略；已有 `~/.futurestaff/workspaces/` 路径不会因启动新客户端自动迁移。Windows 临时目录若返回 8.3 别名，按 [历史交接](development-handoff-20261017.md) 的进程级规范路径方法核对，不改系统环境或测试断言。
 
-- `desktop-shell/deepseek-harness`：`a66e4702047846cdaa10c66c9d3df3951f5ea70d`。
-- `official-desktop`：`477b4f420553e8a52c2fbccc464d7561b239c443`，仅为迁移候选；不能把候选当成已经替换默认发行底座。
+## 台式机资料与数据边界
 
-阅读 `docs/development.md`、`tasks/CURRENT.md` 和对应任务文件，区分已完成的源码验证、曾有的本机试运行和仍未完成的验收。只使用 `main`，保留本地工作；真实外部操作、部署、发布和用户数据改动须遵守既有授权边界。
-
-## 配置与本机数据
-
-客户端开发不需要照搬旧平台仓库的 Alembic、PostgreSQL、Redis 初始化流程。仅因更换电脑，不必安装 Docker；确有服务器容器或相应测试需求时再核对依赖。
-
-仓库不包含 `.env`、用户会话、受保护凭据、浏览器账号 Profile、抖音 SQLite 数据、DSH 用户数据或发布签名密钥。按 `.env.example` 建立本机配置；凭据经安全渠道配置，不提交或输出。操作系统保护的凭据不保证可跨电脑复用，优先重新登录。
-
-如需保留历史会话、文件和业务工作区，先确认实际 DSH 数据目录及账号/主体边界，再单独安全迁移。开发源码迁移不等于运行数据已备份。
-
-## 2026-10-16 后续修复与 3.0.6 发布
-
-初次换机快照中的失败已进入后续修复，最新结果以[测试与 PROD 交付记录](../tasks/ci-prod-release-20261016.md)为准。新电脑不要继续将下方历史失败当成当前已确认问题。
-
-当前源码完整 `npm run check` 已通过，包括两套桌面门禁；Stable 1119 项、Beta 1032 项及根目录 64 项通过，Stable/Beta 各保留 13 项原有平台条件跳过。Web 仓库的 Repository Guard 也已通过。安装包 PROD 状态和摘要继续以交付记录为准。
-
-3.0.6 独立 Windows x64 安装包[已发布 PROD](https://fsstory.net/desktop-updates/FutureStaff-Agent-3.0.6-x64-Setup.exe)，外部完整下载与 SHA-256 核对通过。构建源码为 `ee926bbd31e50ebde8ec040d60f5745aaf53b12f`。此为手动下载安装包交付，软件内签名升级源保持原状态，当前旧电脑没有被自动安装覆盖；3.0.5 回退包保留。详细摘要和回退方式见交付记录。
-
-本轮保留原测试超时、业务断言和发布门禁，修复真实浏览器退出/连接回收、过期的版本夹具，并对 4 项既有产品差异逐项复核后更新摘要。3.0.5 公开安装包已核验为回退基线，新包只接受该版本完整匹配的代码清单，不覆盖用户自定义代码、会话或业务文件。
-
-## 2026-10-16 初次换机快照验证（历史记录）
-
-起始客户端 main：`1ef692067e1195c846a4498034a0e585fdce88f0`；推送前重新 fetch，确认与 origin/main 一致。两个固定子模块干净，未升级。完整命令日志只保留旧电脑本地 `work-migration-*.log`，不上传可能含运行上下文的原始日志。
-
-| 检查 | 结果 |
+| 资料 | 位置与处理 |
 | --- | --- |
-| `npm run check` | 未通过：工作区类型检查完成；抖音 UI 的 `test/browser-ui.test.js` 中真实浏览器渲染测试 30 秒超时，此后进程未正常退出。仅终止本次检查创建的进程树，未修改功能或关闭门禁 |
-| `npm run build:product` | 通过，包含各产品工作区构建 |
-| `npm run test -w @futurestaff/fs-platform-access` | 299 项通过 |
-| `npm run test -w @futurestaff/fs-geo` | 12 项通过 |
-| `node --test test/*.test.js` | 64 项通过 |
-| `corepack yarn@4.18.0 --cwd desktop-shell workspace dsh-plugin-desktop typecheck` | 通过 |
-| `corepack yarn@4.18.0 --cwd desktop-shell workspace dsh-plugin-desktop build` | 通过 |
-| 从 `desktop-shell/dsh-plugin-desktop` 运行 `node ../../node_modules/vitest/vitest.mjs run tests/system-views.spec.ts tests/package.spec.ts` | 48 项通过、1 项失败；嵌入页面 11 项全部通过。唯一失败是 package 测试期待 `3.0.2`，当前 manifest 为 `3.0.5` |
-| `npm run check:desktop` | 未通过：`Desktop variant reviewed source changed: electron-runtime.ts`，后续完整桌面门禁未执行 |
-| `node scripts/verify-official-candidate.mjs` | 通过，仅确认固定候选，不代表默认发行底座已切换 |
-| 敏感内容与差异检查 | 候选文件未发现真实凭据，命中项为隔离测试/Mock 字符串；真实配置、会话、数据库和原始日志不进入提交。5 个新增证据脚本仅移除多余文件末尾空行 |
+| 当前源码 | `D:/项目/FutureStaff/FutureStaff Agent`；已推送，笔记本从 Git 获取 |
+| 更早迁移来源 | `D:/项目/futurestaff-dsh`；仅历史参考 |
+| 本次已登录安装版 | `%LOCALAPPDATA%/FutureStaff Agent/{harness,desktop}`；桌面“FutureStaff Agent 新版”只设置进程级路径 |
+| 原有定制环境 | Roaming 配置及旧 `~/.dsh` 原样保留；不能伪称官方原版后强制覆盖 |
+| 原生咖啡成片 | `outputs/video-native-case/{initial,revised}`，本机忽略目录 |
+| 制作与发布证据 | `outputs/video-native-case/`、`outputs/video-agent-v311-*.json`、`work/platform-agent-model-policy-20261021/`，仅按需脱敏交接 |
 
-以上描述首次换机快照当时的状态，后续修复与发布见上方交付记录。历史限制不代表后续任务没有获得授权或没有完成检查。
+源码交接不等于会话、成员工程或凭据迁移。本轮没有复制登录凭据、迁移成员数据或删旧目录。笔记本优先重新登录；如果要迁移完整会话和工程，先确认账户与实际数据根，再关闭写入、单独复制及校验，保留源数据。不要把 `.dsh`、Electron userData、浏览器 Profile、数据库、原始日志或整个 `work/outputs` 提交 Git。
 
-## 2026-10-10 验证（历史记录）
+依赖和制作组件按锁定版本重新准备，不复制 `node_modules` 或组件缓存。可单独拷贝脱敏的咖啡媒体与制作配方作为验收资料；它们不直接覆盖笔记本的成员 Profile。
 
-- `npm run check`：未完全通过。工作区类型检查、测试、产品构建通过；桌面布局检查停在 `verify-desktop-variants.mjs`，稳定版与 Beta 的 9 个源码路径存在未声明差异。
-- `corepack yarn@4.18.0 --cwd desktop-shell workspace dsh-plugin-desktop build`：通过。
-- `corepack yarn@4.18.0 --cwd desktop-shell workspace dsh-plugin-desktop typecheck`：通过。
-- `corepack yarn@4.18.0 --cwd desktop-shell workspace dsh-plugin-desktop test`：114 个测试文件通过，1101 项测试通过，13 项跳过。
-- `node --test test/*.test.js`：64 项通过。
-- `node scripts/verify-official-candidate.mjs`：通过；两个子模块干净，固定提交可从上游获取。
-- 暂存内容的敏感文件检查和 `git diff --cached --check`：通过；配置、凭据、数据库、浏览器 Profile 和本机运行数据未进入提交。
+## 后续开发与发布
 
-桌面差异清单涉及 `electron-runtime.ts`、`electron-shell-generation.ts`、`module-window.ts`、`startup-recovery-window.ts`，以及原生对话框的 HTML、React、CSS 和类型声明。应核对各差异的版本意图并按现有规则修复，不能简单关闭门禁或把未声明差异全部加入允许列表。完整桌面门禁后续阶段未执行；本次保存开发状态，不作为已验收发行物。
+先读 [开发规范](development.md)、[当前任务](../tasks/CURRENT.md) 和对应模块说明。只使用 `main`，保留已有变更，不修改 DSH Core；提交前运行仓库要求的检查。开发和打包在笔记本执行。
+
+正式发布继续使用 [升级机制](specs/desktop-in-app-updates.md) 和 [发布契约](specs/desktop-update-publication.md)。`docs/deployment.md` 中的 Docker 流程属于早期服务端运行形态，不是升级 Windows 客户端的步骤。3.1.1 使用现有 Ed25519 清单签名与安装器字节验证，不把它表述为 Windows Authenticode 签名。
+
+发布私钥、SSH/Git 权限通过安全渠道单独配置，私钥继续放源码树外；不重建公钥信任、不把凭据写进交接包。今后修改 Platform 模型契约时，笔记本客户端与本机负责的平台实现要共同核对兼容性；不能把整个 Platform 工作树当成 Agent 发布内容。
