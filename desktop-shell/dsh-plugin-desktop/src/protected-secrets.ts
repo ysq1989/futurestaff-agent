@@ -2,7 +2,7 @@
 
 import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
-import { chmod, lstat, mkdir, open, unlink } from 'node:fs/promises'
+import { chmod, lstat, mkdir, open, readdir, unlink } from 'node:fs/promises'
 import { isAbsolute, join, resolve } from 'node:path'
 import { withFileLock, writeFileAtomic } from '@deepseek-ai/dsh-atomic-write'
 import type { Context } from '@deepseek-ai/cordis'
@@ -106,11 +106,9 @@ export class FileDesktopProtectedSecrets implements DesktopProtectedSecrets {
     await this.requireProtection()
     try {
       if (!await inspectDirectory(this.#userDataDir)) return undefined
-      if (await inspectState(path) === undefined) return undefined
-      return await withFileLock(path, async () => {
-        const state = await readState(path)
-        return state === undefined ? undefined : await this.open(state)
-      }, { waitMs: 10_000 })
+      // Atomic rename commits complete ciphertext; readers must not acquire writer locks.
+      const state = await readState(path)
+      return state === undefined ? undefined : await this.open(state)
     } catch (cause) {
       if (cause instanceof DesktopProtectedSecretsError) throw cause
       throw secretError('invalid-state', 'protected secret could not be read safely.', cause)
@@ -121,8 +119,7 @@ export class FileDesktopProtectedSecrets implements DesktopProtectedSecrets {
     const path = statePath(this.#userDataDir, key)
     try {
       if (!await inspectDirectory(this.#userDataDir)) return false
-      if (await inspectState(path) === undefined) return false
-      return await withFileLock(path, async () => await inspectState(path) !== undefined, { waitMs: 10_000 })
+      return await inspectState(path) !== undefined
     } catch (cause) {
       if (cause instanceof DesktopProtectedSecretsError) throw cause
       throw secretError('invalid-state', 'protected secret state could not be inspected safely.', cause)
@@ -221,6 +218,54 @@ export class FileDesktopProtectedSecrets implements DesktopProtectedSecrets {
   }
 }
 
+/**
+ * Recover interrupted secret writes only during pre-Host Electron startup.
+ * The caller must already own Electron's single-instance lock for this userData
+ * and must not have started secret writers. That ownership, not PID liveness or
+ * file age, proves these locks belong to a previous service generation (PIDs can
+ * be reused). Other processes and generic atomic-write locks are not recovered.
+ */
+export async function recoverDesktopProtectedSecretLocks(
+  userDataDir: string, ownsExclusiveDesktop: () => boolean,
+): Promise<number> {
+  const requireOwnership = () => {
+    if (!ownsExclusiveDesktop()) throw secretError('invalid-state', 'exclusive Desktop startup ownership is required.')
+  }
+  requireOwnership()
+  if (!isAbsolute(userDataDir) || /[\0\r\n]/u.test(userDataDir)) {
+    throw secretError('invalid-state', 'protected secret userData path is invalid.')
+  }
+  try { if (!await inspectDirectory(userDataDir)) return 0 }
+  catch (cause) { if ((cause as NodeJS.ErrnoException).code === 'ENOENT') return 0; throw cause }
+  const directory = join(userDataDir, DIRECTORY_NAME)
+  let recovered = 0
+  for (const name of await readdir(directory)) {
+    if (!/^[0-9a-f]{64}\.json\.lock$/u.test(name)) continue
+    const lock = join(directory, name)
+    const info = await inspectState(lock)
+    if (!info) continue
+    if (info.size > 32) throw secretError('invalid-state', 'credential writer lock is malformed.')
+    const handle = await open(lock, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
+    try {
+      const opened = await handle.stat()
+      if (opened.dev !== info.dev || opened.ino !== info.ino || !opened.isFile()) {
+        throw secretError('invalid-state', 'credential writer lock changed while opening.')
+      }
+      if (!/^[1-9][0-9]*\n$/u.test(await handle.readFile('utf8'))) {
+        throw secretError('invalid-state', 'credential writer lock is malformed.')
+      }
+    } finally { await handle.close() }
+    requireOwnership()
+    const current = await inspectState(lock)
+    if (!current || current.dev !== info.dev || current.ino !== info.ino) {
+      throw secretError('invalid-state', 'credential writer lock changed before recovery.')
+    }
+    await unlink(lock)
+    recovered++
+  }
+  return recovered
+}
+
 async function prepareDirectory(userDataDir: string): Promise<void> {
   const userDataInfo = await lstat(userDataDir)
   if (!userDataInfo.isDirectory() || userDataInfo.isSymbolicLink()) {
@@ -273,13 +318,14 @@ async function inspectState(path: string): Promise<Awaited<ReturnType<typeof lst
   }
 }
 
-async function readState(path: string): Promise<PersistedSecretV1 | undefined> {
+async function readState(path: string, attempt = 0): Promise<PersistedSecretV1 | undefined> {
   const inspected = await inspectState(path)
   if (inspected === undefined) return undefined
   const handle = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
   try {
     const opened = await handle.stat()
     if (!opened.isFile() || opened.dev !== inspected.dev || opened.ino !== inspected.ino) {
+      if (attempt < 3) return readState(path, attempt + 1)
       throw secretError('invalid-state', 'protected secret state changed while opening.')
     }
     const bytes = Buffer.alloc(MAX_STATE_BYTES + 1)

@@ -84,6 +84,7 @@ import {
 import { DesktopActionsService } from './desktop-actions.ts'
 import {
   FileDesktopProtectedSecrets,
+  recoverDesktopProtectedSecretLocks,
   type DesktopSecretProtector,
 } from './protected-secrets.ts'
 import { clearDesktopProfilePluginState, DesktopPluginsService } from './desktop-plugins.ts'
@@ -623,6 +624,10 @@ async function start(): Promise<void> {
   })
   try {
     await app.whenReady()
+    const recoveredSecretLocks = await recoverDesktopProtectedSecretLocks(desktopUserDataDir, () => app.hasSingleInstanceLock())
+    if (recoveredSecretLocks > 0) {
+      try { logSink?.write('info', JSON.stringify({ event: 'desktop_credential_locks_recovered', generationId, count: recoveredSecretLocks })) } catch { /* best-effort diagnostics */ }
+    }
     startupStage = 'shell-environment'
     lifecycleRecorder.transitionStartupStage(startupStage)
     if (process.platform === 'win32') app.setAppUserModelId(DESKTOP_APP_ID)
