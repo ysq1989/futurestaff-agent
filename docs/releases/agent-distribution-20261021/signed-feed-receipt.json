@@ -1,0 +1,22 @@
+{
+  "version": "3.2.0",
+  "rollbackVersion": "3.1.1",
+  "manifestSignatureVerified": true,
+  "originalTrustPreserved": true,
+  "updateFrom311Available": true,
+  "artifacts": [
+    {
+      "url": "https://fsstory.net/desktop-updates/FutureStaff-Agent-3.2.0-x64-Setup.exe",
+      "size": 140037670,
+      "sha256": "5698e2b7809bb871218c8391b5cf1fb5164ebfba228d4ff8a651f1a40d698e54",
+      "httpsFullDownloadVerified": true
+    },
+    {
+      "url": "https://fsstory.net/desktop-updates/FutureStaff-Agent-3.1.1-x64-Setup.exe",
+      "size": 140016874,
+      "sha256": "749c80826f2fea74a22459c7880354f0edf4d5129cfca4ae94d4838aabc01a4b",
+      "httpsFullDownloadVerified": true
+    }
+  ],
+  "privateKeyUploaded": false
+}
