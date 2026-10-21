@@ -2,7 +2,7 @@
 
 日期：2026-10-21。候选版本：客户端 3.2.0；分发契约 2.0.0；平台迁移 `202610211000_agent_releases`。
 
-**状态：两端源码与本地隔离业务闭环完成，尚未提交、部署或交付新安装版。完整上线验收未完成。**
+**当前状态：Platform 1.13.0 已部署 PROD，客户端3.2.0已公开手动下载；完整真实用户业务验收仍未完成。文末记录本次发布结果，以下本地验证段保留当时证据。**
 
 ## 已实现
 
@@ -52,3 +52,19 @@ V1 使用主动检查和显式更新，不做静默自动激活。单个 Host �
 - 平台：受影响 `test_desktop*.py`、`test_auth_service_tokens.py`、`test_agent_business_scope_contract.py`、`test_agent_distribution*.py`、`test_erp_agent.py`、`test_erp_desktop_binding.py`；使用独立 `--basetemp`。
 - 跨仓：在 Platform 设置 `AGENT_CLIENT_WORKSPACE` 为客户端绝对路径，再运行 `backend/tests/test_agent_distribution_journey.py`。
 - 平台 UI：在客户端设置 `AGENT_PLATFORM_WORKSPACE` 为平台绝对路径，再运行 `plugins/fs-platform-access/test/platform-publication-browser.test.js`。不设置另一仓路径时仅该跨仓 UI 用例会明确跳过。
+
+## PROD 发布结果（后续授权，覆盖前文发布状态）
+
+用户明确授权“直接推送部署到prod”。两仓已提交并推送 main。平台 1.13.0（产品源码 `5b83554681d4`）已部署，generation63 / Schema9，实际迁移叶 `202610211020_prod_agent_releases`。API 健康、Web index 和全部入口 JS/CSS 均与候选构建一致；其他系统容器未切换。DEV 未修改。
+
+客户端 3.2.0（`35736438fde1`）安装包已公开：[Windows x64 下载](https://fsstory.net/desktop-updates/FutureStaff-Agent-3.2.0-x64-Setup.exe)。140037670 字节，SHA-256 `5698e2b7809bb871218c8391b5cf1fb5164ebfba228d4ff8a651f1a40d698e54`，公网完整下载复验通过。3.1.1 回滚安装包保留。当前机器缺少既有 Ed25519 私钥，因此**签名更新源仍为 3.1.1，3.2.0 需手动下载安装**；未替换信任或签名密钥。Windows 安装包沿用现有无 Authenticode 签名交付方式。
+
+平台在生产侧内部网络恢复真实 PostgreSQL 备份，精确迁移前后七张既有表计数/内容摘要一致，`upgrade head` 被保护器拒绝。真实 Redis/JWT/ORM 认证依赖下的发布、下载摘要、草稿隔离、历史版本、跨主体/管理权限、停用与撤权均通过。正式迁移再次备份并确认相同数据保留。测试身份只在隔离恢复库创建，隔离容器和数据卷已删除，备份保留在服务器私有发布目录。
+
+桌面追加门禁：Windows 打包 191 tests passed；Linux 链接安全 38 passed；Beta 完整 check、closure/CLI/loader/Profile/licenses/operations 通过。正式包对应的 unpacked 原生 Electron 在独立 Harness/UserData 冷启动成功，全页设置和品牌栏正常；未覆盖当前安装目录或现有会话/工程。官方 3.1.1 的206项代码清单已逐项校验，升级保护只匹配官方旧代码。
+
+发布脚本中诊断文件名、Python 导入路径、回执解析、分阶段清单和目标域名检查的问题已修复并推送。首次应用切换因误检查官网健康地址自动回滚；第二次基于回滚后镜像与容器基线成功切换，CAS 保护未关闭。数据库未 downgrade。
+
+**验收边界：**上述业务验收使用隔离恢复库夹具，不是实际用户 SSO/真实供应商推理。当前没有完成“在现有账号安装覆盖后续聊旧会话、打开原工程、真实模型/图片/视频/业务写操作”的最终人工业务验收；不标记完整业务验收通过。既有数据未迁移或删改，本地回归已覆盖保留规则。后续用实际账号登录3.2.0完成该清单，不能把本次健康检查和原生冷启动代替它。
+
+结构化证据：[发布回执](releases/agent-distribution-20261021/production-receipt.json)。安装包及原始日志在忽略的 `outputs/`、`output/agent-distribution/` 下，不提交数据库备份、凭据或真实对话。

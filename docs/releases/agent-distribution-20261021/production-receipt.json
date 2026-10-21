@@ -1,0 +1,106 @@
+{
+  "version": "3.2.0",
+  "sourceCommit": "35736438fde105d027d3877cceb955909e5d217b",
+  "bytes": 140037670,
+  "sha256": "5698e2b7809bb871218c8391b5cf1fb5164ebfba228d4ff8a651f1a40d698e54",
+  "downloadUrl": "https://fsstory.net/desktop-updates/FutureStaff-Agent-3.2.0-x64-Setup.exe",
+  "signedFeedVersion": "3.1.1",
+  "signedFeedChanged": false,
+  "rollbackInstaller": "3.1.1",
+  "httpsFullDownloadVerified": true,
+  "native": {
+    "version": "3.2.0",
+    "isolatedUserData": true,
+    "title": "FutureStaff Agent",
+    "settingsPage": true,
+    "categories": [
+      "FutureStaff",
+      "閫氱敤璁剧疆"
+    ],
+    "visibleBody": true
+  },
+  "platform": {
+    "production-migration.json": {
+      "passed": true,
+      "from": "202610181010_prod_erp_ext_keys",
+      "to": "202610211020_prod_agent_releases",
+      "protectedTables": 7,
+      "existingDataPreserved": true,
+      "rehearsal": false
+    },
+    "production-verification.json": {
+      "deployed": true,
+      "version": "1.13.0",
+      "sourceCommit": "5b83554681d4956add1081410bc80e503976d0f8",
+      "siblingContainersPreserved": true
+    },
+    "validation-rehearsal.json": {
+      "passed": true,
+      "from": "202610181010_prod_erp_ext_keys",
+      "to": "202610211020_prod_agent_releases",
+      "protectedTables": 7,
+      "existingDataPreserved": true,
+      "rehearsal": true
+    },
+    "validation-probe.json": {
+      "passed": true,
+      "checks": [
+        "authenticated-publish",
+        "authenticated-download-integrity",
+        "draft-isolation-and-retained-release",
+        "tenant-and-manage-boundaries",
+        "stop-blocks-retained-release",
+        "revocation"
+      ],
+      "realPostgres": true,
+      "realRedis": true,
+      "realAuthenticationDependencies": true,
+      "externalProviderCalls": 0
+    },
+    "platform.json": {
+      "generation": 63,
+      "sourceCommit": "5b83554681d4956add1081410bc80e503976d0f8",
+      "schemaGeneration": 9,
+      "releaseId": "prod-agent-distribution-1.13.0-20261021-5b835546",
+      "manifestDigest": "sha256:c3f1e6ad6f457713ec689d8dc01339b8f5f4e20b66b3ce626d2bbd4e11a6369c",
+      "artifactDigests": {
+        "PLATFORM_BACKEND_IMAGE": "sha256:3b687f8b683d4bb5a5f6779e518504c422b091798311a4b23e31219b2a9f9ea8",
+        "PLATFORM_FRONTEND_IMAGE": "sha256:11d0d16f49875c6fb1fbf4d105b7583883433e46f58fe7076900b0a4e374884e",
+        "AGENT_DISTRIBUTION_MIGRATION_IMAGE": "sha256:3b687f8b683d4bb5a5f6779e518504c422b091798311a4b23e31219b2a9f9ea8"
+      }
+    },
+    "schema.json": {
+      "generation": 9,
+      "sourceCommit": "5b83554681d4956add1081410bc80e503976d0f8"
+    },
+    "runnerCommit": "d72a7f34b48885d70353b88b51cf2251c960d1fe",
+    "publicChecks": [
+      {
+        "url": "https://platform.fsstory.net/api/health",
+        "status": 200,
+        "sha256": "119d41592985166ea8c34ab6f836e06c0b76394982f6eb7a482469b30fa7377e",
+        "response": {
+          "status": "ok",
+          "version": "1.13.0"
+        }
+      },
+      {
+        "url": "https://platform.fsstory.net/desktop/v1/agent-distribution",
+        "status": 401,
+        "sha256": "d2502302c5781408474f6ddcff0d290071a6f4e23be4a5b76d107f520207f935"
+      },
+      {
+        "url": "https://platform.fsstory.net/api/auth/providers",
+        "status": 200,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "url": "https://platform.fsstory.net/",
+        "status": 200,
+        "sha256": "2de8d06e4ada6edf0d3919d9b38d77947054fb767f9163e5d91026893a40b045",
+        "matchesBuiltIndex": true,
+        "allEntryAssetsMatchBuild": true
+      }
+    ]
+  }
+}
