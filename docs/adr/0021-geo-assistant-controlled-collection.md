@@ -1,6 +1,6 @@
 # ADR-0021：GEO 助手与受控网页采集
 
-2026-10-21。状态：用户已接受，豆包首期本地真实采集与隔离 GEO 回传验收通过；尚未发布/安装新版本。详见 GEO 仓 `docs/GEO_ASSISTANT_VALIDATION_20261021.md`。
+2026-10-21。状态：用户已接受，豆包首期本地真实采集与隔离 GEO 回传验收通过；3.3.0 已安装本机并完成账号、Loader 和重启验收，公开更新源未切换。线上完整采集尚待 GEO 接口和助手资源发布。详见本仓 `docs/validation/geo-assistant-3.3.0-20261021.md` 及 GEO 仓 `docs/GEO_ASSISTANT_VALIDATION_20261021.md`。
 
 复用 fs-geo 承载 GEO 助手工具域，不另建 Agent Runtime 或本地业务库。GEO 云端拥有任务、原文、引用、截图和效果报告；Host 逐次验证 Platform 身份、Agent GEO 业务范围和 GEO 应用权限，使用专用隔离浏览器与持久任务日志。
 
