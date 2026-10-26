@@ -13,7 +13,25 @@ const noTaskSnapshot = {epoch: 0, binding: null, candidates: [] as TaskSuggestio
 const noTaskSubscription = () => () => {}
 
 const names: Record<CandidateDomain, string> = {enterprise_knowledge: '企业知识候选', platform_product_feedback: '产品反馈'}
-const css = `.fs-candidate-dock{min-width:0;max-width:100%;font-size:13px;color:var(--text-primary)}.fs-candidate-dock summary{cursor:pointer;padding:8px;color:var(--text-secondary)}.fs-candidate-dock label{display:block;margin:10px 0}.fs-candidate-dock textarea,.fs-candidate-dock input[type=text],.fs-candidate-dock select{width:100%;max-width:100%;padding:8px;color:var(--text-primary);background:var(--bg-primary);border:1px solid var(--border-default);border-radius:6px;font:inherit}.fs-candidate-dock textarea{min-height:84px;resize:vertical}.fs-candidate-dock :focus-visible{outline:2px solid var(--accent-primary);outline-offset:2px}.fs-candidate-dock pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}.fs-candidate-dock .fs-candidate-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fs-candidate-dock .fs-candidate-evidence{color:var(--text-secondary)}.fs-candidate-dock input[type=checkbox]{accent-color:var(--accent-primary);margin-right:6px}.fs-candidate-dock p{overflow-wrap:anywhere}@media(max-width:640px){.fs-candidate-dock .fs-candidate-fields{grid-template-columns:1fr}.fs-candidate-dock summary{min-height:44px}}`
+const css = `
+.fs-candidate-dock{box-sizing:border-box;flex:none;min-width:0;width:calc(100% - var(--dsh-composer-side-clearance,16px) - var(--dsh-composer-side-clearance,16px) - 4 * var(--dsh-composer-dock-inset,8px));max-width:calc(var(--dsh-composer-card-max-width,832px) - 4 * var(--dsh-composer-dock-inset,8px));margin:0 auto;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-primary);font-size:13px;line-height:1.5;color:var(--text-primary);overflow-wrap:anywhere}
+.fs-candidate-dock *{box-sizing:border-box;min-width:0}
+.fs-candidate-dock>summary{cursor:pointer;min-height:36px;padding:8px 12px;color:var(--text-secondary);font-weight:500;border-radius:inherit}
+.fs-candidate-dock[open]>summary{border-bottom:1px solid var(--border-default);border-radius:8px 8px 0 0}
+.fs-candidate-dock__body{max-height:min(var(--dsh-composer-text-max-height,336px),32dvh);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:12px}
+.fs-candidate-dock summary{cursor:pointer;color:var(--text-secondary)}
+.fs-candidate-dock label{display:block;margin:10px 0}
+.fs-candidate-dock textarea,.fs-candidate-dock input[type=text],.fs-candidate-dock select{box-sizing:border-box;width:100%;max-width:100%;padding:8px;color:var(--text-primary);background:var(--bg-primary);border:1px solid var(--border-default);border-radius:6px;font:inherit}
+.fs-candidate-dock textarea{min-height:84px;max-height:160px;resize:vertical}
+.fs-candidate-dock :focus-visible{outline:2px solid var(--accent-primary);outline-offset:2px}
+.fs-candidate-dock>summary:focus-visible{outline-offset:-3px}
+.fs-candidate-dock pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+.fs-candidate-dock .fs-candidate-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fs-candidate-dock .fs-candidate-evidence{color:var(--text-secondary)}
+.fs-candidate-dock input[type=checkbox]{accent-color:var(--accent-primary);margin-right:6px}
+.fs-candidate-dock p{overflow-wrap:anywhere}
+@media(max-width:640px){.fs-candidate-dock .fs-candidate-fields{grid-template-columns:1fr}.fs-candidate-dock>summary{min-height:44px}}
+`
 
 /** Confirmed sanitized previews use a separate local key; this storage never grants Platform permission. */
 function storageKey(owner: CandidateOwner): string { return 'futurestaff.governance.local.v1:' + JSON.stringify([owner.tenantId, owner.actorId]) }
@@ -124,6 +142,7 @@ function ScopedWorkbench({owner, sessionId, storage, taskSource, taskCandidates,
   }
   return <details className="fs-candidate-dock">
     <style>{css}</style><summary>候选草稿{taskCandidates.length ? ` · ${taskCandidates.length} 项任务建议` : ''}</summary>
+    <div className="fs-candidate-dock__body" role="region" aria-label="候选草稿内容" tabIndex={0}>
     <MessageCardNotice>桌面提交未连接。仅保存本地候选；平台接收域、可见成员与权限须另行核验。</MessageCardNotice>
     <section aria-label="当前任务建议" data-task-suggestions-status={taskStatus}>
       <p>{!taskSource || ['disabled', 'not_connected'].includes(taskStatus) ? '当前任务建议未开启，可信事件桥未连接。' : taskStatus === 'ready' ? taskCandidates.length ? '当前任务已结束，建议已合并。请核对来源与分享范围后决定。' : '当前任务已结束，暂无待核对建议。' : taskStatus === 'listening' ? '当前任务建议：等待任务结束后统一整理，不逐句打断。' : taskStatus === 'summarizing' ? '正在合并本次任务建议…' : '本次任务建议已停止，未确认内容已清理。'}</p>
@@ -147,6 +166,7 @@ function ScopedWorkbench({owner, sessionId, storage, taskSource, taskCandidates,
         <pre>{entry.draft.content}</pre><DraftCompatibilityNotice draft={entry.draft}/><CandidateConsentControls draft={entry.draft} source={windowClient}/><p>当前仅本机当前账号可见。恢复后需重新确认，平台权限尚未核验。</p>
       </MessageCard>
     </section>)}
+    </div>
   </details>
 }
 

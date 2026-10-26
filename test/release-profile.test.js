@@ -143,8 +143,34 @@ test('pins the release runtime and platform contract in the staged manifest', as
     assert.ok(result.releaseManifest.supersedes.includes(unpublishedCandidate.manifestDigest))
     assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
       JSON.stringify(files) === JSON.stringify(unpublishedCandidate.platformFiles)))
+    assert.ok(result.releaseManifest.supersedes.includes(
+      '88ccdaefb4c311788036cd5e6aadbf5e11ba14e4de99b9a67d41e86a387d7e15'),
+    'future releases recognize the published 3.3.2 Profile by its exact manifest digest')
+    const stockDesktop = JSON.parse(await readFile(path.join(root, 'profile', 'workspace-upgrade-3.3.2.json'), 'utf8'))
+    const dockRepair = JSON.parse(await readFile(path.join(root, 'profile', 'workspace-upgrade-3.3.2-candidate-dock-ui.json'), 'utf8'))
+    assert.equal(stockDesktop.manifestDigest, '88ccdaefb4c311788036cd5e6aadbf5e11ba14e4de99b9a67d41e86a387d7e15')
+    assert.equal(stockDesktop.installerSha256, '2999cc77057003cb5a2bc3d2973a9fc70907231e5a795977044adbeb117e6f9a')
+    assert.equal(stockDesktop.version, '3.3.2')
+    assert.equal(dockRepair.version, '3.3.2')
+    assert.notEqual(dockRepair.manifestDigest, stockDesktop.manifestDigest,
+      'a local UI repair has a distinct exact manifest despite retaining the desktop version')
+    assert.equal(Object.keys(stockDesktop.platformFiles).length, 323)
+    assert.deepEqual(Object.keys(dockRepair.platformFiles).sort(), Object.keys(stockDesktop.platformFiles).sort(),
+      'the local UI repair neither adds nor removes managed Platform files')
+    const platformPrefix = 'node_modules/@futurestaff/fs-platform-access/lib/'
+    assert.deepEqual(Object.keys(stockDesktop.platformFiles).filter(file => stockDesktop.platformFiles[file] !== dockRepair.platformFiles[file]).sort(),
+      ['client.js', 'client.js.map', 'client/governance-candidates.js', 'client/governance-candidates.js.map'].map(file => platformPrefix + file).sort(),
+      'the audited local tree differs from stock only in the four approved client artifacts')
+    assert.equal(dockRepair.platformPackageSha256, stockDesktop.platformPackageSha256,
+      'the local UI repair preserves the published Platform package manifest')
+    for (const previous of [stockDesktop, dockRepair]) {
+      assert.ok(result.releaseManifest.supersedes.includes(previous.manifestDigest))
+      assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
+        JSON.stringify(files) === JSON.stringify(previous.platformFiles)))
+    }
     assert.deepEqual(result.releaseManifest.workspacePreviousPlatformPackageHashes,
-      [interactionDesktop.platformPackageSha256, ...interactionDesktop.additionalPlatformPackageHashes, unpublishedCandidate.platformPackageSha256])
+      [...new Set([interactionDesktop.platformPackageSha256, ...interactionDesktop.additionalPlatformPackageHashes,
+        unpublishedCandidate.platformPackageSha256, stockDesktop.platformPackageSha256, dockRepair.platformPackageSha256])])
     assert.ok(result.releaseManifest.workspacePreviousGeoInventories.some(files =>
       JSON.stringify(files) === JSON.stringify(geoAssistantDesktop.geoFiles)))
     // Keep the stock 3.3.0 UI lineage even after rebuilding today's current UI.
