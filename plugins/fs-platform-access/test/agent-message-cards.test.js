@@ -52,6 +52,27 @@ test('cancel can skip required fields; expired/aborted cards cannot act',async()
  const c=setup(),w=await c.cards.present(content(),'session');c.abort();await assert.rejects(c.cards.respond(w.viewId,'session','cancel',{}))
 })
 
+test('authorized hot expiry can recover the durable answer without downgrading owner or policy failures',async()=>{
+ let now=100,owner='tenant:user',policy='original-policy',reads=0,deliveries=0,archived
+ const signal=new AbortController().signal
+ const cards=new AgentMessageCards(async()=>({owner,policy,signal}),async()=>{deliveries++;return true},{now:()=>now,ttlMs:1000,readHistory:async(viewId,sessionId)=>{
+  reads++;assert.equal(viewId,archived.viewId);assert.equal(sessionId,archived.sessionId)
+  return {...structuredClone(archived),expiresAt:now}
+ }})
+ const view=await cards.present(content(),'original-session')
+ archived=await cards.respond(view.viewId,view.sessionId,'send',{note:'持久原回答'})
+ now+=1001
+ owner='foreign';await assert.rejects(cards.view(view.viewId,view.sessionId),/AGENT_CARD_FORBIDDEN/)
+ owner='tenant:user';policy='changed-policy';await assert.rejects(cards.view(view.viewId,view.sessionId),/AGENT_CARD_FORBIDDEN/)
+ assert.equal(reads,0)
+ policy='original-policy'
+ const historical=await cards.view(view.viewId,view.sessionId)
+ assert.equal(historical.response.values.note,'持久原回答');assert.equal(historical.expiresAt,now);assert.equal(reads,1)
+ await assert.rejects(cards.retry(view.viewId,view.sessionId),/AGENT_CARD_EXPIRED/)
+ await assert.rejects(cards.respond(view.viewId,view.sessionId,'send',{note:'持久原回答'}),/AGENT_CARD_EXPIRED/)
+ assert.equal(deliveries,1);assert.equal(reads,1)
+})
+
 test('unavailable return channel preserves original answer; view is read-only and retry only reuses original event',async()=>{
  let available=false,calls=[],abort=new AbortController()
  const cards=new AgentMessageCards(async()=>({owner:'a',policy:'a',signal:abort.signal}),async v=>{calls.push(v.response.eventId);return available})

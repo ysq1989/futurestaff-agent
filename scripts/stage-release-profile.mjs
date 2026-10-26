@@ -181,15 +181,16 @@ export async function stageReleaseProfile(options = {}) {
   // Frozen, independently audited local 3.3.0 repairs are an exact release
   // baseline. Never derive these hashes from the machine running this builder.
   const interactionDesktop = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.3.0-interactions.json'), 'utf8'))
+  const unpublishedCandidate = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.3.1.json'), 'utf8'))
   const releaseManifest = {
     schemaVersion: 1,
     profile: profileName,
     productVersion: profileManifest.version,
     dshVersion: '0.1.2-rc.1',
-    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? []), videoUpgrade.manifestDigest, previousDesktop.manifestDigest, geoDesktop.manifestDigest, geoAssistantDesktop.manifestDigest, interactionDesktop.manifestDigest],
+    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? []), videoUpgrade.manifestDigest, previousDesktop.manifestDigest, geoDesktop.manifestDigest, geoAssistantDesktop.manifestDigest, interactionDesktop.manifestDigest, unpublishedCandidate.manifestDigest],
     workspacePreviousFiles: workspaceUpgrade.files,
-    workspacePreviousInventories: [...(workspaceUpgrade.inventories ?? []), videoUpgrade.platformFiles, previousDesktop.platformFiles, geoDesktop.platformFiles, geoAssistantDesktop.platformFiles, interactionDesktop.platformFiles],
-    workspacePreviousPlatformPackageHashes: [interactionDesktop.platformPackageSha256, ...(interactionDesktop.additionalPlatformPackageHashes ?? [])],
+    workspacePreviousInventories: [...(workspaceUpgrade.inventories ?? []), videoUpgrade.platformFiles, previousDesktop.platformFiles, geoDesktop.platformFiles, geoAssistantDesktop.platformFiles, interactionDesktop.platformFiles, unpublishedCandidate.platformFiles],
+    workspacePreviousPlatformPackageHashes: [interactionDesktop.platformPackageSha256, ...(interactionDesktop.additionalPlatformPackageHashes ?? []), unpublishedCandidate.platformPackageSha256],
     workspacePreviousGeoInventories: [geoDesktop.geoFiles, geoAssistantDesktop.geoFiles],
     workspacePreviousVideoFiles: videoUpgrade.videoFiles,
     platformContract: foundation.platformContract,

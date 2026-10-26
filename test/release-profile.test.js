@@ -138,8 +138,13 @@ test('pins the release runtime and platform contract in the staged manifest', as
     assert.ok(result.releaseManifest.supersedes.includes(interactionDesktop.manifestDigest))
     assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
       JSON.stringify(files) === JSON.stringify(interactionDesktop.platformFiles)))
+    const unpublishedCandidate = JSON.parse(await readFile(path.join(root, 'profile', 'workspace-upgrade-3.3.1.json'), 'utf8'))
+    assert.equal(Object.keys(unpublishedCandidate.platformFiles).length, 320)
+    assert.ok(result.releaseManifest.supersedes.includes(unpublishedCandidate.manifestDigest))
+    assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
+      JSON.stringify(files) === JSON.stringify(unpublishedCandidate.platformFiles)))
     assert.deepEqual(result.releaseManifest.workspacePreviousPlatformPackageHashes,
-      [interactionDesktop.platformPackageSha256, ...interactionDesktop.additionalPlatformPackageHashes])
+      [interactionDesktop.platformPackageSha256, ...interactionDesktop.additionalPlatformPackageHashes, unpublishedCandidate.platformPackageSha256])
     assert.ok(result.releaseManifest.workspacePreviousGeoInventories.some(files =>
       JSON.stringify(files) === JSON.stringify(geoAssistantDesktop.geoFiles)))
     // Keep the stock 3.3.0 UI lineage even after rebuilding today's current UI.

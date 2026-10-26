@@ -41,3 +41,8 @@ Host 产生 schemaVersion=1、module=agent-card、kind=message、随机 viewId�
 ```
 
 回答会以 `futurestaff.card.response` 插件消息进入原会话，含原卡片 viewId、固定 eventId、actionId/actionLabel 和 values；模型不传接收人、tenantId 或任意后端动作。通用协议供业务扩展通过 `@futurestaff/fs-platform-access/message-card-contract` 引用；视觉外壳继续从已有 `./message-cards` 引用。实现与验收见[本轮报告](../validation/agent-message-cards-20261026.md)。
+## 冷启动与历史回答补充（3.3.2）
+
+3.3.1实机重启暴露了live Session与冷历史查询混用、初始身份恢复后不重新读取，以及持久化回答未投影回卡片的问题。历史读取必须由当前成员Profile内的权威会话查询验证原始工具调用/结果，并仅接纳同会话同卡片、来源明确为Host卡片插件的结构化回答。历史可显示原内容与已提交回答，所有动作保持只读；不能从文本伪造能力、重建旧registry、延长时效或自动启动Agent。
+
+身份恢复未完成时不请求卡片；身份变更立即清除旧显示并丢弃迟到响应，恢复或切换完成后只重新请求Host读取授权。只有实际用户操作才允许原live能力的respond/retry，真实禁止访问与未知结果仍保留原有边界。

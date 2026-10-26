@@ -6,12 +6,12 @@ import {createServer} from 'node:http'
 
 const built=await build({entryPoints:[fileURLToPath(new URL('../src/agent-message-card-host.ts',import.meta.url))],bundle:true,write:false,platform:'node',format:'esm'})
 const {mountAgentMessageCards}=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].text).toString('base64'))
-async function bench(t) {
+async function bench(t,{cold=false,history}={}) {
  let route,definition,disposed,owner='tenant:user',policy='default',abort=new AbortController(),received=[]
  const cleanup=[],agent={id:'native-session',followup:input=>{received.push(input)}},active=new Map([[agent.id,agent]])
  const ctx={on:(name,fn)=>{if(name==='agent/disposed')disposed=fn},effect:factory=>{const c=factory();if(typeof c==='function')cleanup.push(c)},
   get:key=>key==='agents'?active:undefined,webServer:{register:r=>{route=r;return()=>{}}},inject:(_deps,callback)=>callback({effect:ctx.effect,tools:{register:d=>{definition=d;return()=>{}}}})}
- mountAgentMessageCards(ctx,async()=>({owner,policy,signal:abort.signal}))
+ mountAgentMessageCards(ctx,async()=>{if(cold)throw Error('AGENT_CARD_SESSION_REQUIRED');return {owner,policy,signal:abort.signal}},history)
  const server=createServer((req,res)=>route.handler(req,res))
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve))
  t.after(async()=>{for(const c of cleanup.reverse())c();server.closeAllConnections();await new Promise(resolve=>server.close(resolve))})
@@ -20,6 +20,21 @@ async function bench(t) {
  return {definition,agent,received,post,origin,active,route,dispose:()=>disposed({agent}),setOwner:x=>{owner=x},setPolicy:x=>{policy=x},abort:()=>abort.abort()}
 }
 const options=()=>({title:'请选择下一步',description:'普通 Agent 的通用卡片',actions:[{id:'compare',label:'比较方案'}]})
+
+test('cold history view is read-only while answer and retry still require the live capability',async t=>{
+ let reads=0
+ const view={schemaVersion:1,module:'agent-card',kind:'message',viewId:'00000000-0000-4000-8000-000000000001',sessionId:'native-session',title:'历史选择',expiresAt:0,data:{title:'历史选择',actions:[{id:'compare',label:'比较方案'}]}}
+ const b=await bench(t,{cold:true,history:async(viewId,sessionId)=>{reads++;assert.equal(viewId,view.viewId);assert.equal(sessionId,view.sessionId);return structuredClone(view)}})
+ const base={viewId:view.viewId,sessionId:view.sessionId}
+ const restored=await b.post({action:'view',...base})
+ assert.equal(restored.status,200)
+ assert.deepEqual(restored.data,view)
+ for(const action of ['respond','retry']){
+  const result=await b.post({action,...base,...(action==='respond'?{actionId:'compare',values:{}}:{})})
+  assert.equal(result.status,400);assert.equal(result.data.error,'AGENT_CARD_SESSION_REQUIRED')
+ }
+ assert.equal(reads,1);assert.equal(b.received.length,0)
+})
 
 test('real Host tool and HTTP card answer are fixed to the generating Agent and delivered only once',async t=>{
  const b=await bench(t)

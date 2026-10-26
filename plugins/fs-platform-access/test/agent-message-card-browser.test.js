@@ -32,6 +32,7 @@ test('generic cards validate, deliver once, recover unknown results, preserve re
  const ordinaryFetch=window.fetch;window.fetch=async(url,init)=>{
   if(url!=='/_futurestaff/message-card')return ordinaryFetch(url,init);
   const request=JSON.parse(init.body);window.requests.push(request);
+  if(owner!=='tenant-a:user-a')return Response.json({error:'AGENT_CARD_FORBIDDEN'},{status:403});
   if(window.mode==='forbidden')return Response.json({error:'AGENT_CARD_FORBIDDEN'},{status:403});
   if(window.mode==='expired')return Response.json({error:'AGENT_CARD_EXPIRED'},{status:400});
   if(window.mode==='invalid'&&request.action==='respond')return Response.json({error:'AGENT_CARD_RESPONSE_INVALID'},{status:400});

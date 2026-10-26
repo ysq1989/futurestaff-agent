@@ -14,7 +14,7 @@ export class AgentMessageCards {
   constructor(
     private authorize: (sessionId: string) => Promise<AgentCardIdentity>,
     private deliver: (view: AgentMessageCardView, owner: string) => Promise<boolean>,
-    options: {now?: () => number; ttlMs?: number} = {},
+    private options: {now?: () => number; ttlMs?: number; readHistory?: (viewId: string, sessionId: string) => Promise<AgentMessageCardView>} = {},
   ) {
     this.now = options.now ?? Date.now
     this.ttlMs = options.ttlMs ?? 600000
@@ -43,7 +43,17 @@ export class AgentMessageCards {
     return structuredClone(view)
   }
   async view(viewId: string, sessionId: string): Promise<AgentMessageCardView> {
-    return structuredClone(this.checked(viewId, sessionId, await this.identity(sessionId)).view)
+    // A missing in-memory capability can only be read from the authoritative
+    // original log. Its historical view is expired and never enters the registry.
+    if (!this.owners.has(viewId) && this.options.readHistory) return this.options.readHistory(viewId, sessionId)
+    const identity = await this.identity(sessionId)
+    try { return structuredClone(this.checked(viewId, sessionId, identity).view) }
+    catch (error) {
+      // checked() rejects a retained owner/policy mismatch as FORBIDDEN before
+      // checking TTL. Only an authorized expired capability can read history.
+      if ((error as Error).message !== 'AGENT_CARD_EXPIRED' || !this.options.readHistory) throw error
+      return this.options.readHistory(viewId, sessionId)
+    }
   }
   async respond(viewId: string, sessionId: string, actionId: unknown, values: unknown): Promise<AgentMessageCardView> {
     const identity = await this.identity(sessionId), saved = this.checked(viewId, sessionId, identity)

@@ -12,6 +12,7 @@ import { mountErp } from './erp-host.js'
 import { mountShop } from './shop-host.js'
 import { mountAgentImages } from './agent-images-host.js'
 import { mountAgentMessageCards } from './agent-message-card-host.js'
+import { createAgentCardHistoryReader, type AgentCardHistoryQuery } from './agent-message-card-history.js'
 import { mountWebsite } from './website-host.js'
 import { mountSystemAssistantTools } from './system-assistant-tools.js'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
@@ -167,7 +168,8 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     const {signal: _signal, ...policy} = binding ?? {}
     return {owner: `${identity.tenantId}:${identity.userId}`, policy: origin + '\n' + JSON.stringify(policy),
       signal: binding?.signal ? AbortSignal.any([credentials.signal, binding.signal]) : credentials.signal}
-  })
+  }, createAgentCardHistoryReader({identity, authorize: async () => {await initialized; return access.authorizeTemplates()},
+    query: () => ctx.get('sessionQuery') as unknown as AgentCardHistoryQuery | undefined}))
   if (identity && agents) ctx.provide('futurestaffGeoAssistantSession', {
     authorize: async (sessionId:string, signal?:AbortSignal) => {
       signal?.throwIfAborted()
