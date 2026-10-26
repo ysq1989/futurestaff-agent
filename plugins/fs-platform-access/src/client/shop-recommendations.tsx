@@ -1,6 +1,7 @@
-import {useRef,useState} from 'react'
+import {useEffect,useRef,useState} from 'react'
 import {shopProductImage,type ShopProductCandidate,type ShopRecommendationData} from '../shop-products.js'
 import {InteractionWindow} from './interaction.js'
+import {MessageCardAction,MessageCardNotice} from './message-card.js'
 
 function ProductImage({product,large=false}:{product:ShopProductCandidate;large?:boolean}){
  const [state,setState]=useState<'loading'|'loaded'|'failed'>('loading'),src=shopProductImage(product.image)
@@ -8,27 +9,28 @@ function ProductImage({product,large=false}:{product:ShopProductCandidate;large?
   {src&&state!=='failed'?<><img src={src} alt={product.name} loading={large?'eager':'lazy'} decoding="async" referrerPolicy="no-referrer" onLoad={()=>setState('loaded')} onError={()=>setState('failed')}/>{state==='loading'&&<span className="fs-shop-image-status">图片加载中…</span>}</>:<span className="fs-shop-image-status">{src?'图片加载失败':'暂无商品图片'}</span>}
  </span>
 }
-export function ShopRecommendations({data,onSelect}:{data:ShopRecommendationData;onSelect:(id:number)=>Promise<boolean>}){
+export function ShopRecommendations({data,onSelect,readOnly=false}:{data:ShopRecommendationData;onSelect:(id:number)=>Promise<boolean>;readOnly?:boolean}){
  const [image,setImage]=useState<ShopProductCandidate>(),[pending,setPending]=useState<number>(),[error,setError]=useState(''),[delivered,setDelivered]=useState(true)
  const selected=data.products.find(product=>product.id===data.selectedProductId)
  const choosing=useRef(false)
- async function choose(id:number){if(choosing.current)return;choosing.current=true;setPending(id);setError('');try{setDelivered(await onSelect(id))}catch(reason){setError((reason as Error).message)}finally{choosing.current=false;setPending(undefined)}}
+ useEffect(()=>{if(readOnly)setError('')},[readOnly])
+ async function choose(id:number){if(readOnly||choosing.current)return;choosing.current=true;setPending(id);setError('');try{setDelivered(await onSelect(id))}catch(reason){setError((reason as Error).message)}finally{choosing.current=false;setPending(undefined)}}
  return <div className="fs-shop-recommendations">
-  <div className="fs-shop-recommendation-heading"><strong>为你推荐 {data.products.length} 款商品</strong><span>本店已有商品 · 点击图片看大图</span></div>
+  <div className="fs-shop-recommendation-heading"><span>本店已有商品 · 点击图片看大图</span></div>
   {!data.products.length?<p role="status">暂无匹配商品，请调整选品条件后重新查询。</p>:<div className="fs-shop-product-grid" aria-busy={pending!==undefined}>
    {data.products.map((product,index)=><article className="fs-shop-product" data-selected={selected?.id===product.id} key={product.id}>
-    <button className="fs-shop-product-photo" aria-label={`查看${product.name}大图`} onClick={()=>setImage(product)}><ProductImage key={product.image??'missing'} product={product}/></button>
+    <button type="button" className="fs-shop-product-photo" aria-label={`查看${product.name}大图`} onClick={()=>setImage(product)}><ProductImage key={product.image??'missing'} product={product}/></button>
     <div className="fs-shop-product-info">
      <div className="fs-shop-product-meta"><span>候选 {index+1} · 编号 {product.id}</span><span>{product.onSale===true?'已上架':product.onSale===false?'未上架':'上架状态未知'}</span></div>
      <h3>{product.name}</h3>
      <div className="fs-shop-product-facts"><strong>{product.price===null?'价格待核实':`¥${Number(product.price).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:4})}`}</strong><span>{product.stock===null?'库存待核实':`库存 ${product.stock}`}</span></div>
      <p className="fs-shop-product-reason"><span>推荐理由</span>{product.reason}</p>
-     <button className="fs-shop-product-select" aria-pressed={selected?.id===product.id} disabled={pending!==undefined||selected?.id===product.id&&delivered} onClick={()=>{void choose(product.id)}}>{pending===product.id?'正在记录选择…':selected?.id===product.id?(delivered?'✓ 已选中':'重试返回选择'):'选择这款'}</button>
+     <MessageCardAction className="fs-shop-product-select" variant={selected?.id===product.id?'secondary':'primary'} aria-pressed={selected?.id===product.id} disabled={readOnly||pending!==undefined||selected?.id===product.id&&delivered} onClick={()=>{void choose(product.id)}}>{readOnly?(selected?.id===product.id?'历史已选':'历史推荐，仅供查看'):pending===product.id?'正在记录选择…':selected?.id===product.id?(delivered?'✓ 已选中':'重试返回选择'):'选择这款'}</MessageCardAction>
     </div>
    </article>)}
   </div>}
-  <p className="fs-shop-selection-status" role="status" aria-live="polite">{selected?`已选：${selected.name}（${selected.id}）。本店已有商品，无需导入。`:'先比较商品，再选择喜欢的一款。选择不会导入或上架商品。'}{!delivered&&' 选择已记录，但原会话暂未收到，请重试返回选择。'}</p>
-  {error&&<p role="alert">{error}</p>}
+  <p className="fs-shop-selection-status" role="status" aria-live="polite">{readOnly?(selected?`历史已选：${selected.name}（${selected.id}）。`:'这是当时的商品推荐记录。'):selected?`已选：${selected.name}（${selected.id}）。本店已有商品，无需导入。`:'先比较商品，再选择喜欢的一款。选择不会导入或上架商品。'}{!readOnly&&!delivered&&' 选择已记录，但原会话暂未收到，请重试返回选择。'}</p>
+  {error&&<MessageCardNotice kind="error">{error}</MessageCardNotice>}
   {image&&<InteractionWindow title={image.name} mode="dialog" className="fs-shop-image-dialog" onClose={()=>setImage(undefined)}><ProductImage key={image.image??'missing'} product={image} large/><p>商品编号 {image.id} · 本店真实商品图片</p></InteractionWindow>}
  </div>
 }
@@ -56,5 +58,5 @@ export const shopRecommendationCss=`
 .fs-shop-selection-status{margin:14px 0 0;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
 .fs-shop-recommendations [role=alert]{color:var(--error)}
 .fs-shop-image-dialog .fs-shop-product-image-large{height:min(65vh,620px);margin-top:12px}.fs-shop-image-dialog p{font-size:13px;color:var(--text-secondary)}
-@media(max-width:480px){.fs-shop-card:has(.fs-shop-recommendations){padding:12px}.fs-shop-product-image{height:220px}.fs-shop-product-grid{grid-template-columns:1fr}.fs-shop-product-info{padding:14px}}
+@media(max-width:480px){.fs-shop-product-image{height:220px}.fs-shop-product-grid{grid-template-columns:1fr}.fs-shop-product-info{padding:14px}}
 `

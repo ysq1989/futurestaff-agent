@@ -2,6 +2,7 @@
 
 import { createHash, randomUUID } from 'node:crypto'
 import {
+  constants,
   copyFileSync,
   cpSync,
   existsSync,
@@ -27,6 +28,9 @@ const MAX_MANIFEST_BYTES = 1024 * 1024
 // budget independent of the smaller per-workspace upgrade-code inventories.
 export const MAX_PROFILE_FILES = 1024
 const MAX_WORKSPACE_FILES = 256
+const MAX_PLATFORM_WORKSPACE_FILES = 512
+const MAX_PLATFORM_INVENTORIES = 32
+const MAX_PACKAGE_MANIFEST_BYTES = 64 * 1024
 
 interface ReleaseManifest {
   readonly schemaVersion: number
@@ -36,6 +40,7 @@ interface ReleaseManifest {
   readonly supersedes?: readonly string[]
   readonly workspacePreviousFiles?: Record<string, string>
   readonly workspacePreviousInventories?: readonly Record<string, string>[]
+  readonly workspacePreviousPlatformPackageHashes?: readonly string[]
   readonly workspacePreviousGeoInventories?: readonly Record<string, string>[]
   readonly workspacePreviousVideoFiles?: Record<string, string>
   readonly files: Record<string, string>
@@ -127,9 +132,9 @@ function readManifest(source: string): ReleaseManifest {
   }
   const entries = Object.entries(value.files)
   if (value.workspacePreviousInventories !== undefined && (!Array.isArray(value.workspacePreviousInventories)
-    || value.workspacePreviousInventories.length > 16
+    || value.workspacePreviousInventories.length > MAX_PLATFORM_INVENTORIES
     || value.workspacePreviousInventories.some(files => files === null || typeof files !== 'object'
-      || Array.isArray(files) || Object.keys(files).length > MAX_WORKSPACE_FILES
+      || Array.isArray(files) || Object.keys(files).length > MAX_PLATFORM_WORKSPACE_FILES
       || Object.entries(files).some(([name, digest]) =>
         !name.startsWith('node_modules/@futurestaff/fs-platform-access/lib/')
         || !safeRelativePath(name) || typeof digest !== 'string' || !/^[0-9a-f]{64}$/u.test(digest))))) {
@@ -137,10 +142,18 @@ function readManifest(source: string): ReleaseManifest {
   }
   if (value.workspacePreviousFiles !== undefined && (value.workspacePreviousFiles === null
     || typeof value.workspacePreviousFiles !== 'object' || Array.isArray(value.workspacePreviousFiles)
+    || Object.keys(value.workspacePreviousFiles).length > MAX_PLATFORM_WORKSPACE_FILES
     || Object.entries(value.workspacePreviousFiles).some(([name, digest]) =>
       !name.startsWith('node_modules/@futurestaff/fs-platform-access/lib/')
       || !safeRelativePath(name) || !/^[0-9a-f]{64}$/u.test(digest)))) {
     throw new Error('FutureStaff workspace upgrade inventory is invalid')
+  }
+  if (value.workspacePreviousPlatformPackageHashes !== undefined
+    && (!Array.isArray(value.workspacePreviousPlatformPackageHashes)
+      || value.workspacePreviousPlatformPackageHashes.length > MAX_PLATFORM_INVENTORIES
+      || new Set(value.workspacePreviousPlatformPackageHashes).size !== value.workspacePreviousPlatformPackageHashes.length
+      || value.workspacePreviousPlatformPackageHashes.some(digest => typeof digest !== 'string' || !/^[0-9a-f]{64}$/u.test(digest)))) {
+    throw new Error('FutureStaff platform package upgrade hashes are invalid')
   }
   if (value.workspacePreviousVideoFiles !== undefined && (value.workspacePreviousVideoFiles === null
     || typeof value.workspacePreviousVideoFiles !== 'object' || Array.isArray(value.workspacePreviousVideoFiles)
@@ -320,6 +333,7 @@ export function installBundledFutureStaffProfile(
 }
 
 const PLATFORM_PREFIX = 'node_modules/@futurestaff/fs-platform-access/lib/'
+const PLATFORM_PACKAGE_MANIFEST = 'node_modules/@futurestaff/fs-platform-access/package.json'
 const GEO_PREFIX = 'node_modules/@futurestaff/fs-geo/lib/'
 const VIDEO_PREFIX = 'node_modules/@futurestaff/fs-video/'
 
@@ -357,6 +371,34 @@ function matchesCodeInventory(root: string, prefix: string, expected: Record<str
   return actual.length === Object.keys(expected).length && actual.every(file =>
     Object.hasOwn(expected, file)
     && createHash('sha256').update(readFileSync(join(root, file))).digest('hex') === expected[file])
+}
+
+/**
+ * A controlled migration can leave current Host code beside older product UI
+ * artifacts. Accept that mixture only if its entire path set is a complete
+ * audited release tree and every byte matches the same path in a trusted
+ * inventory. Return the actual tree so the atomic swap rechecks precisely the
+ * mixture we inspected, rather than one of its constituent release inventories.
+ */
+function auditedMixedCodeInventory(
+  root: string,
+  prefix: string,
+  trusted: readonly Record<string, string>[],
+): Record<string, string> | undefined {
+  const library = join(root, prefix)
+  const packageName = prefix.split('/')[2]
+  if (![root, join(root, 'node_modules'), join(root, 'node_modules/@futurestaff'),
+    join(root, 'node_modules/@futurestaff', packageName!), library].every(realDirectory)) return undefined
+  const actual = inventory(library).map(file => prefix + file)
+  if (!trusted.some(files => actual.length === Object.keys(files).length
+    && actual.every(file => Object.hasOwn(files, file)))) return undefined
+  const observed: Record<string, string> = {}
+  for (const file of actual) {
+    const digest = createHash('sha256').update(readFileSync(join(root, file))).digest('hex')
+    if (!trusted.some(files => files[file] === digest)) return undefined
+    observed[file] = digest
+  }
+  return observed
 }
 
 /** Only a canonical generated member Profile is eligible for code reconciliation. */
@@ -412,15 +454,70 @@ function workspaceCodeUpgrades(homeDir: string, manifest: ReleaseManifest): Work
       try {
         const packageRoot = join(workspace.target, 'node_modules/@futurestaff', item.package)
         if (!realDirectory(packageRoot)) continue
+        const current = Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(item.prefix)))
+        if (matchesCodeInventory(workspace.target, item.prefix, current)) continue
         const previous = item.inventories.find(files => matchesCodeInventory(workspace.target, item.prefix, files))
-        if (previous !== undefined && !matchesCodeInventory(workspace.target, item.prefix,
-          Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(item.prefix))))) {
+          ?? (item.package === 'fs-platform-access' && item.inventories.length > 0
+            ? auditedMixedCodeInventory(workspace.target, item.prefix, [current, ...item.inventories]) : undefined)
+        if (previous !== undefined) {
           result.push({ profile: workspace.name, target: workspace.target, prefix: item.prefix, package: item.package, previous })
         }
-      } catch { /* Any extra file, changed byte or link preserves this package. */ }
+      } catch { /* Any unknown file, unaudited byte or link preserves this package. */ }
     }
   }
   return result
+}
+
+function ordinaryPackageManifestDigest(file: string): string | undefined {
+  const info = lstatSync(file)
+  if (!info.isFile() || info.isSymbolicLink() || info.size > MAX_PACKAGE_MANIFEST_BYTES) return undefined
+  return createHash('sha256').update(readFileSync(file)).digest('hex')
+}
+
+/** An interrupted lib upgrade may leave only the package export map to reconcile. */
+function workspacePlatformPackageUpgrades(homeDir: string, manifest: ReleaseManifest): { profile: string; target: string; previous: string }[] {
+  if (!manifest.workspacePreviousPlatformPackageHashes?.length || !manifest.files[PLATFORM_PACKAGE_MANIFEST]) return []
+  const current = Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(PLATFORM_PREFIX)))
+  if (!Object.keys(current).length) return []
+  const result: { profile: string; target: string; previous: string }[] = []
+  for (const workspace of ownedWorkspaceProfiles(homeDir)) {
+    try {
+      if (!matchesCodeInventory(workspace.target, PLATFORM_PREFIX, current)) continue
+      const previous = ordinaryPackageManifestDigest(join(workspace.target, PLATFORM_PACKAGE_MANIFEST))
+      if (previous && previous !== manifest.files[PLATFORM_PACKAGE_MANIFEST]
+        && manifest.workspacePreviousPlatformPackageHashes.includes(previous)) {
+        result.push({ profile: workspace.name, target: workspace.target, previous })
+      }
+    } catch { /* Missing, linked or custom manifests are not managed upgrade slots. */ }
+  }
+  return result
+}
+
+function refreshWorkspacePlatformPackageManifests(homeDir: string, source: string, manifest: ReleaseManifest): void {
+  const current = Object.fromEntries(Object.entries(manifest.files).filter(([name]) => name.startsWith(PLATFORM_PREFIX)))
+  for (const item of workspacePlatformPackageUpgrades(homeDir, manifest)) {
+    const file = join(item.target, PLATFORM_PACKAGE_MANIFEST)
+    const temporary = file + '.updating-' + process.pid + '-' + randomUUID()
+    const backup = temporary + '.backup'
+    try {
+      copyFileSync(join(source, PLATFORM_PACKAGE_MANIFEST), temporary, constants.COPYFILE_EXCL)
+      if (ordinaryPackageManifestDigest(temporary) !== manifest.files[PLATFORM_PACKAGE_MANIFEST]
+        || !matchesCodeInventory(item.target, PLATFORM_PREFIX, current)
+        || ordinaryPackageManifestDigest(file) !== item.previous) continue
+      renameSync(file, backup)
+      if (ordinaryPackageManifestDigest(backup) !== item.previous
+        || !matchesCodeInventory(item.target, PLATFORM_PREFIX, current)
+        || profileEntryExists(file)) {
+        if (!profileEntryExists(file)) renameSync(backup, file)
+        continue
+      }
+      renameSync(temporary, file)
+      rmSync(backup)
+    } catch {
+      if (!profileEntryExists(file) && profileEntryExists(backup)) renameSync(backup, file)
+      console.warn('futurestaff-profile: workspace package manifest refresh skipped; existing files preserved')
+    } finally { rmSync(temporary, { force: true }) }
+  }
 }
 
 /** Read-only plan using precisely the same validators as startup reconciliation. */
@@ -436,8 +533,14 @@ export function planBundledFutureStaffProfile(options: BundledFutureStaffProfile
   const bundled = !profileEntryExists(target) ? 'installed'
     : isRepairableLegacyProfile(target, manifest) ? 'repaired'
       : isUpgradeableBundledProfile(target, manifest) ? 'upgraded' : 'preserved'
-  return { bundled, workspaces: workspaceCodeUpgrades(options.homeDir, manifest)
-    .map(({ profile, package: name }) => ({ profile, package: name })) }
+  const workspaces = workspaceCodeUpgrades(options.homeDir, manifest)
+    .map(({ profile, package: name }) => ({ profile, package: name }))
+  for (const item of workspacePlatformPackageUpgrades(options.homeDir, manifest)) {
+    if (!workspaces.some(existing => existing.profile === item.profile && existing.package === 'fs-platform-access')) {
+      workspaces.push({ profile: item.profile, package: 'fs-platform-access' })
+    }
+  }
+  return { bundled, workspaces }
 }
 
 /** Refresh only exact audited product code; member identity and work files remain in place. */
@@ -474,6 +577,7 @@ function refreshBundledWorkspaceClients(homeDir: string, source: string, manifes
       console.warn('futurestaff-profile: workspace code refresh skipped; existing files preserved')
     } finally { rmSync(temporary, { recursive: true, force: true }) }
   }
+  refreshWorkspacePlatformPackageManifests(homeDir, source, manifest)
   // Compatibility for old packages without an audited Host inventory. Modern
   // release manifests always take the complete-inventory path above.
   if (manifest.workspacePreviousFiles !== undefined) return

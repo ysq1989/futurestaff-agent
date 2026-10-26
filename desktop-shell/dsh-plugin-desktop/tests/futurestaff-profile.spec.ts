@@ -230,6 +230,95 @@ describe('bundled FutureStaff Profile', () => {
     } finally { rmSync(value.root, { recursive: true, force: true }) }
   })
 
+  it('accepts bounded 512-file platform inventories and 32 historical releases for hotpatched 3.3.0 migration', () => {
+    const value = fixture()
+    try {
+      const file = join(value.source, 'release-manifest.json'), manifest = JSON.parse(readFileSync(file, 'utf8'))
+      const previous = Object.fromEntries(Array.from({ length: 512 }, (_, index) => [`node_modules/@futurestaff/fs-platform-access/lib/file-${index}.js`, 'a'.repeat(64)]))
+      manifest.workspacePreviousFiles = previous
+      manifest.workspacePreviousInventories = Array.from({ length: 32 }, () => ({ 'node_modules/@futurestaff/fs-platform-access/lib/index.js': 'b'.repeat(64) }))
+      writeFileSync(file, JSON.stringify(manifest))
+      expect(validateBundledFutureStaffProfile(value.source)).toBe(5)
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+
+  it.each(['platform-files', 'platform-releases', 'geo-files', 'geo-releases'] as const)(
+    'keeps explicit inventory bounds and existing GEO limits: %s', mode => {
+      const value = fixture()
+      try {
+        const file = join(value.source, 'release-manifest.json'), manifest = JSON.parse(readFileSync(file, 'utf8'))
+        const platform = { 'node_modules/@futurestaff/fs-platform-access/lib/index.js': 'a'.repeat(64) }
+        const geo = { 'node_modules/@futurestaff/fs-geo/lib/index.js': 'a'.repeat(64) }
+        if (mode === 'platform-files') manifest.workspacePreviousFiles = Object.fromEntries(Array.from({ length: 513 }, (_, index) => [`node_modules/@futurestaff/fs-platform-access/lib/file-${index}.js`, 'a'.repeat(64)]))
+        if (mode === 'platform-releases') manifest.workspacePreviousInventories = Array.from({ length: 33 }, () => platform)
+        if (mode === 'geo-files') manifest.workspacePreviousGeoInventories = [Object.fromEntries(Array.from({ length: 257 }, (_, index) => [`node_modules/@futurestaff/fs-geo/lib/file-${index}.js`, 'a'.repeat(64)]))]
+        if (mode === 'geo-releases') manifest.workspacePreviousGeoInventories = Array.from({ length: 17 }, () => geo)
+        writeFileSync(file, JSON.stringify(manifest))
+        expect(() => validateBundledFutureStaffProfile(value.source)).toThrow('workspace upgrade')
+        expect(existsSync(value.homeDir)).toBe(false)
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
+  it.each(['already-current-lib', 'audited-lib-upgrade', 'custom-package', 'unknown-lib', 'extra-lib-file', 'missing-lib-file', 'unlisted-package', 'unconfigured-package', 'linked-package', 'package-directory', 'missing-package'] as const)(
+    'refreshes platform exports only with exact current library and audited ordinary package manifest: %s', mode => {
+      const value = fixture()
+      try {
+        const relative = 'node_modules/@futurestaff/fs-platform-access/package.json'
+        const prefix = 'node_modules/@futurestaff/fs-platform-access/lib/'
+        const oldPackage = '{"name":"@futurestaff/fs-platform-access","exports":{".":"./lib/index.js"}}\n'
+        const newPackage = '{"name":"@futurestaff/fs-platform-access","exports":{".":"./lib/index.js","./message-card-contract":"./lib/agent-message-card-contract.js"}}\n'
+        const sourceFile = join(value.source, 'release-manifest.json'), manifest = JSON.parse(readFileSync(sourceFile, 'utf8'))
+        manifest.workspacePreviousFiles = { [prefix + 'index.js']: createHash('sha256').update('previous official lib').digest('hex') }
+        manifest.workspacePreviousPlatformPackageHashes = mode === 'unlisted-package' ? ['b'.repeat(64)] : [createHash('sha256').update(oldPackage).digest('hex')]
+        if (mode === 'unconfigured-package') delete manifest.workspacePreviousPlatformPackageHashes
+        mkdirSync(join(value.source, prefix), { recursive: true })
+        writeFileSync(join(value.source, prefix, 'index.js'), 'current official lib')
+        writeFileSync(join(value.source, relative), newPackage)
+        manifest.files[prefix + 'index.js'] = createHash('sha256').update('current official lib').digest('hex')
+        manifest.files[relative] = createHash('sha256').update(newPackage).digest('hex')
+        writeFileSync(sourceFile, JSON.stringify(manifest))
+        const identity = { environment: 'production', tenantId: '10000000-0000-4000-8000-000000000001', userId: '20000000-0000-4000-8000-000000000001' }
+        const name = 'fs-production-' + createHash('sha256').update(JSON.stringify(identity)).digest('hex')
+        const target = join(value.homeDir, 'profiles', name), packageRoot = join(target, 'node_modules/@futurestaff/fs-platform-access')
+        const actualPackage = mode === 'linked-package' ? join(value.root, 'external-platform') : packageRoot
+        mkdirSync(join(target, 'node_modules/@futurestaff'), { recursive: true })
+        mkdirSync(join(actualPackage, 'lib'), { recursive: true })
+        if (mode === 'linked-package') symlinkSync(actualPackage, packageRoot, process.platform === 'win32' ? 'junction' : 'dir')
+        const privateFiles = { 'futurestaff-workspace.json': JSON.stringify(identity), 'cordis.patch.yml': 'custom member composition', 'private-history.jsonl': 'original history', 'project-ledger.json': 'original project', 'opaque-login.fixture': 'opaque protected-envelope sentinel' }
+        for (const [file, text] of Object.entries(privateFiles)) writeFileSync(join(target, file), text)
+        const selection = JSON.stringify({ version: 2, active: name })
+        mkdirSync(join(value.root, 'user-data/profile-selection'), { recursive: true })
+        writeFileSync(value.selectionStatePath, selection)
+        if (mode === 'package-directory') mkdirSync(join(actualPackage, 'package.json'))
+        else if (mode !== 'missing-package') writeFileSync(join(actualPackage, 'package.json'), mode === 'custom-package' ? 'custom package preferences' : oldPackage)
+        if (mode !== 'missing-lib-file') writeFileSync(join(actualPackage, 'lib/index.js'), mode === 'audited-lib-upgrade' ? 'previous official lib' : mode === 'unknown-lib' ? 'custom lib' : 'current official lib')
+        if (mode === 'extra-lib-file') writeFileSync(join(actualPackage, 'lib/custom.js'), 'custom helper')
+        const expectedUpgrade = mode === 'already-current-lib' || mode === 'audited-lib-upgrade'
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual(expectedUpgrade ? [{ profile: name, package: 'fs-platform-access' }] : [])
+        installBundledFutureStaffProfile(value)
+        if (mode === 'package-directory') expect(lstatSync(join(actualPackage, 'package.json')).isDirectory()).toBe(true)
+        else if (mode === 'missing-package') expect(existsSync(join(actualPackage, 'package.json'))).toBe(false)
+        else expect(readFileSync(join(actualPackage, 'package.json'), 'utf8')).toBe(expectedUpgrade ? newPackage : mode === 'custom-package' ? 'custom package preferences' : oldPackage)
+        for (const [file, text] of Object.entries(privateFiles)) expect(readFileSync(join(target, file), 'utf8')).toBe(text)
+        expect(readFileSync(value.selectionStatePath, 'utf8')).toBe(selection)
+        installBundledFutureStaffProfile(value)
+        if (expectedUpgrade) expect(readFileSync(join(actualPackage, 'package.json'), 'utf8')).toBe(newPackage)
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual([])
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
+  it.each([{ hashes: ['not-a-digest'] }, { hashes: Array.from({ length: 33 }, (_, index) => index.toString(16).padStart(64, '0')) }, { hashes: ['a'.repeat(64), 'a'.repeat(64)] }])(
+    'rejects malformed or unbounded platform package migration hashes', ({ hashes }) => {
+      const value = fixture()
+      try {
+        const file = join(value.source, 'release-manifest.json'), manifest = JSON.parse(readFileSync(file, 'utf8'))
+        manifest.workspacePreviousPlatformPackageHashes = hashes
+        writeFileSync(file, JSON.stringify(manifest))
+        expect(() => validateBundledFutureStaffProfile(value.source)).toThrow('platform package upgrade hashes are invalid')
+        expect(existsSync(value.homeDir)).toBe(false)
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
+
   it.each(['../outside.js', '/outside.js', 'module.js'])('rejects invalid inventory path or digest: %s', name => {
     const value = fixture()
     try {
@@ -317,6 +406,46 @@ describe('bundled FutureStaff Profile', () => {
       expect(readFileSync(join(target, prefix, 'index.js'), 'utf8')).toBe(mode === 'custom' ? 'custom Host' : 'new index.js')
     } finally { rmSync(value.root, { recursive: true, force: true }) }
   })
+  it.each(['audited-mix', 'unknown-host', 'unknown-client', 'extra-file', 'missing-file'] as const)(
+    'reconciles a migration mixture only when its complete code tree is audited: %s', mode => {
+      const value = fixture()
+      try {
+        const prefix = 'node_modules/@futurestaff/fs-platform-access/lib/'
+        const manifest = JSON.parse(readFileSync(join(value.source, 'release-manifest.json'), 'utf8'))
+        manifest.workspacePreviousFiles = {}
+        const files = ['index.js', 'client.js', 'client.js.map', 'managed-settings.js', 'managed-settings.js.map']
+        mkdirSync(join(value.source, prefix), { recursive: true })
+        for (const file of files) {
+          writeFileSync(join(value.source, prefix, file), 'current ' + file)
+          manifest.files[prefix + file] = createHash('sha256').update('current ' + file).digest('hex')
+          manifest.workspacePreviousFiles[prefix + file] = createHash('sha256').update('previous ' + file).digest('hex')
+        }
+        writeFileSync(join(value.source, 'release-manifest.json'), JSON.stringify(manifest))
+        const identity = { environment: 'production', tenantId: '10000000-0000-4000-8000-000000000001', userId: '20000000-0000-4000-8000-000000000001' }
+        const name = 'fs-production-' + createHash('sha256').update(JSON.stringify(identity)).digest('hex')
+        const target = join(value.homeDir, 'profiles', name)
+        mkdirSync(join(target, prefix), { recursive: true })
+        const marker = JSON.stringify(identity)
+        writeFileSync(join(target, 'futurestaff-workspace.json'), marker)
+        writeFileSync(join(target, 'private-history.json'), 'private history and project data')
+        writeFileSync(join(target, 'cordis.patch.yml'), 'member preferences and plugins')
+        for (const file of files) writeFileSync(join(target, prefix, file), (file === 'index.js' ? 'current ' : 'previous ') + file)
+        if (mode === 'unknown-host') writeFileSync(join(target, prefix, 'index.js'), 'custom Host')
+        if (mode === 'unknown-client') writeFileSync(join(target, prefix, 'client.js'), 'custom client')
+        if (mode === 'extra-file') writeFileSync(join(target, prefix, 'custom.js'), 'custom helper')
+        if (mode === 'missing-file') rmSync(join(target, prefix, 'managed-settings.js.map'))
+        const expected = mode === 'audited-mix' ? [{ profile: name, package: 'fs-platform-access' }] : []
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual(expected)
+        installBundledFutureStaffProfile(value)
+        expect(readFileSync(join(target, prefix, 'client.js'), 'utf8')).toBe(
+          mode === 'audited-mix' ? 'current client.js' : mode === 'unknown-client' ? 'custom client' : 'previous client.js')
+        expect(readFileSync(join(target, prefix, 'index.js'), 'utf8')).toBe(mode === 'unknown-host' ? 'custom Host' : 'current index.js')
+        expect(readFileSync(join(target, 'futurestaff-workspace.json'), 'utf8')).toBe(marker)
+        expect(readFileSync(join(target, 'private-history.json'), 'utf8')).toBe('private history and project data')
+        expect(readFileSync(join(target, 'cordis.patch.yml'), 'utf8')).toBe('member preferences and plugins')
+        expect(planBundledFutureStaffProfile(value).workspaces).toEqual([])
+      } finally { rmSync(value.root, { recursive: true, force: true }) }
+    })
   it.each(['valid', 'wrong-identity', 'linked-code'] as const)('refreshes only owned workspace client code: %s', mode => {
     const value = fixture()
     try {

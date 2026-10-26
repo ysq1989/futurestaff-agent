@@ -6,6 +6,7 @@ type Identity={accessToken:string;tenantId:string;userId:string;signal:AbortSign
 type Data=Record<string,unknown>
 export type ErpView=InteractionView & {module:'erp';kind:'table'|'entity'|'form'|'preview';resource:string;summary:string}
 type Grant=Identity & {token:string;policy:Data}
+export type ErpSessionPrincipal={agentId:string;version:string;releaseVersion?:string}|{kind:'local-template';signal:AbortSignal}
 type Saved=OwnedView<ErpView> & {operation?:string;body?:Data;id?:string;key?:string;references?:Map<string,string>;committed?:{data:unknown};result?:ErpView;running?:Promise<ErpView>}
 const resources=['customers','suppliers','products','materials','warehouses','sales-orders','purchase-orders','production-orders','boms','stock','stock/records','payments','financials','reports/sales','reports/purchase','reports/inventory','reports/customers','reports/profit-loss','dashboard']
 const titles:Record<string,string>={'customers':'客户','suppliers':'供应商','products':'产品','materials':'物料','warehouses':'仓库','sales-orders':'销售订单','purchase-orders':'采购订单','production-orders':'生产工单','boms':'物料清单','stock':'库存','stock/records':'出入库记录','payments':'收付款','financials':'财务记录','dashboard':'经营驾驶舱'}
@@ -29,16 +30,16 @@ function allow(g:Grant,action:string){if(g.policy.enabled!==true||!Array.isArray
 export class ErpService {
  private views:InteractionRegistry<ErpView,Saved>
  readonly erpOrigin:string
- constructor(private origin:string,private authorize:()=>Promise<Identity>,private fetcher:typeof fetch=fetch,private now=()=>Date.now(),private authorizeSession?:(sessionId:string)=>Promise<void|{agentId:string;version:string;releaseVersion?:string}>){
+ constructor(private origin:string,private authorize:()=>Promise<Identity>,private fetcher:typeof fetch=fetch,private now=()=>Date.now(),private authorizeSession?:(sessionId:string,tool?:string)=>Promise<void|ErpSessionPrincipal>){
   this.views=new InteractionRegistry('erp',{now,invalidError:'ERP_VIEW_EXPIRED'})
   if(!['https://platform.fsstory.net','https://platform-dev.fsstory.net','https://dev.fsstory.net'].includes(origin))throw Error('ERP_ORIGIN_INVALID')
   this.erpOrigin=origin==='https://platform.fsstory.net'?'https://erp.fsstory.net':'https://erp-dev.fsstory.net'
  }
  private async grant(signal?:AbortSignal,sessionId?:string):Promise<Grant>{
-  let binding:void|{agentId:string;version:string;releaseVersion?:string}=undefined
+  let binding:void|ErpSessionPrincipal=undefined
   if(this.authorizeSession){if(!sessionId)throw Error('ERP_SESSION_REQUIRED');binding=await this.authorizeSession(sessionId)}
-  const original=await this.authorize();const identity={...original,signal:signal?AbortSignal.any([original.signal,signal]):original.signal};identity.signal.throwIfAborted()
-  const response=await this.fetcher(this.origin+'/api/application-settings/v1/futurestaff-erp/agent/token',{method:'POST',headers:{Authorization:'Bearer '+identity.accessToken,'Content-Type':'application/json'},...(binding?{body:JSON.stringify({agentId:binding.agentId,agentVersion:binding.version,...(binding.releaseVersion?{agentReleaseVersion:binding.releaseVersion}:{})})}:{}),signal:identity.signal})
+  const original=await this.authorize();const signals=[original.signal,...(signal?[signal]:[]),...(binding&&'kind'in binding?[binding.signal]:[])];const identity={...original,signal:signals.length===1?original.signal:AbortSignal.any(signals)};identity.signal.throwIfAborted()
+  const response=await this.fetcher(this.origin+'/api/application-settings/v1/futurestaff-erp/agent/token',{method:'POST',headers:{Authorization:'Bearer '+identity.accessToken,'Content-Type':'application/json'},...(binding&&'agentId'in binding?{body:JSON.stringify({agentId:binding.agentId,agentVersion:binding.version,...(binding.releaseVersion?{agentReleaseVersion:binding.releaseVersion}:{})})}:{}),signal:identity.signal})
   if(!response.ok)throw Error(response.status===403?'ERP_PERMISSION_DENIED':'ERP_AUTH_REQUIRED')
   const t=object(await response.json())
   if(t.tenantId!==identity.tenantId||t.memberId!==identity.userId||t.tokenType!=='Bearer'||t.expiresIn!==60||t.audience!==(this.erpOrigin==='https://erp.fsstory.net'?'futurestaff-erp-prod':'futurestaff-erp-dev')||typeof t.accessToken!=='string')throw Error('ERP_IDENTITY_MISMATCH')

@@ -19,6 +19,14 @@
       "types": "./lib/interaction.d.ts",
       "default": "./lib/interaction.js"
     },
+    "./message-cards": {
+      "types": "./lib/client/message-card.d.ts",
+      "default": "./lib/client/message-card.js"
+    },
+    "./message-card-contract": {
+      "types": "./lib/agent-message-card-contract.d.ts",
+      "default": "./lib/agent-message-card-contract.js"
+    },
     "./managed-settings": {
       "types": "./lib/managed-settings.d.ts",
       "default": "./lib/managed-settings.js"
@@ -41,7 +49,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && node ../../scripts/build-managed-settings.mjs && node ../../scripts/build-dsh-client.mjs . @futurestaff/fs-platform-access",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test"
+    "test": "npm run build && node --test --test-concurrency=1"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-llm": "0.1.2-rc.1",

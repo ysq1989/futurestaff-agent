@@ -45,6 +45,11 @@
   },
   "decisions": [
     {
+      "id": "new-session-agent-directory",
+      "decision": "New conversation is the main assistant directory. Remove the sidebar footer Agent Center launcher and show authorized installed and uninstalled assistants directly in the new-session page. Reuse the existing market, classification, search, install/update and Host session flows. Use neutral themed cards with concise descriptions, a primary start/install action, and collapsed details for capabilities, retained versions and uninstall. Cards adapt to content width with three, two or one column. Published assistants open their exact installed workspace without returning to the chooser. Preserve installed-only modal choices, member authorization cancellation, settings embedding and existing history.",
+      "date": "2026-10-24"
+    },
+    {
       "id": "full-page-settings",
       "decision": "Settings occupies the application content area as a page, following the user's Codex reference: searchable left category navigation, independent right content scrolling, top utility actions and an explicit return-to-workbench button. Preserve FutureStaff light/dark tokens, live section registrations, onboarding and native window controls. No backdrop or modal settings shell. Reuse existing controls and settings slots; 21st Settings Sidebar Layout was consulted as metadata inspiration.",
       "date": "2026-10-21"
@@ -63,6 +68,16 @@
       "id": "product-hub-approval-split",
       "decision": "Use a restrained split approval surface with frozen products on the left and the explicit publication action on the right; collapse to one column below 980px.",
       "date": "2026-09-07"
+    },
+    {
+      "id": "unified-agent-center",
+      "decision": "User-confirmed layout: one Agent Center for browsing, installing, updating and uninstalling local templates and published agents; remove the separate release-package management entry. Use All Assistants, System Assistants and General Assistants categories, with independent All, Installed and Updates filters whose counts follow the active category and search. Classify by explicit business-system associations, preserve stable source identities, existing Host capability confirmation and rollback, and installed-only conversation choices. Reuse FutureStaff neutral light/dark tokens, semantic controls, the full-page settings embed and the narrow-screen single-column layout.",
+      "date": "2026-10-22"
+    },
+    {
+      "id": "interactive-message-cards",
+      "decision": "User approved inline interactive message cards for all Agents. Share one product-layer React card shell, semantic status, notices and accessible action controls. First adapt genuine Shop product selection, ERP inline preview/confirmation and Fashion image results. Preserve existing authenticated Host routes, confirmation and idempotency, original-session followup, image zoom/comparison/download, detailed drawers and historical records. Rendering/replay never executes a mutation. Show pending, running, succeeded, failed, expired, unconfirmed and read-only states; disable duplicate actions while busy and revalidate current identity. Use existing neutral light/dark appearance tokens and compact responsive layout. 21st AI Message and Chat Card metadata were consulted; no new UI framework or dependency is introduced.",
+      "date": "2026-10-25"
     }
   ],
   "evidence": [

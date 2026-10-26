@@ -126,7 +126,7 @@ test('dual-version bindings preserve business tools and only pin a first model p
   t.after(()=>rm(root,{recursive:true,force:true}))
   let current=modern,live
   const host=mountAgents({effect:factory=>factory(),webServer:{register:()=>()=>{}},get:name=>name==='sessions'?{get:()=>live}:undefined},
-    'https://platform.fsstory.net',identity,root,async()=>({...identity,accessToken:'fixture',signal:new AbortController().signal}),async url=>{
+    'https://platform.fsstory.net',identity,root,async()=>({...identity,accessToken:'fixture',signal:new AbortController().signal,applications:[{appId:'shop',tenantId:identity.tenantId,capabilities:['shop.admin']}]}),async url=>{
       const isModern=String(url).endsWith('?contractVersion=1.1.0')
       return Response.json({contractVersion:isModern?'1.1.0':'1.0.0',activeTenantId:identity.tenantId,snapshot:isModern?current:legacy})
     })

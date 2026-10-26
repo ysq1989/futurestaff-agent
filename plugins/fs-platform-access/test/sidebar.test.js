@@ -4,7 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createAccountSidebar, sidebarIdentity, sidebarVersion } from '../lib/client/sidebar.js'
 import { apply } from '../lib/client/index.js'
-import { FutureStaffSettingsRoot } from '../lib/client/settings-page.js'
+import { SystemPages } from '../lib/client/system-pages.js'
 
 const snapshot = { phase: 'ready', user: { userId: 'fixture-user', displayName: '测试用户' },
   activeTenantId: 'active-subject', tenants: [
@@ -49,6 +49,21 @@ test('account sidebar preserves sessions and settings but replaces legacy launch
   assert.doesNotMatch(html, /选品中心/)
 })
 
+test('new conversation is the agent discovery entry and the footer only retains the account controls', () => {
+  const pages = new SystemPages()
+  pages.register({ id: 'agents', title: '智能体中心', component: () => null })
+  const controller = { subscribe: () => () => {}, getSnapshot: () => snapshot, logout: async () => {} }
+  const Sidebar = createAccountSidebar(controller, pages)
+  for (const collapsed of [false, true]) {
+    const html = renderToStaticMarkup(createElement(Sidebar, {
+      collapsed, width: 270, startSession: () => {}, toggleSidebar: () => {}, renderSlot: () => null,
+    }))
+    assert.match(html, /aria-label="新会话"/)
+    assert.match(html, /测试用户，用户菜单/)
+    assert.doesNotMatch(html, /打开智能体中心|title="智能体中心"/)
+  }
+})
+
 test('product sidebar preserves the native child slot declarations and navigation injection', () => {
   const inject = () => ({ startSession: () => {} }), children = { 'sidebar.workspaces': { kind: 'single', scope: 'root' } }
   const OriginalSidebar = () => null
@@ -75,7 +90,7 @@ test('full-page settings replaces only the standard shell and retains live secti
     inject: (_name, register) => register(), subscribe: () => () => {},
     entries: name => name === 'sidebar.settings' ? [standard, custom] : [], register: () => () => {},
   } })
-  assert.equal(standard.component, FutureStaffSettingsRoot)
+  assert.equal(standard.component.name, 'PlatformSettingsRoot')
   assert.equal(standard.children, children)
   assert.equal(standard.inject, inject)
   assert.equal(custom.component, Original)

@@ -1,3 +1,5 @@
+import {mountCandidateConsent} from './governance-desktop-window-host.js'
+import {canonicalContractJson} from './governance-desktop-contract.js'
 import { platformOrigin, type PlatformEnvironment } from './environment.js'
 import { mountMarket } from './market-host.js'
 import { roleRoot } from './market.js'
@@ -9,7 +11,9 @@ import { createVideoWorkspaceResolver, type VideoWorkspaceResolver } from './vid
 import { mountErp } from './erp-host.js'
 import { mountShop } from './shop-host.js'
 import { mountAgentImages } from './agent-images-host.js'
+import { mountAgentMessageCards } from './agent-message-card-host.js'
 import { mountWebsite } from './website-host.js'
+import { mountSystemAssistantTools } from './system-assistant-tools.js'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-host-webserver'
@@ -26,6 +30,7 @@ import { dispatchEmbeddedMock } from './embedded-mock.js'
 import { InMemoryTenantResources } from './isolation.js'
 import { PlatformPkceTransaction, platformPkceConstants } from './pkce.js'
 import { PlatformSessionVault, type PlatformProtectedSecrets } from './session-vault.js'
+import { requireApplications, type SystemApplicationId } from './system-policy.js'
 
 const ROUTE_PREFIX = '/_futurestaff/platform-mock'
 const MAX_REQUEST_BYTES = 64 * 1024
@@ -134,15 +139,41 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     pkce: new PlatformPkceTransaction({ environment }), api, vault,
   })
   const initialized = access.restore()
-  const agents = identity ? mountAgents(ctx, origin, identity, workspaceDirectory(identity), async () => {
+  const authorizeSystem = async (application: SystemApplicationId) => {
+    await initialized
+    const credentials = await access.authorizeTemplates()
+    requireApplications(credentials, [application])
+    return credentials
+  }
+  const market = identity ? mountMarket(ctx, origin, identity, roleRoot(identity), async () => {
     await initialized
     return access.authorizeTemplates()
   }) : undefined
+  const agents = identity ? mountAgents(ctx, origin, identity, workspaceDirectory(identity), async () => {
+    await initialized
+    return access.authorizeTemplates()
+  }, globalThis.fetch, (sessionId, system, tool) => market?.resolveBusiness(sessionId, system, tool) ?? Promise.resolve(undefined)) : undefined
+  if (identity && agents) mountAgentMessageCards(ctx, async sessionId => {
+    await initialized
+    const credentials = await access.authorizeTemplates()
+    if (credentials.tenantId !== identity.tenantId || credentials.userId !== identity.userId) throw Error('AGENT_CARD_FORBIDDEN')
+    const sessions = ctx.get('sessions') as unknown as {get(id: string): unknown} | undefined
+    if (!sessions?.get(sessionId)) throw Error('AGENT_CARD_SESSION_REQUIRED')
+    const binding = await market?.resolveBinding(sessionId) ?? await agents.resolvePolicyBinding(sessionId)
+    credentials.signal.throwIfAborted(); binding?.signal?.throwIfAborted()
+    if (binding?.identity && (binding.identity.tenantId !== identity.tenantId || binding.identity.userId !== identity.userId)) throw Error('AGENT_CARD_FORBIDDEN')
+    // Exact bound version/scope remains part of the capability; no business-system
+    // grant is introduced for collecting a user's preferences or simple inputs.
+    const {signal: _signal, ...policy} = binding ?? {}
+    return {owner: `${identity.tenantId}:${identity.userId}`, policy: origin + '\n' + JSON.stringify(policy),
+      signal: binding?.signal ? AbortSignal.any([credentials.signal, binding.signal]) : credentials.signal}
+  })
   if (identity && agents) ctx.provide('futurestaffGeoAssistantSession', {
     authorize: async (sessionId:string, signal?:AbortSignal) => {
       signal?.throwIfAborted()
       const binding=await agents.authorizeBusiness(sessionId,'geo')
-      const snapshot=await agents.boundSnapshot(binding.agentId,binding.releaseVersion)
+      if ('kind' in binding) throw Error('GEO_AGENT_CAPABILITY_REQUIRED')
+      const snapshot=await agents.boundSnapshot(binding.agentId,binding.releaseVersion,binding.snapshotVersion)
       if(snapshot.version!==binding.version||!snapshot.files.some(file=>file.path==='skills/geo-assistant/SKILL.md'))throw Error('GEO_AGENT_CAPABILITY_REQUIRED')
       return {agentId:binding.agentId,agentVersion:binding.version}
     },
@@ -152,12 +183,19 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     authorize: async () => { await initialized; return access.authorizeTemplates() },
     resolveBinding: agents.resolveBinding,
     snapshot: agents.boundSnapshot,
-    workspacePath: (agentId,releaseVersion) => (releaseVersion?agents.installations.runtime(releaseVersion):agents.store).workspacePath(agentId),
+    workspacePath: (agentId,releaseVersion,snapshotVersion) => agents.workspacePath({agentId,releaseVersion,snapshotVersion}),
   }))
-  if (identity && agents) mountErp(ctx, origin, async () => { await initialized; return access.authorizeTemplates() },sessionId=>agents.authorizeBusiness(sessionId,'erp'))
-  if (identity) mountMarket(ctx, origin, identity, roleRoot(identity), async () => {
-    await initialized
-    return access.authorizeTemplates()
+  if (identity && agents) mountErp(ctx, origin, () => authorizeSystem('erp'),async (sessionId, tool) => {
+    const principal = await agents.authorizeBusiness(sessionId, 'erp', tool)
+    // ERP already issues a short, member-bound token without an Agent binding.
+    return principal
+  })
+  if (identity && agents) mountSystemAssistantTools(ctx, origin, async (sessionId, system, tool) => {
+    const principal = await agents.authorizeBusiness(sessionId, system, tool)
+    if (!('kind' in principal)) throw Error('AGENT_BUSINESS_SCOPE_DENIED')
+    const credentials = await access.authorizeTemplates()
+    requireApplications(credentials, [system === 'product-hub' ? 'product_hub' : system === 'visa' ? 'vietnam_immigration' : 'agent'])
+    return { ...credentials, ...principal }
   })
   applyManagedModelDefault(ctx, { snapshot: () => access.getSnapshot(), authorize: async modelId => { await initialized; return access.authorizeChat(modelId) } })
   ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/_futurestaff/platform-dev/environment',
@@ -180,12 +218,17 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
   if (typeof ctx.inject === 'function') ctx.inject(['llm'], llmCtx => {
     const adapter = new FutureStaffChatAdapter(async modelId => { await initialized; return access.authorizeChat(modelId) }, secrets, globalThis.fetch, origin,
       async () => { await initialized; return access.getSnapshot().models },
-      agents ? agents.resolvePolicyBinding : undefined,
+      agents || market ? async sessionId => {
+        const local = await market?.resolveBinding(sessionId)
+        return local ?? agents?.resolvePolicyBinding(sessionId)
+      } : undefined,
       agents ? createChatImageReader(() => ctx.get('attachments'),async sessionId=>{
         await access.authorizeChat()
+        const local = await market?.resolveWorkspace(sessionId)
+        if (local) return local
         const binding=await agents.resolveBinding(sessionId)
         if(!binding)throw Error('AGENT_BINDING_REQUIRED')
-        return (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)
+        return agents.workspacePath(binding)
       }) : undefined,
       async()=>{await initialized;return access.authorizeTemplates()})
     llmCtx.effect(() => {
@@ -270,10 +313,28 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     cancel: close,
   })
   ctx.provide('platformDevLogin', service)
+  mountCandidateConsent(ctx, {authorize: async sessionId => {
+    const current = await service.authorizeLocal()
+    const binding = await agents?.resolveBinding(sessionId)
+    current.signal.throwIfAborted()
+    if (!binding) throw Error('CURRENT_AGENT_TASK_REQUIRED')
+    return {tenantId: current.tenantId, actorId: current.userId, sessionId, taskBinding: canonicalContractJson(binding), signal: current.signal}
+  }})
   if (identity && agents) {
-    mountWebsite(ctx,origin,async sessionId=>{await initialized;await agents.authorizeBusiness(sessionId,'web');const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)}})
-    const shop=mountShop(ctx, async () => { const target=await service.resolveSystemApplication('shop');return {owner:target.owner,signal:target.signal,origin:new URL(target.url).origin} },sessionId=>agents.authorizeBusiness(sessionId,'shop'))
-    mountAgentImages(ctx,origin,async sessionId=>{await initialized;const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId);if(!binding)throw Error('AGENT_SESSION_REQUIRED');return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await (binding.releaseVersion?agents.installations.runtime(binding.releaseVersion):agents.store).workspacePath(binding.agentId)}},shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
+    mountWebsite(ctx,origin,async (sessionId, tool)=>{
+      await initialized
+      const principal = await agents.authorizeBusiness(sessionId,'web',tool), credentials = await authorizeSystem('web')
+      if ('kind' in principal) return { ...credentials, ...principal }
+      return {...credentials,agentId:principal.agentId,version:principal.version,...(principal.releaseVersion?{releaseVersion:principal.releaseVersion}:{}),workspacePath:await agents.workspacePath(principal)}
+    })
+    const shop=mountShop(ctx, async () => { const credentials=await authorizeSystem('shop'),target=await service.resolveSystemApplication('shop');credentials.signal.throwIfAborted();return {owner:target.owner,signal:credentials.signal,origin:new URL(target.url).origin} },sessionId=>agents.authorizeBusiness(sessionId,'shop'))
+    mountAgentImages(ctx,origin,async sessionId=>{
+      await initialized
+      const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId)
+      if(!binding)throw Error('AGENT_SESSION_REQUIRED')
+      if(binding.snapshotVersion)await agents.boundSnapshot(binding.agentId,binding.releaseVersion,binding.snapshotVersion)
+      return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await agents.workspacePath(binding)}
+    },shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
   }
   ctx.effect(() => () => { access.dispose(); close() }, 'futurestaff-platform-access: login and callback lifecycle')
   ctx.effect(() => ctx.webServer.register({

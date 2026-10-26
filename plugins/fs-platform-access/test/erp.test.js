@@ -4,6 +4,16 @@ import { ErpService } from '../lib/erp.js'
 import { erpActionBodySchema } from '../lib/erp-host.js'
 
 const identity={tenantId:'00000000-0000-0000-0000-000000000001',userId:'00000000-0000-0000-0000-000000000002',accessToken:'private-desktop',signal:new AbortController().signal}
+test('local template ERP keeps its full authority signal without serializing an invented Agent binding',async()=>{
+ const auth=new AbortController();let requestSignal
+ const service=new ErpService('https://platform.fsstory.net',async()=>identity,async(url,init)=>{
+  requestSignal=init.signal
+  if(url.endsWith('/agent/token')){assert.equal(init.body,undefined);return Response.json({accessToken:'short-token',tenantId:identity.tenantId,memberId:identity.userId,audience:'futurestaff-erp-prod',tokenType:'Bearer',expiresIn:60})}
+  auth.abort();assert.equal(init.signal.aborted,true);return Response.json({})
+ },()=>Date.now(),async()=>({kind:'local-template',signal:auth.signal}))
+ await assert.rejects(service.query({resource:'customers'},'local-session'))
+ assert.equal(requestSignal.aborted,true)
+})
 test('order forms carry verified draft fields without writing or inventing a price',async()=>{
  const h=harness(),customer='00000000-0000-0000-0000-000000000003',product='00000000-0000-0000-0000-000000000004'
  const view=await h.service.form('sales','session-1',undefined,{customer_id:customer,items:[{product_id:product,quantity:200}]})

@@ -45,6 +45,7 @@ export function mountErp(ctx:Context,origin:string,authorize:ConstructorParamete
   for(const definition of definitions)toolCtx.effect(()=>toolCtx.tools.register({name:definition.name,description:definition.description,parameters:definition.parameters,
    output:{schema:{type:'object',additionalProperties:true},render:(_args,value)=>{const view=value as unknown as {viewId:string;sessionId:string;title:string};return [{type:'text',text:JSON.stringify({kind:'futurestaff.erp',viewId:view.viewId,sessionId:view.sessionId,title:view.title})},{type:'text',text:JSON.stringify(value)}]},presentationMeta:(_args,value)=>{const view=value as unknown as {viewId:string;sessionId:string;title:string};return {kind:'futurestaff.erp',viewId:view.viewId,sessionId:view.sessionId,title:view.title}}},
    execute:async(input,exec)=>{if(!exec.agent)throw Error('ERP_SESSION_REQUIRED');try{
+    await authorizeSession?.(exec.agent.id, definition.name)
     const identity=await authorize(),agent=exec.agent
     returns.bind(agent.id,identity.tenantId+':'+identity.userId,async(view,sourceId)=>{
      identity.signal.throwIfAborted()

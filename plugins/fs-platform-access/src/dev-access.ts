@@ -24,6 +24,7 @@ import {
 import { clearTenantBoundary, type TenantIsolationBoundary } from './isolation.js'
 import type { StoredPlatformSession } from './session-vault.js'
 import type { LoginWorkspace } from './workspace.js'
+import { systemApplicationIds, type SystemApplicationId } from './system-policy.js'
 
 export type PlatformDevAccessPhase = 'signed_out' | 'loading' | 'selecting_tenant' | 'ready' | 'no_apps' | 'expired' | 'error'
 
@@ -292,6 +293,8 @@ export class PlatformDevAccessController {
   #user: User | undefined
   #generation = 0
   #request = new AbortController()
+  #applicationEpochs = new Map<SystemApplicationId, AbortController>(systemApplicationIds.map(id => [id, new AbortController()]))
+  #applicationSignals = new Map<string, { identity: AbortSignal; epochs: AbortSignal[]; signal: AbortSignal }>()
   #queue: Promise<void> = Promise.resolve()
   #pendingLogin: { session: DesktopSession; user: User; loginIdentifier: string; password: string; expiresAt: number } | undefined
   #pendingExpiry: NodeJS.Timeout | undefined
@@ -367,13 +370,45 @@ export class PlatformDevAccessController {
   }
 
   /** Host-only access; intentionally absent from all renderer HTTP routes. */
-  authorizeTemplates(): Promise<{ accessToken: string; tenantId: string; userId: string; signal: AbortSignal }> {
+  authorizeTemplates(): Promise<{ accessToken: string; tenantId: string; userId: string; signal: AbortSignal; applications: readonly AuthorizedApplication[]; restrictApplications(required: readonly SystemApplicationId[]): void }> {
     return this.#enqueue(async () => {
       await this.#renewIfNeeded()
       if (!this.#session || !this.#user || !['ready', 'no_apps'].includes(this.#snapshot.phase)
         || this.#snapshot.activeTenantId !== this.#session.activeTenantId) throw new Error('PLATFORM_LOGIN_REQUIRED')
+      const session = this.#session, user = this.#user, signal = this.#request.signal
+      let result: { readonly activeTenantId: string; readonly items: readonly AuthorizedApplication[] }
+      try { result = await this.api.listApplications(session.accessToken, session.activeTenantId, signal) }
+      catch (error) {
+        if (!(error instanceof PlatformApiError) || error.code !== 'APPLICATION_ACCESS_DENIED') throw error
+        result = { activeTenantId: session.activeTenantId, items: [] }
+      }
+      signal.throwIfAborted()
+      if (this.#session !== session || this.#user !== user || result.activeTenantId !== session.activeTenantId || !Array.isArray(result.items) || result.items.length > 200) throw Error('PLATFORM_IDENTITY_MISMATCH')
+      const applications = Object.freeze(result.items.map(safeApplication))
+      if (applications.some(app => app.tenantId !== session.activeTenantId) || new Set(applications.map(app => app.appId)).size !== applications.length) throw Error('PLATFORM_IDENTITY_MISMATCH')
+      const phase = applications.length ? 'ready' : 'no_apps'
+      if (this.#snapshot.phase !== phase || JSON.stringify(this.#snapshot.applications) !== JSON.stringify(applications)) this.#publish({ ...this.#snapshot, phase, applications })
+      // The renderer cannot control this hook. A queued operation captures the
+      // epochs now, then claims only its actual systems once their recipe is known.
+      const epochs = new Map([...this.#applicationEpochs].map(([id, controller]) => [id, controller.signal]))
+      const required = new Set<SystemApplicationId>()
+      let operationSignal = signal
       return { accessToken: this.#session.accessToken, tenantId: this.#session.activeTenantId,
-        userId: this.#user.userId, signal: this.#request.signal }
+        userId: this.#user.userId, get signal() { return operationSignal }, applications: this.#snapshot.applications,
+        restrictApplications: dependencies => {
+          let changed = false
+          for (const id of dependencies) { if (!epochs.has(id)) throw Error('AGENT_APPLICATION_REQUIRED'); if (!required.has(id)) { required.add(id); changed = true } }
+          if (changed) {
+            const ids = [...required].sort(), captured = ids.map(id => epochs.get(id)!), key = ids.join(',')
+            let scoped = this.#applicationSignals.get(key)
+            if (!scoped || scoped.identity !== signal || scoped.epochs.some((epoch, index) => epoch !== captured[index])) {
+              scoped = { identity: signal, epochs: captured, signal: AbortSignal.any([signal, ...captured]) }
+              this.#applicationSignals.set(key, scoped)
+            }
+            operationSignal = scoped.signal
+          }
+          operationSignal.throwIfAborted()
+        } }
     })
   }
 
@@ -730,5 +765,15 @@ export class PlatformDevAccessController {
     })
   }
 
-  #publish(snapshot: PlatformDevAccessSnapshot): void { this.#snapshot = Object.freeze(snapshot) }
+  #publish(snapshot: PlatformDevAccessSnapshot): void {
+    const grant = (state: PlatformDevAccessSnapshot, id: SystemApplicationId) => {
+      const app = state.applications.find(item => item.appId === id && item.tenantId === state.activeTenantId && item.capabilities.length)
+      return app ? JSON.stringify([app.tenantId, [...app.capabilities].sort()]) : ''
+    }
+    for (const id of systemApplicationIds) if (grant(this.#snapshot, id) !== grant(snapshot, id)) {
+      this.#applicationEpochs.get(id)!.abort()
+      this.#applicationEpochs.set(id, new AbortController())
+    }
+    this.#snapshot = Object.freeze(snapshot)
+  }
 }

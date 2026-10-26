@@ -124,6 +124,48 @@ describe('desktop profile composition', {
     ), 'utf8')).toBe('# Cordis plugin development\n')
   })
 
+  it('preserves member preset roots, trust and preferences while adding the packaged presets', () => {
+    const home = temporaryHome()
+    const source = ensureDesktopProfile(home)
+    const manifest = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8')) as {
+      dsh: { profile: { bundles: string[] } }
+    }
+    const member = join(home, 'profiles', 'fs-production-local-talent')
+    initProfile(member, manifest.dsh.profile.bundles)
+    const configuredRoots = [
+      { path: join(home, 'member-talent-presets'), trust: 'system' },
+      { path: join(home, 'personal-presets'), trust: 'user' },
+    ]
+    const config = { roots: configuredRoots, default: 'member-choice', includeUserRoot: false, includeShippedRoot: false }
+    const patchPath = join(member, 'cordis.patch.yml')
+    const patch = JSON.stringify([{ id: 'agent-presets', config }]) + '\n'
+    writeFileSync(patchPath, patch)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'win32', 'fs-production-local-talent')
+    const presets = composeEntries([prepared.patches]).find(row => row.id === 'agent-presets')
+    expect(presets?.config).toEqual(expect.objectContaining({
+      ...config,
+      roots: [...configuredRoots, { path: shippedPresetRoot(), trust: 'system' }],
+    }))
+    expect(readFileSync(patchPath, 'utf8')).toBe(patch)
+  })
+
+  it('does not append a second packaged preset root already configured by the profile', () => {
+    const home = temporaryHome()
+    const profile = ensureDesktopProfile(home)
+    const configuredRoots = [
+      { path: join(home, 'member-presets'), trust: 'user' },
+      { path: shippedPresetRoot(), trust: 'system' },
+    ]
+    writeFileSync(join(profile, 'cordis.patch.yml'), JSON.stringify([{
+      id: 'agent-presets', config: { roots: configuredRoots, default: 'standard', includeUserRoot: true },
+    }]) + '\n')
+
+    const prepared = prepareDesktopProfile(undefined, home, 'darwin')
+    const presets = composeEntries([prepared.patches]).find(row => row.id === 'agent-presets')
+    expect(presets?.config).toEqual(expect.objectContaining({ roots: configuredRoots, default: 'standard', includeUserRoot: true }))
+  })
+
   it('adds the Web surface before third-party bundles and removes the launcher bundle duplicate', () => {
     expect(desktopBundleList([
       '@deepseek-ai/dsh-base',

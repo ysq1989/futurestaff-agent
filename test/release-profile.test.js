@@ -16,6 +16,14 @@ test('stages a relocatable built-only FutureStaff Profile', async () => {
     const files = await verifyReleaseProfile(temporary, root)
     assert.ok(files.includes('node_modules/@futurestaff/fs-core/lib/index.js'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/index.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/message-card.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/message-card.d.ts'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/agent-message-card-contract.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/agent-message-card-host.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/agent-message-cards.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/agent-message-card-gallery.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/erp-card-state.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/erp-gallery.js'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-product-hub-ui/lib/client/index.js'))
     assert.ok(!files.some(file => file.startsWith('node_modules/@futurestaff/fs-product-hub-ui/ui/')))
     assert.ok(files.includes('node_modules/@futurestaff/fs-geo/lib/ui/index.html'))
@@ -117,6 +125,26 @@ test('pins the release runtime and platform contract in the staged manifest', as
     assert.equal(Object.keys(previousDesktop.platformFiles).length, 206)
     assert.ok(result.releaseManifest.supersedes.includes(previousDesktop.manifestDigest))
     assert.ok(result.releaseManifest.workspacePreviousInventories.some(files => JSON.stringify(files) === JSON.stringify(previousDesktop.platformFiles)))
+    const geoAssistantDesktop = JSON.parse(await readFile(path.join(root, 'profile/workspace-upgrade-3.3.0.json'), 'utf8'))
+    assert.equal(geoAssistantDesktop.installerSha256, 'bc9217bd8e67f2e5cd186e90b979e0f45a4bc45ef8790a9a80a74a4b81fc706e')
+    assert.equal(geoAssistantDesktop.manifestDigest, 'c4e3cfee66f588ec7528eb2e27cded67dbb3461aba22e517c1359fdf8be72a5f')
+    assert.equal(Object.keys(geoAssistantDesktop.platformFiles).length, 218)
+    assert.equal(Object.keys(geoAssistantDesktop.geoFiles).length, 150)
+    assert.ok(result.releaseManifest.supersedes.includes(geoAssistantDesktop.manifestDigest))
+    assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
+      JSON.stringify(files) === JSON.stringify(geoAssistantDesktop.platformFiles)))
+    const interactionDesktop = JSON.parse(await readFile(path.join(root, 'profile', 'workspace-upgrade-3.3.0-interactions.json'), 'utf8'))
+    assert.equal(Object.keys(interactionDesktop.platformFiles).length, 266)
+    assert.ok(result.releaseManifest.supersedes.includes(interactionDesktop.manifestDigest))
+    assert.ok(result.releaseManifest.workspacePreviousInventories.some(files =>
+      JSON.stringify(files) === JSON.stringify(interactionDesktop.platformFiles)))
+    assert.deepEqual(result.releaseManifest.workspacePreviousPlatformPackageHashes,
+      [interactionDesktop.platformPackageSha256, ...interactionDesktop.additionalPlatformPackageHashes])
+    assert.ok(result.releaseManifest.workspacePreviousGeoInventories.some(files =>
+      JSON.stringify(files) === JSON.stringify(geoAssistantDesktop.geoFiles)))
+    // Keep the stock 3.3.0 UI lineage even after rebuilding today's current UI.
+    assert.equal(geoAssistantDesktop.platformFiles['node_modules/@futurestaff/fs-platform-access/lib/client.js'],
+      '86b4a203d911c18aaf20dbddb1a35178b8ab7549e8288f2413242f72a9efd414')
   } finally {
     await rm(temporary, { recursive: true, force: true })
   }

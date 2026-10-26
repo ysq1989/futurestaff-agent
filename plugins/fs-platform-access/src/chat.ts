@@ -4,7 +4,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { LlmAdapter, LlmError, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { PlatformProtectedSecrets } from './session-vault.js'
-import {businessToolAllowed,type BusinessSystem} from './business-scope.js'
+import {businessToolAllowed,decodeBusinessSystems,templateToolAllowed,type BusinessSystem} from './business-scope.js'
 import {shopSelectionInstructions,shopSelectionTurnContext} from './shop-selection.js'
 import {shopThemeInstructions,normalizeThemeCatalogHistory,shopThemeCompletion,shopImageRecovery} from './shop-theme-guidance.js'
 import type { AgentModelPolicy } from './agents.js'
@@ -26,9 +26,40 @@ export interface ChatAgentBinding {
   identity?:Pick<ChatIdentity,'userId'|'tenantId'>
   signal?:AbortSignal
 }
+/** Host-verified installed template session; it is never a Platform Agent identity. */
+export interface ChatTemplateBinding {
+  kind:'local-template'
+  templateId:string
+  version:string
+  businessSystems:readonly BusinessSystem[]
+  tools?:readonly string[]
+  identity:Pick<ChatIdentity,'userId'|'tenantId'>
+  signal:AbortSignal
+}
+export type ChatBinding = ChatAgentBinding | ChatTemplateBinding
+
+function isTemplateBinding(binding:ChatBinding):binding is ChatTemplateBinding {
+  return 'kind' in binding && binding.kind==='local-template'
+}
+
+function validateTemplateBinding(binding:ChatTemplateBinding):void {
+  let invalidScope=false
+  try{decodeBusinessSystems(binding.businessSystems)}catch{invalidScope=true}
+  if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(binding.templateId)
+    || !/^[a-f0-9]{64}$/.test(binding.version) || invalidScope
+    || (binding.tools!==undefined&&(!Array.isArray(binding.tools)||binding.tools.length>512||new Set(binding.tools).size!==binding.tools.length
+      || binding.tools.some(name=>typeof name!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(name))))
+    || !binding.identity || typeof binding.identity.userId!=='string' || !binding.identity.userId
+    || typeof binding.identity.tenantId!=='string' || !binding.identity.tenantId
+    || !binding.signal || typeof binding.signal.throwIfAborted!=='function'
+    || 'agentId' in binding || 'modelPolicy' in binding || 'releaseVersion' in binding) {
+    throw new LlmError('本地人才会话归属无法确认，请从已安装人才新建会话。','FUTURESTAFF_AGENT_BINDING')
+  }
+}
 
 const unavailable = () => new LlmError('平台聊天服务暂时不可用，请检查登录状态或联系管理员。', 'FUTURESTAFF_CHAT')
 const invalid = () => new LlmError('平台聊天响应不完整或版本不兼容。', 'FUTURESTAFF_CONTRACT')
+const messageCardInstructions = '交互消息卡片：需要展示信息、让用户选择或补全简单字段时，使用 agent_message_card 提供结构化数据，由客户端绘制卡片；不要输出 HTML、脚本或伪造按钮。用户点击或提交后，其真实响应会返回原会话，请据此继续处理。卡片按钮不授予任何业务写入权限；商品推荐、ERP 确认和图片成果优先使用对应的专用工具与既有授权、预览及确认流程，通用卡片不能替代业务确认。'
 const textOnly = (blocks: readonly ContentBlock[]): string => blocks.map(block => {
   if (block.type !== 'text') throw new LlmError('当前平台聊天仅支持文字，请移除图片或其他附件。', 'FUTURESTAFF_TEXT_ONLY')
   return block.text
@@ -115,7 +146,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     private readonly fetcher: typeof fetch = fetch,
     private readonly origin: string = 'https://dev.fsstory.net',
     private readonly catalog: () => Promise<readonly PlatformModel[]> = async () => [],
-    private readonly agentBinding?: (sessionId: string) => Promise<ChatAgentBinding | undefined>,
+    private readonly agentBinding?: (sessionId: string) => Promise<ChatBinding | undefined>,
     private readonly readImage?: ChatImageReader,
     private readonly identitySnapshot?: () => Promise<ChatIdentity>,
   ) { super(); assertPlatformOrigin(origin) }
@@ -211,33 +242,40 @@ export class FutureStaffChatAdapter extends LlmAdapter {
 
   async *#run(options: GenerateOptions, identity?:ChatIdentity): AsyncIterable<StreamChunk> {
     if(typeof options.sessionId!=='string'||!options.sessionId||options.sessionId.length>256)throw new LlmError('请在新建会话中使用平台聊天。','FUTURESTAFF_SESSION')
-    let agent:ChatAgentBinding|undefined
+    let binding:ChatBinding|undefined
     try {
-      agent = this.agentBinding && options.sessionId ? await this.agentBinding(options.sessionId) : undefined
+      binding = this.agentBinding && options.sessionId ? await this.agentBinding(options.sessionId) : undefined
     } catch (error) {
       identity?.signal.throwIfAborted()
       if(error instanceof Error&&error.message==='AGENT_MODEL_VERSION_CHANGED')throw new LlmError('智能体配置已更新，请重新选择智能体并新建会话。原会话记录仍保留。','FUTURESTAFF_AGENT_VERSION')
       throw new LlmError('智能体会话归属无法确认，请重新选择智能体并新建会话。', 'FUTURESTAFF_AGENT_BINDING')
     }
-    if (this.agentBinding && !agent) throw new LlmError('请先选择智能体，再创建会话；历史会话保留在旧工作区。', 'FUTURESTAFF_AGENT_REQUIRED')
+    if (this.agentBinding && !binding) throw new LlmError('请先选择智能体，再创建会话；历史会话保留在旧工作区。', 'FUTURESTAFF_AGENT_REQUIRED')
+    const template=binding&&isTemplateBinding(binding)?binding:undefined
+    const agent=binding&&!isTemplateBinding(binding)?binding:undefined
+    if(template)validateTemplateBinding(template)
     if(agent&&!agent.modelPolicy)throw new LlmError('此会话尚未绑定智能体模型配置，请重新选择智能体并新建会话。','FUTURESTAFF_AGENT_VERSION')
     const selected=options.model==='default'&&agent?agent.modelPolicy!.primaryModelId:options.model
     if(!selected)throw new LlmError('智能体尚未配置可用主模型，请联系管理员；不会自动切换到其他模型。','FUTURESTAFF_AGENT_MODEL')
-    identity?.signal.throwIfAborted();agent?.signal?.throwIfAborted();options.signal?.throwIfAborted()
+    identity?.signal.throwIfAborted();binding?.signal?.throwIfAborted();options.signal?.throwIfAborted()
     const currentIdentity=await this.#captureIdentity()
+    if(template&&(!identity||!currentIdentity))throw new LlmError('本地人才聊天需要确认当前账号与主体，请重新登录。','FUTURESTAFF_AUTH')
     if(identity&&((currentIdentity&&(currentIdentity.userId!==identity.userId||currentIdentity.tenantId!==identity.tenantId))
-      ||(agent?.identity&&(agent.identity.userId!==identity.userId||agent.identity.tenantId!==identity.tenantId))))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
+      ||(binding?.identity&&(binding.identity.userId!==identity.userId||binding.identity.tenantId!==identity.tenantId))))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
     // Model authorization comes after the trusted Session and policy, never from the tenant default for a bound Agent.
     const credentials=await this.#credentials(selected)
     if((identity&&(credentials.userId!==identity.userId||credentials.tenantId!==identity.tenantId))
-      ||(agent?.identity&&(credentials.userId!==agent.identity.userId||credentials.tenantId!==agent.identity.tenantId)))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
-    identity?.signal.throwIfAborted();agent?.signal?.throwIfAborted();credentials.signal.throwIfAborted();options.signal?.throwIfAborted()
+      ||(binding?.identity&&(credentials.userId!==binding.identity.userId||credentials.tenantId!==binding.identity.tenantId)))throw new LlmError('此会话的账号或租户已变化，请重新选择智能体并新建会话。','FUTURESTAFF_TENANT')
+    if(template&&!(await this.catalog()).some(model=>model.modelId===credentials.modelId))throw new LlmError('当前账号已无权使用所选模型，请刷新平台模型后重试。','FUTURESTAFF_AUTH')
+    identity?.signal.throwIfAborted();binding?.signal?.throwIfAborted();credentials.signal.throwIfAborted();options.signal?.throwIfAborted()
     try { await this.#bind(options, credentials) } catch (error) {
       credentials.signal.throwIfAborted()
       if (error instanceof LlmError) throw error
       throw new LlmError('无法保存此会话的账号归属，请检查本机受保护存储。', 'FUTURESTAFF_STORAGE')
     }
-    if(options.tools)options={...options,tools:options.tools.filter(tool=>businessToolAllowed(tool.name,agent?.businessSystems))}
+    if(options.tools)options={...options,tools:options.tools.filter(tool=>template
+      ?templateToolAllowed(tool.name,template.tools,template.businessSystems)
+      :businessToolAllowed(tool.name,binding?.businessSystems))}
     let themeRecovery:ReturnType<typeof shopImageRecovery>
     if(agent?.businessSystems?.includes('shop')&&!options.purpose){
       const recovery=shopImageRecovery(options.messages)
@@ -256,6 +294,9 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       options={...options,system:[options.system,shopSelectionInstructions,shopThemeInstructions,selection,recovery?recovery.notice+' 本会话有待恢复图片，agent_image_generate暂不可用。先agent_image_status查询上述原请求，成功才继续上传；失败/unknown明确停止。':undefined].filter(Boolean).join('\n\n'),
         ...(selection&&options.tools?{tools:options.tools.filter(tool=>!['shop_call','ask_user_question'].includes(tool.name))}:{})}
     }
+    if(!options.purpose&&options.tools?.some(tool=>tool.name==='agent_message_card')){
+      options={...options,system:[options.system,messageCardInstructions].filter(Boolean).join('\n\n')}
+    }
     if(options.messages.some(m=>m.content.some(b=>(b.type==='tool-result'?b.content:[b]).some(image=>image.type==='image'&&!(image as ContentBlock & {offloaded?:boolean}).offloaded)))){
       const selected=(await this.catalog()).find(m=>m.modelId===credentials.modelId)
       if(!selected?.supportsVision)throw new LlmError('当前模型不支持图片，请选择支持图片的模型。','FUTURESTAFF_IMAGES')
@@ -269,7 +310,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     const abort = new AbortController()
     const timeout = setTimeout(() => abort.abort(), 130_000)
     timeout.unref()
-    const signal = AbortSignal.any([credentials.signal, abort.signal, this.#lifetime.signal,...(agent?.signal?[agent.signal]:[]),
+    const signal = AbortSignal.any([credentials.signal, abort.signal, this.#lifetime.signal,...(binding?.signal?[binding.signal]:[]),
       ...(options.signal ? [options.signal] : [])])
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
     try {

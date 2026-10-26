@@ -166,7 +166,6 @@ export function createAccountSidebar(controller: SidebarAccountController,pages?
         {snapshot.phase==='error' && <p role="status">系统授权读取失败，请在账号设置中重新连接。</p>}
       </section>
       <footer className="fs-sidebar-footer" ref={footer}>
-        {pages?.has('agents')&&authenticated&&<button type="button" className="fs-sidebar-system" aria-label="打开智能体中心" title="智能体中心" onClick={()=>pages.open('agents')}><span className="fs-system-icon" aria-hidden="true"><SystemIcon id="hub"/></span>{!collapsed&&<span>智能体中心</span>}</button>}
         <div className="fs-sidebar-account" data-open={accountOpen}>
           <div className="fs-sidebar-subject" title={identity.tenantName} hidden={!accountOpen}><SubjectLogo name={identity.tenantName} url={identity.logoUrl}/><span className="fs-sidebar-name"><small>当前主体</small>{identity.tenantName}</span></div>
           <div key={snapshot.activeTenantId ?? 'signed-out'} className="fs-sidebar-settings">{renderSlot('sidebar.settings', { wide: true })}</div>

@@ -1,15 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { lstat, mkdir, readFile, realpath, rename, writeFile, unlink, link } from 'node:fs/promises'
+import { lstat, mkdir, readFile, realpath, rename, writeFile, unlink, link, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { requireUuid } from './contracts.js'
 import { assertPlatformOrigin } from './environment.js'
 import type { WorkspaceIdentity } from './workspace.js'
 import {decodeBusinessSystems,type BusinessSystem} from './business-scope.js'
+import type { ApplicationAuthority } from './system-policy.js'
 
 export interface AgentCard { agentId: string; name: string; description: string; available: boolean; unavailableReason: string | null }
 export interface AgentModelPolicy { primaryModelId: string | null; fallbackModelId: string | null }
 export interface AgentSnapshot { agentId: string; name: string; description: string; version: string; files: { path: string; content: string }[]; businessSystems?:BusinessSystem[]; modelPolicy?:AgentModelPolicy; legacyVersion?:string }
-export interface AgentCredentials { accessToken: string; tenantId: string; userId: string; signal: AbortSignal }
+export interface AgentCredentials extends ApplicationAuthority { accessToken: string; tenantId: string; userId: string; signal: AbortSignal }
 const id = (value: string) => requireUuid({id:value},'id').toLowerCase()
 const error = () => new Error('AGENT_CONTRACT_INVALID')
 const record = (value: unknown): value is Record<string,unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -92,16 +93,56 @@ export async function atomicBytes(file:string,value:Uint8Array):Promise<void>{
   try{await writeFile(temporary,value,{flag:'wx',mode:0o600});await rename(temporary,file)}finally{await unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e})}
 }
 export class AgentWorkspaceStore {
-  constructor(readonly root:string,readonly identity:WorkspaceIdentity,readonly releaseVersion?:string){if(!path.isAbsolute(root))throw error();id(identity.tenantId);id(identity.userId);if(releaseVersion&&!/^[a-f0-9]{64}$/.test(releaseVersion))throw error()}
-  directory(agentId:string):string{const base=path.join(this.root,'agents',id(agentId));return this.releaseVersion?path.join(base,'releases',this.releaseVersion):base}
+  constructor(readonly root:string,readonly identity:WorkspaceIdentity,readonly releaseVersion?:string,readonly snapshotVersion?:string){if(!path.isAbsolute(root))throw error();id(identity.tenantId);id(identity.userId);if((releaseVersion&&!/^[a-f0-9]{64}$/.test(releaseVersion))||(snapshotVersion&&!/^[a-f0-9]{64}$/.test(snapshotVersion))||(releaseVersion&&snapshotVersion))throw error()}
+  directory(agentId:string):string{const base=path.join(this.root,'agents',id(agentId));return this.releaseVersion?path.join(base,'releases',this.releaseVersion):this.snapshotVersion?path.join(base,'snapshots',this.snapshotVersion):base}
   /** Match the native registry's canonical paths, including Windows app virtualization. */
   async workspacePath(agentId:string):Promise<string>{
     const directory=path.join(this.directory(agentId),'workspace')
     try{await existingTree(directory);return await realpath(directory)}
     catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return directory;throw e}
   }
-  async materialize(raw:AgentSnapshot,signal:AbortSignal):Promise<string>{
+  private async materializeSnapshot(snapshot:AgentSnapshot,signal:AbortSignal,beforeCommit?:()=>Promise<void>):Promise<string>{
+    const directory=this.directory(snapshot.agentId)
+    let previous:AgentSnapshot|undefined
+    try{previous=await this.snapshot(snapshot.agentId)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
+    if(previous){
+      if(JSON.stringify(previous)!==JSON.stringify(snapshot))throw new Error('AGENT_SNAPSHOT_CHANGED')
+      await existingTree(path.join(directory,'workspace'));await beforeCommit?.();signal.throwIfAborted();return directory
+    }
+    // An incomplete or independently created destination belongs to its writer.
+    // Never reconcile it with managed files or remove it during rollback.
+    try{await lstat(directory);throw new Error('AGENT_SNAPSHOT_LOCAL_CONFLICT')}
+    catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
+    const parent=path.dirname(directory);await ensureTree(parent);signal.throwIfAborted()
+    const staging=path.join(parent,`.snapshot-stage-${randomUUID()}`)
+    await mkdir(staging,{mode:0o700})
+    try{
+      const staged=new AgentWorkspaceStore(staging,this.identity)
+      const prepared=await staged.materialize(snapshot,signal)
+      await beforeCommit?.();signal.throwIfAborted()
+      try{await rename(prepared,directory)}catch(e){
+        // Atomic directory publication never merges into an existing workspace.
+        // A concurrent identical installation may be reused without changing it.
+        try{
+          const concurrent=await this.snapshot(snapshot.agentId)
+          if(JSON.stringify(concurrent)===JSON.stringify(snapshot)){await existingTree(path.join(directory,'workspace'));return directory}
+        }catch{}
+        try{await lstat(directory);throw new Error('AGENT_SNAPSHOT_LOCAL_CONFLICT')}
+        catch(conflict){if((conflict as NodeJS.ErrnoException).code!=='ENOENT')throw conflict}
+        throw e
+      }
+      return directory
+    }finally{
+      // The random private staging root is never exposed as a native workspace.
+      // Check its owned parent and real-directory chain before recursive cleanup.
+      if(path.dirname(staging)!==parent||!path.basename(staging).startsWith('.snapshot-stage-'))throw error()
+      await existingTree(staging);await rm(staging,{recursive:true,force:true})
+    }
+  }
+  async materialize(raw:AgentSnapshot,signal:AbortSignal,beforeCommit?:()=>Promise<void>):Promise<string>{
     const snapshot=decodeAgentSnapshot(raw);signal.throwIfAborted()
+    if(this.snapshotVersion&&(snapshot.version!==this.snapshotVersion||!snapshot.modelPolicy))throw new Error('AGENT_SNAPSHOT_CHANGED')
+    if(this.snapshotVersion)return this.materializeSnapshot(snapshot,signal,beforeCommit)
     const directory=this.directory(snapshot.agentId)
     let previous:AgentSnapshot|undefined
     try{previous=await this.snapshot(snapshot.agentId)}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
@@ -135,7 +176,9 @@ export class AgentWorkspaceStore {
     const directory=this.directory(agentId);await existingTree(path.join(directory,'definition'))
     const target=path.join(directory,'definition','snapshot.json')
     if((await lstat(target)).isSymbolicLink())throw error()
-    return decodeAgentSnapshot(JSON.parse(await readFile(target,'utf8')))
+    const snapshot=decodeAgentSnapshot(JSON.parse(await readFile(target,'utf8')))
+    if(this.snapshotVersion&&(snapshot.version!==this.snapshotVersion||!snapshot.modelPolicy))throw new Error('AGENT_SNAPSHOT_CHANGED')
+    return snapshot
   }
   private bindingFile(sessionId:string):string{
     if(!sessionId||sessionId.length>256)throw error()
@@ -182,7 +225,7 @@ export class AgentWorkspaceStore {
   }
   async bind(sessionId:string,agentId:string):Promise<void>{
     const snapshot=await this.snapshot(agentId);const existing=await this.binding(sessionId)
-    if(existing){if(existing.agentId!==id(agentId)||existing.releaseVersion!==this.releaseVersion)throw new Error('AGENT_SESSION_MISMATCH');return}
+    if(existing){if(existing.agentId!==id(agentId)||existing.releaseVersion!==this.releaseVersion||(this.snapshotVersion&&(existing.modelVersion!==this.snapshotVersion||existing.version!==snapshot.legacyVersion)))throw new Error('AGENT_SESSION_MISMATCH');return}
     const file=this.bindingFile(sessionId);await ensureTree(path.dirname(file))
     // Exclusive creation protects against simultaneous attempts to bind different Agents.
     await writeFile(file,JSON.stringify({sessionId,identity:this.identity,agentId:id(agentId),version:snapshot.legacyVersion??snapshot.version,

@@ -1,0 +1,1500 @@
+{
+  "provenance": {
+    "contract": "futurestaff.desktop-consent.v1",
+    "revision": "web-atomic-consent-20261026",
+    "jsonBytes": 69152,
+    "jsonSha256": "90d540ca56e8e0b32d91bdaa539a3c8ad17a9e4b2945c19bd244e4015074e220",
+    "syntheticOnly": true
+  },
+  "schemas": {
+    "DesktopContext": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "format": "uuid",
+          "title": "Agent Id",
+          "type": "string"
+        },
+        "agent_version": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Agent Version",
+          "type": "string"
+        },
+        "agent_release_version": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Agent Release Version",
+          "type": "string"
+        },
+        "client_version": {
+          "pattern": "^[0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5}$",
+          "title": "Client Version",
+          "type": "string"
+        },
+        "client_task_id": {
+          "pattern": "^[A-Za-z0-9_.:-]{1,120}$",
+          "title": "Client Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent_id",
+        "agent_version",
+        "agent_release_version",
+        "client_version",
+        "client_task_id"
+      ],
+      "title": "DesktopContext",
+      "type": "object"
+    },
+    "DesktopProbe": {
+      "$defs": {
+        "DesktopContext": {
+          "additionalProperties": false,
+          "properties": {
+            "agent_id": {
+              "format": "uuid",
+              "title": "Agent Id",
+              "type": "string"
+            },
+            "agent_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Version",
+              "type": "string"
+            },
+            "agent_release_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Release Version",
+              "type": "string"
+            },
+            "client_version": {
+              "pattern": "^[0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5}$",
+              "title": "Client Version",
+              "type": "string"
+            },
+            "client_task_id": {
+              "pattern": "^[A-Za-z0-9_.:-]{1,120}$",
+              "title": "Client Task Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agent_id",
+            "agent_version",
+            "agent_release_version",
+            "client_version",
+            "client_task_id"
+          ],
+          "title": "DesktopContext",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/DesktopContext"
+        }
+      },
+      "required": [
+        "request_id",
+        "context"
+      ],
+      "title": "DesktopProbe",
+      "type": "object"
+    },
+    "PrepareDesktop": {
+      "$defs": {
+        "DesktopContext": {
+          "additionalProperties": false,
+          "properties": {
+            "agent_id": {
+              "format": "uuid",
+              "title": "Agent Id",
+              "type": "string"
+            },
+            "agent_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Version",
+              "type": "string"
+            },
+            "agent_release_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Release Version",
+              "type": "string"
+            },
+            "client_version": {
+              "pattern": "^[0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5}$",
+              "title": "Client Version",
+              "type": "string"
+            },
+            "client_task_id": {
+              "pattern": "^[A-Za-z0-9_.:-]{1,120}$",
+              "title": "Client Task Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agent_id",
+            "agent_version",
+            "agent_release_version",
+            "client_version",
+            "client_task_id"
+          ],
+          "title": "DesktopContext",
+          "type": "object"
+        },
+        "Manifest": {
+          "additionalProperties": false,
+          "properties": {
+            "domain": {
+              "enum": [
+                "enterprise_knowledge",
+                "platform_product_feedback"
+              ],
+              "title": "Domain",
+              "type": "string"
+            },
+            "recipient": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Recipient",
+              "type": "string"
+            },
+            "purpose": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Purpose",
+              "type": "string"
+            },
+            "payload_hash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Payload Hash",
+              "type": "string"
+            },
+            "evidence_manifest_hash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Evidence Manifest Hash",
+              "type": "string"
+            },
+            "scope": {
+              "$ref": "#/$defs/Scope"
+            },
+            "source_versions": {
+              "items": {
+                "$ref": "#/$defs/SourceVersion"
+              },
+              "maxItems": 8,
+              "minItems": 1,
+              "title": "Source Versions",
+              "type": "array"
+            },
+            "selected_fields": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 40,
+              "minItems": 1,
+              "title": "Selected Fields",
+              "type": "array"
+            },
+            "privacy_transform_version": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Privacy Transform Version",
+              "type": "string"
+            },
+            "policy_version": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Policy Version",
+              "type": "string"
+            },
+            "allow_cross_tenant_aggregation": {
+              "title": "Allow Cross Tenant Aggregation",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "domain",
+            "recipient",
+            "purpose",
+            "payload_hash",
+            "evidence_manifest_hash",
+            "scope",
+            "source_versions",
+            "selected_fields",
+            "privacy_transform_version",
+            "policy_version",
+            "allow_cross_tenant_aggregation"
+          ],
+          "title": "Manifest",
+          "type": "object"
+        },
+        "Scope": {
+          "additionalProperties": false,
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "audiences": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 16,
+              "minItems": 1,
+              "title": "Audiences",
+              "type": "array"
+            },
+            "purpose": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Purpose",
+              "type": "string"
+            },
+            "valid_until": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Valid Until"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "audiences",
+            "purpose",
+            "valid_until"
+          ],
+          "title": "Scope",
+          "type": "object"
+        },
+        "SourceVersion": {
+          "additionalProperties": false,
+          "properties": {
+            "source_id": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            },
+            "version": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_id",
+            "version"
+          ],
+          "title": "SourceVersion",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/DesktopContext"
+        },
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        }
+      },
+      "required": [
+        "request_id",
+        "context",
+        "manifest"
+      ],
+      "title": "PrepareDesktop",
+      "type": "object"
+    },
+    "DesktopTarget": {
+      "$defs": {
+        "DesktopContext": {
+          "additionalProperties": false,
+          "properties": {
+            "agent_id": {
+              "format": "uuid",
+              "title": "Agent Id",
+              "type": "string"
+            },
+            "agent_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Version",
+              "type": "string"
+            },
+            "agent_release_version": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Agent Release Version",
+              "type": "string"
+            },
+            "client_version": {
+              "pattern": "^[0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5}$",
+              "title": "Client Version",
+              "type": "string"
+            },
+            "client_task_id": {
+              "pattern": "^[A-Za-z0-9_.:-]{1,120}$",
+              "title": "Client Task Id",
+              "type": "string"
+            }
+          },
+          "required": [
+            "agent_id",
+            "agent_version",
+            "agent_release_version",
+            "client_version",
+            "client_task_id"
+          ],
+          "title": "DesktopContext",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/DesktopContext"
+        },
+        "domain": {
+          "enum": [
+            "enterprise_knowledge",
+            "platform_product_feedback"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "context",
+        "domain",
+        "payload_hash"
+      ],
+      "title": "DesktopTarget",
+      "type": "object"
+    },
+    "RecoveryTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "domain": {
+          "enum": [
+            "enterprise_knowledge",
+            "platform_product_feedback"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "domain",
+        "payload_hash"
+      ],
+      "title": "RecoveryTarget",
+      "type": "object"
+    },
+    "CancelDesktop": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "domain": {
+          "enum": [
+            "enterprise_knowledge",
+            "platform_product_feedback"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        },
+        "operation_request_id": {
+          "format": "uuid",
+          "title": "Operation Request Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "user_cancelled",
+            "identity_changed",
+            "intent_expired"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "domain",
+        "payload_hash",
+        "operation_request_id",
+        "reason"
+      ],
+      "title": "CancelDesktop",
+      "type": "object"
+    },
+    "WebTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id"
+      ],
+      "title": "WebTarget",
+      "type": "object"
+    },
+    "WebPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "format": "uuid",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "target_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Target Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "target_hash"
+      ],
+      "title": "WebPreview",
+      "type": "object"
+    },
+    "ConfirmDesktop": {
+      "$defs": {
+        "AspectRatio": {
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Width",
+              "type": "integer"
+            },
+            "height": {
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Height",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "title": "AspectRatio",
+          "type": "object"
+        },
+        "Evidence": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "format": "uuid",
+              "title": "Evidence Id",
+              "type": "string"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRef"
+            },
+            "excerpt": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "title": "Excerpt",
+              "type": "string"
+            },
+            "basis": {
+              "enum": [
+                "explicit_user",
+                "model_inference",
+                "resource_verified"
+              ],
+              "title": "Basis",
+              "type": "string"
+            },
+            "relation": {
+              "enum": [
+                "supports",
+                "refutes",
+                "context"
+              ],
+              "title": "Relation",
+              "type": "string"
+            },
+            "sensitivity": {
+              "enum": [
+                "ordinary",
+                "sensitive_allowed",
+                "prohibited"
+              ],
+              "title": "Sensitivity",
+              "type": "string"
+            },
+            "redaction_status": {
+              "enum": [
+                "not_needed",
+                "redacted",
+                "blocked"
+              ],
+              "title": "Redaction Status",
+              "type": "string"
+            },
+            "redaction_version": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Redaction Version",
+              "type": "string"
+            },
+            "asset_refs": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "maxItems": 0,
+              "title": "Asset Refs",
+              "type": "array"
+            }
+          },
+          "required": [
+            "evidence_id",
+            "source",
+            "excerpt",
+            "basis",
+            "relation",
+            "sensitivity",
+            "redaction_status",
+            "redaction_version",
+            "asset_refs"
+          ],
+          "title": "Evidence",
+          "type": "object"
+        },
+        "FeedbackPayload": {
+          "additionalProperties": false,
+          "properties": {
+            "goal": {
+              "maxLength": 800,
+              "minLength": 1,
+              "title": "Goal",
+              "type": "string"
+            },
+            "expected": {
+              "maxLength": 1200,
+              "minLength": 1,
+              "title": "Expected",
+              "type": "string"
+            },
+            "actual": {
+              "maxLength": 1200,
+              "minLength": 1,
+              "title": "Actual",
+              "type": "string"
+            },
+            "entrypoint": {
+              "maxLength": 300,
+              "minLength": 1,
+              "title": "Entrypoint",
+              "type": "string"
+            },
+            "versions": {
+              "$ref": "#/$defs/Versions"
+            },
+            "category": {
+              "enum": [
+                "feature_request",
+                "suspected_bug",
+                "operation_help",
+                "model_limitation",
+                "unknown"
+              ],
+              "title": "Category",
+              "type": "string"
+            },
+            "subcategory": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "discoverability",
+                    "capability_gap_pending_verification",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Subcategory"
+            },
+            "basis": {
+              "enum": [
+                "explicit_user",
+                "model_inference"
+              ],
+              "title": "Basis",
+              "type": "string"
+            },
+            "capability_status": {
+              "enum": [
+                "unknown",
+                "reported",
+                "verified_supported",
+                "verified_gap",
+                "verified_contract_violation",
+                "verified_model_limit"
+              ],
+              "title": "Capability Status",
+              "type": "string"
+            },
+            "aspect_ratio": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/AspectRatio"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pixel_size": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PixelSize"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "repro_steps": {
+              "items": {
+                "maxLength": 500,
+                "type": "string"
+              },
+              "maxItems": 6,
+              "title": "Repro Steps",
+              "type": "array"
+            },
+            "evidence": {
+              "items": {
+                "$ref": "#/$defs/Evidence"
+              },
+              "maxItems": 8,
+              "minItems": 1,
+              "title": "Evidence",
+              "type": "array"
+            }
+          },
+          "required": [
+            "goal",
+            "expected",
+            "actual",
+            "entrypoint",
+            "versions",
+            "category",
+            "subcategory",
+            "basis",
+            "capability_status",
+            "aspect_ratio",
+            "pixel_size",
+            "repro_steps",
+            "evidence"
+          ],
+          "title": "FeedbackPayload",
+          "type": "object"
+        },
+        "KnowledgePayload": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "new_fact",
+                "correction",
+                "expression",
+                "resource_change"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Title",
+              "type": "string"
+            },
+            "proposed_content": {
+              "maxLength": 6000,
+              "minLength": 1,
+              "title": "Proposed Content",
+              "type": "string"
+            },
+            "basis": {
+              "enum": [
+                "explicit_user",
+                "model_inference"
+              ],
+              "title": "Basis",
+              "type": "string"
+            },
+            "base_version_id": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Base Version Id"
+            },
+            "scope": {
+              "$ref": "#/$defs/Scope"
+            },
+            "evidence": {
+              "items": {
+                "$ref": "#/$defs/Evidence"
+              },
+              "maxItems": 8,
+              "minItems": 1,
+              "title": "Evidence",
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "title",
+            "proposed_content",
+            "basis",
+            "base_version_id",
+            "scope",
+            "evidence"
+          ],
+          "title": "KnowledgePayload",
+          "type": "object"
+        },
+        "PixelSize": {
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "maximum": 65536,
+              "minimum": 1,
+              "title": "Width",
+              "type": "integer"
+            },
+            "height": {
+              "maximum": 65536,
+              "minimum": 1,
+              "title": "Height",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "title": "PixelSize",
+          "type": "object"
+        },
+        "Scope": {
+          "additionalProperties": false,
+          "properties": {
+            "policy_id": {
+              "format": "uuid",
+              "title": "Policy Id",
+              "type": "string"
+            },
+            "policy_version": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Policy Version",
+              "type": "integer"
+            },
+            "audiences": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 16,
+              "minItems": 1,
+              "title": "Audiences",
+              "type": "array"
+            },
+            "purpose": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Purpose",
+              "type": "string"
+            },
+            "valid_until": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Valid Until"
+            }
+          },
+          "required": [
+            "policy_id",
+            "policy_version",
+            "audiences",
+            "purpose",
+            "valid_until"
+          ],
+          "title": "Scope",
+          "type": "object"
+        },
+        "SourceRef": {
+          "additionalProperties": false,
+          "properties": {
+            "source_id": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "conversation_excerpt",
+                "resource",
+                "document",
+                "user_statement"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "resource_app": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Resource App"
+            },
+            "opaque_locator": {
+              "anyOf": [
+                {
+                  "maxLength": 300,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Opaque Locator"
+            },
+            "version": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Version",
+              "type": "string"
+            },
+            "content_hash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "Content Hash",
+              "type": "string"
+            },
+            "observed_at": {
+              "format": "date-time",
+              "title": "Observed At",
+              "type": "string"
+            },
+            "verification_status": {
+              "enum": [
+                "reported",
+                "verified",
+                "unverified",
+                "revoked"
+              ],
+              "title": "Verification Status",
+              "type": "string"
+            },
+            "rights_basis": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Rights Basis",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_id",
+            "kind",
+            "resource_app",
+            "opaque_locator",
+            "version",
+            "content_hash",
+            "observed_at",
+            "verification_status",
+            "rights_basis"
+          ],
+          "title": "SourceRef",
+          "type": "object"
+        },
+        "Versions": {
+          "additionalProperties": false,
+          "properties": {
+            "application": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Application",
+              "type": "string"
+            },
+            "client": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Client",
+              "type": "string"
+            },
+            "agent": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Agent",
+              "type": "string"
+            },
+            "tool": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tool"
+            }
+          },
+          "required": [
+            "application",
+            "client",
+            "agent",
+            "tool"
+          ],
+          "title": "Versions",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "operation_request_id": {
+          "format": "uuid",
+          "title": "Operation Request Id",
+          "type": "string"
+        },
+        "confirmation_id": {
+          "format": "uuid",
+          "title": "Confirmation Id",
+          "type": "string"
+        },
+        "preview_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Preview Hash",
+          "type": "string"
+        },
+        "challenge": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Challenge",
+          "type": "string"
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgePayload"
+            },
+            {
+              "$ref": "#/$defs/FeedbackPayload"
+            }
+          ],
+          "title": "Payload"
+        }
+      },
+      "required": [
+        "operation_request_id",
+        "confirmation_id",
+        "preview_hash",
+        "challenge",
+        "payload"
+      ],
+      "title": "ConfirmDesktop",
+      "type": "object"
+    }
+  },
+  "goldens": {
+    "contract_version": 1,
+    "synthetic_only": true,
+    "algorithm": "ASCII object keys sorted; compact JSON; no Unicode normalization; UTF8; SHA256; no floats or lone surrogates",
+    "cases": [
+      {
+        "domain": "enterprise_knowledge",
+        "prepare_metadata_only": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "enterprise_knowledge",
+            "recipient": "tenant_knowledge_intake",
+            "purpose": "knowledge_candidate_review",
+            "payload_hash": "60a72cbdfb830539425512c5385f7bc5423a776aab76787a502252850a5385e7",
+            "evidence_manifest_hash": "e3f3f3201b73afc879ca2ea5726e8f67cdcb82b52962d4860eac2d77ca2753ca",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              }
+            ],
+            "selected_fields": [
+              "kind",
+              "title",
+              "proposed_content",
+              "basis",
+              "base_version_id",
+              "scope",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "human_confirm_payload": {
+          "kind": "expression",
+          "title": "消费者圈层宣传表达（合成）",
+          "proposed_content": "让团队专注更有价值的工作。",
+          "basis": "explicit_user",
+          "base_version_id": null,
+          "scope": {
+            "policy_id": "00000000-0000-4000-8000-000000000002",
+            "policy_version": 1,
+            "audiences": [
+              "customer"
+            ],
+            "purpose": "answer_current_task",
+            "valid_until": null
+          },
+          "evidence": [
+            {
+              "evidence_id": "00000002-0000-4000-8000-000000000001",
+              "source": {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "statement-1",
+                "content_hash": "88e1b781f6fbea443c70203eeda135753e74c507fc0b7e01248c5a018a8e0356",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "合成：消费者宣传使用“让团队专注更有价值的工作”。",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            }
+          ]
+        },
+        "evidence_sha256": "e3f3f3201b73afc879ca2ea5726e8f67cdcb82b52962d4860eac2d77ca2753ca",
+        "bound_payload_sha256": "60a72cbdfb830539425512c5385f7bc5423a776aab76787a502252850a5385e7"
+      },
+      {
+        "domain": "platform_product_feedback",
+        "prepare_metadata_only": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "platform_product_feedback",
+            "recipient": "tenant_feedback_intake",
+            "purpose": "product_feedback_triage",
+            "payload_hash": "459de3a24eef92fae00211052fc0f5d48e7cae8075128f98e25948043abfbc53",
+            "evidence_manifest_hash": "e4f5bcd9f41110185add9e012fae421fedc7be82237bf1211e0b8a53b1c6247b",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              }
+            ],
+            "selected_fields": [
+              "goal",
+              "expected",
+              "actual",
+              "entrypoint",
+              "versions",
+              "category",
+              "subcategory",
+              "basis",
+              "capability_status",
+              "aspect_ratio",
+              "pixel_size",
+              "repro_steps",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "human_confirm_payload": {
+          "goal": "制作竖版宣传图（合成）",
+          "expected": "宽高比 2:3；像素尺寸尚未指定",
+          "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+          "entrypoint": "synthetic/agent/image-options",
+          "versions": {
+            "application": "synthetic-1",
+            "client": "synthetic-3.1.1",
+            "agent": "synthetic-v1",
+            "tool": null
+          },
+          "category": "feature_request",
+          "subcategory": "capability_gap_pending_verification",
+          "basis": "explicit_user",
+          "capability_status": "unknown",
+          "aspect_ratio": {
+            "width": 2,
+            "height": 3
+          },
+          "pixel_size": null,
+          "repro_steps": [
+            "打开合成图像入口",
+            "查找2:3选项"
+          ],
+          "evidence": [
+            {
+              "evidence_id": "00000002-0000-4000-8000-000000000001",
+              "source": {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "statement-1",
+                "content_hash": "c85d4727d23791f8950ffbdb9beab4e7c6738d30fd49f445e0a86fdcd8b36573",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "合成：我希望生成2:3宣传图，但在这个入口没找到选项。",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            }
+          ]
+        },
+        "evidence_sha256": "e4f5bcd9f41110185add9e012fae421fedc7be82237bf1211e0b8a53b1c6247b",
+        "bound_payload_sha256": "459de3a24eef92fae00211052fc0f5d48e7cae8075128f98e25948043abfbc53"
+      }
+    ],
+    "vectors": [
+      {
+        "name": "unicode-no-normalization",
+        "value": {
+          "text": "中文 2:3 😀 é é line",
+          "bool": false,
+          "null": null,
+          "integer": 1
+        },
+        "canonical_utf8": "{\"bool\":false,\"integer\":1,\"null\":null,\"text\":\"中文 2:3 😀 é é line\"}",
+        "utf8_hex": "7b22626f6f6c223a66616c73652c22696e7465676572223a312c226e756c6c223a6e756c6c2c2274657874223a22e4b8ade6968720323a3320f09f988020c3a92065cc81e280a86c696e65227d",
+        "sha256": "3d161d87a11f3cacf94c6e3007cdd22766fa7ab9f8f1686680b72ff0e04929c8"
+      },
+      {
+        "name": "key-order-escape-array",
+        "value": {
+          "z": [
+            "\\",
+            "\"",
+            "\n",
+            "\t",
+            "/"
+          ],
+          "a": {
+            "b": 2,
+            "a": 1
+          }
+        },
+        "canonical_utf8": "{\"a\":{\"a\":1,\"b\":2},\"z\":[\"\\\\\",\"\\\"\",\"\\n\",\"\\t\",\"/\"]}",
+        "utf8_hex": "7b2261223a7b2261223a312c2262223a327d2c227a223a5b225c5c222c225c22222c225c6e222c225c74222c222f225d7d",
+        "sha256": "2fad30a1ce19d4c541ac54e53e29d54b816394c41e75c8293bfe9ad026a6dd2a"
+      },
+      {
+        "name": "enterprise_knowledge-prepare",
+        "value": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "enterprise_knowledge",
+            "recipient": "tenant_knowledge_intake",
+            "purpose": "knowledge_candidate_review",
+            "payload_hash": "60a72cbdfb830539425512c5385f7bc5423a776aab76787a502252850a5385e7",
+            "evidence_manifest_hash": "e3f3f3201b73afc879ca2ea5726e8f67cdcb82b52962d4860eac2d77ca2753ca",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              }
+            ],
+            "selected_fields": [
+              "kind",
+              "title",
+              "proposed_content",
+              "basis",
+              "base_version_id",
+              "scope",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "canonical_utf8": "{\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"manifest\":{\"allow_cross_tenant_aggregation\":false,\"domain\":\"enterprise_knowledge\",\"evidence_manifest_hash\":\"e3f3f3201b73afc879ca2ea5726e8f67cdcb82b52962d4860eac2d77ca2753ca\",\"payload_hash\":\"60a72cbdfb830539425512c5385f7bc5423a776aab76787a502252850a5385e7\",\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"knowledge_candidate_review\",\"recipient\":\"tenant_knowledge_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"kind\",\"title\",\"proposed_content\",\"basis\",\"base_version_id\",\"scope\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"}]},\"request_id\":\"00000000-0000-4000-8000-000000000003\"}",
+        "utf8_hex": "7b22636f6e74657874223a7b226167656e745f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303031222c226167656e745f72656c656173655f76657273696f6e223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262222c226167656e745f76657273696f6e223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22636c69656e745f7461736b5f6964223a2273796e7468657469632d73657373696f6e3a7475726e2d31222c22636c69656e745f76657273696f6e223a22332e322e30227d2c226d616e6966657374223a7b22616c6c6f775f63726f73735f74656e616e745f6167677265676174696f6e223a66616c73652c22646f6d61696e223a22656e74657270726973655f6b6e6f776c65646765222c2265766964656e63655f6d616e69666573745f68617368223a2265336633663332303162373361666338373963613265613537323665386636376364636238326235323936326434383630656163326437376361323735336361222c227061796c6f61645f68617368223a2236306137326362646662383330353339343235353132633533383566376263353432336137373661616237363738376135303232353238353061353338356537222c22706f6c6963795f76657273696f6e223a22676f7665726e616e63652d707269766174652d746578742d7631222c22707269766163795f7472616e73666f726d5f76657273696f6e223a22726564616374696f6e2d7631222c22707572706f7365223a226b6e6f776c656467655f63616e6469646174655f726576696577222c22726563697069656e74223a2274656e616e745f6b6e6f776c656467655f696e74616b65222c2273636f7065223a7b2261756469656e636573223a5b22637573746f6d6572225d2c22706f6c6963795f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303032222c22706f6c6963795f76657273696f6e223a312c22707572706f7365223a22616e737765725f63757272656e745f7461736b222c2276616c69645f756e74696c223a6e756c6c7d2c2273656c65637465645f6669656c6473223a5b226b696e64222c227469746c65222c2270726f706f7365645f636f6e74656e74222c226261736973222c22626173655f76657273696f6e5f6964222c2273636f7065222c2265766964656e6365225d2c22736f757263655f76657273696f6e73223a5b7b22736f757263655f6964223a2230303030303030332d303030302d343030302d383030302d303030303030303030303031222c2276657273696f6e223a2273746174656d656e742d31227d5d7d2c22726571756573745f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303033227d",
+        "sha256": "31e437f5f8570d735a5ba7a020491c734a2f9c66fb403ece1aa6a60b01306711"
+      },
+      {
+        "name": "enterprise_knowledge-evidence",
+        "value": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "88e1b781f6fbea443c70203eeda135753e74c507fc0b7e01248c5a018a8e0356",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成：消费者宣传使用“让团队专注更有价值的工作”。",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ],
+        "canonical_utf8": "[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成：消费者宣传使用“让团队专注更有价值的工作”。\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"88e1b781f6fbea443c70203eeda135753e74c507fc0b7e01248c5a018a8e0356\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}]",
+        "utf8_hex": "5b7b2261737365745f72656673223a5b5d2c226261736973223a226578706c696369745f75736572222c2265766964656e63655f6964223a2230303030303030322d303030302d343030302d383030302d303030303030303030303031222c2265786365727074223a22e59088e68890efbc9ae6b688e8b4b9e88085e5aea3e4bca0e4bdbfe794a8e2809ce8aea9e59ba2e9989fe4b893e6b3a8e69bb4e69c89e4bbb7e580bce79a84e5b7a5e4bd9ce2809de38082222c22726564616374696f6e5f737461747573223a226e6f745f6e6565646564222c22726564616374696f6e5f76657273696f6e223a227631222c2272656c6174696f6e223a22737570706f727473222c2273656e7369746976697479223a226f7264696e617279222c22736f75726365223a7b22636f6e74656e745f68617368223a2238386531623738316636666265613434336337303230336565646131333537353365373463353037666330623765303132343863356130313861386530333536222c226b696e64223a22757365725f73746174656d656e74222c226f627365727665645f6174223a22323032362d31302d32355431323a30303a30305a222c226f70617175655f6c6f6361746f72223a6e756c6c2c227265736f757263655f617070223a6e756c6c2c227269676874735f6261736973223a22757365722d73656c656374656420657863657270743b2074656e616e7420757365206f6e6c79222c22736f757263655f6964223a2230303030303030332d303030302d343030302d383030302d303030303030303030303031222c22766572696669636174696f6e5f737461747573223a227265706f72746564222c2276657273696f6e223a2273746174656d656e742d31227d7d5d",
+        "sha256": "e3f3f3201b73afc879ca2ea5726e8f67cdcb82b52962d4860eac2d77ca2753ca"
+      },
+      {
+        "name": "platform_product_feedback-prepare",
+        "value": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "platform_product_feedback",
+            "recipient": "tenant_feedback_intake",
+            "purpose": "product_feedback_triage",
+            "payload_hash": "459de3a24eef92fae00211052fc0f5d48e7cae8075128f98e25948043abfbc53",
+            "evidence_manifest_hash": "e4f5bcd9f41110185add9e012fae421fedc7be82237bf1211e0b8a53b1c6247b",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              }
+            ],
+            "selected_fields": [
+              "goal",
+              "expected",
+              "actual",
+              "entrypoint",
+              "versions",
+              "category",
+              "subcategory",
+              "basis",
+              "capability_status",
+              "aspect_ratio",
+              "pixel_size",
+              "repro_steps",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "canonical_utf8": "{\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"manifest\":{\"allow_cross_tenant_aggregation\":false,\"domain\":\"platform_product_feedback\",\"evidence_manifest_hash\":\"e4f5bcd9f41110185add9e012fae421fedc7be82237bf1211e0b8a53b1c6247b\",\"payload_hash\":\"459de3a24eef92fae00211052fc0f5d48e7cae8075128f98e25948043abfbc53\",\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"product_feedback_triage\",\"recipient\":\"tenant_feedback_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"goal\",\"expected\",\"actual\",\"entrypoint\",\"versions\",\"category\",\"subcategory\",\"basis\",\"capability_status\",\"aspect_ratio\",\"pixel_size\",\"repro_steps\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"}]},\"request_id\":\"00000000-0000-4000-8000-000000000003\"}",
+        "utf8_hex": "7b22636f6e74657874223a7b226167656e745f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303031222c226167656e745f72656c656173655f76657273696f6e223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262222c226167656e745f76657273696f6e223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22636c69656e745f7461736b5f6964223a2273796e7468657469632d73657373696f6e3a7475726e2d31222c22636c69656e745f76657273696f6e223a22332e322e30227d2c226d616e6966657374223a7b22616c6c6f775f63726f73735f74656e616e745f6167677265676174696f6e223a66616c73652c22646f6d61696e223a22706c6174666f726d5f70726f647563745f666565646261636b222c2265766964656e63655f6d616e69666573745f68617368223a2265346635626364396634313131303138356164643965303132666165343231666564633762653832323337626631323131653062386135336231633632343762222c227061796c6f61645f68617368223a2234353964653361323465656639326661653030323131303532666330663564343865376361653830373531323866393865323539343830343361626662633533222c22706f6c6963795f76657273696f6e223a22676f7665726e616e63652d707269766174652d746578742d7631222c22707269766163795f7472616e73666f726d5f76657273696f6e223a22726564616374696f6e2d7631222c22707572706f7365223a2270726f647563745f666565646261636b5f747269616765222c22726563697069656e74223a2274656e616e745f666565646261636b5f696e74616b65222c2273636f7065223a7b2261756469656e636573223a5b22637573746f6d6572225d2c22706f6c6963795f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303032222c22706f6c6963795f76657273696f6e223a312c22707572706f7365223a22616e737765725f63757272656e745f7461736b222c2276616c69645f756e74696c223a6e756c6c7d2c2273656c65637465645f6669656c6473223a5b22676f616c222c226578706563746564222c2261637475616c222c22656e747279706f696e74222c2276657273696f6e73222c2263617465676f7279222c2273756263617465676f7279222c226261736973222c226361706162696c6974795f737461747573222c226173706563745f726174696f222c22706978656c5f73697a65222c22726570726f5f7374657073222c2265766964656e6365225d2c22736f757263655f76657273696f6e73223a5b7b22736f757263655f6964223a2230303030303030332d303030302d343030302d383030302d303030303030303030303031222c2276657273696f6e223a2273746174656d656e742d31227d5d7d2c22726571756573745f6964223a2230303030303030302d303030302d343030302d383030302d303030303030303030303033227d",
+        "sha256": "937a237809e2e52926ac62cb73b879529cbf212ccbee724be9371a5068bfc8e7"
+      },
+      {
+        "name": "platform_product_feedback-evidence",
+        "value": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "c85d4727d23791f8950ffbdb9beab4e7c6738d30fd49f445e0a86fdcd8b36573",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成：我希望生成2:3宣传图，但在这个入口没找到选项。",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ],
+        "canonical_utf8": "[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成：我希望生成2:3宣传图，但在这个入口没找到选项。\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"c85d4727d23791f8950ffbdb9beab4e7c6738d30fd49f445e0a86fdcd8b36573\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}]",
+        "utf8_hex": "5b7b2261737365745f72656673223a5b5d2c226261736973223a226578706c696369745f75736572222c2265766964656e63655f6964223a2230303030303030322d303030302d343030302d383030302d303030303030303030303031222c2265786365727074223a22e59088e68890efbc9ae68891e5b88ce69c9be7949fe68890323a33e5aea3e4bca0e59bbeefbc8ce4bd86e59ca8e8bf99e4b8aae585a5e58fa3e6b2a1e689bee588b0e98089e9a1b9e38082222c22726564616374696f6e5f737461747573223a226e6f745f6e6565646564222c22726564616374696f6e5f76657273696f6e223a227631222c2272656c6174696f6e223a22737570706f727473222c2273656e7369746976697479223a226f7264696e617279222c22736f75726365223a7b22636f6e74656e745f68617368223a2263383564343732376432333739316638393530666662646239626561623465376336373338643330666434396634343565306138366664636438623336353733222c226b696e64223a22757365725f73746174656d656e74222c226f627365727665645f6174223a22323032362d31302d32355431323a30303a30305a222c226f70617175655f6c6f6361746f72223a6e756c6c2c227265736f757263655f617070223a6e756c6c2c227269676874735f6261736973223a22757365722d73656c656374656420657863657270743b2074656e616e7420757365206f6e6c79222c22736f757263655f6964223a2230303030303030332d303030302d343030302d383030302d303030303030303030303031222c22766572696669636174696f6e5f737461747573223a227265706f72746564222c2276657273696f6e223a2273746174656d656e742d31227d7d5d",
+        "sha256": "e4f5bcd9f41110185add9e012fae421fedc7be82237bf1211e0b8a53b1c6247b"
+      }
+    ],
+    "negative_cases": [
+      "lone_surrogate",
+      "float_or_unsafe_integer",
+      "unknown_fields",
+      "prepare_with_plaintext_payload",
+      "self_reported_human_confirmed",
+      "self_reported_verified"
+    ]
+  },
+  "bindingGolden": {
+    "input": {
+      "purpose": "desktop.content.handoff.v1",
+      "preview_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "target_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "channel_id": "00000000-0000-4000-8000-000000000004",
+      "web_nonce": "00000000-0000-4000-8000-000000000009"
+    },
+    "canonical_utf8": "{\"channel_id\":\"00000000-0000-4000-8000-000000000004\",\"preview_hash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"purpose\":\"desktop.content.handoff.v1\",\"target_hash\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"web_nonce\":\"00000000-0000-4000-8000-000000000009\"}",
+    "sha256": "7556d662b7cb8ea0b8d052024f0c3fa7bf67cf2550d30b01c53c98bdd746f24d"
+  }
+}

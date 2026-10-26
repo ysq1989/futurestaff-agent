@@ -982,9 +982,16 @@ export function prepareDesktopProfile(
   }
   const presets = rows.get(AGENT_PRESETS_ROW_ID)
   if (presets !== undefined) {
+    const configured = rowConfig(presets)
+    const roots = configured.roots ?? []
+    if (!Array.isArray(roots)) throw new Error(`${BIN_NAME}: agent-presets roots must be an array`)
+    const shippedRoot = shippedPresetRoot()
+    const hasShippedRoot = roots.some(root => root !== null && typeof root === 'object' && root.path === shippedRoot)
     const config = {
-      ...rowConfig(presets),
-      roots: [{ path: shippedPresetRoot(), trust: 'system' }],
+      ...configured,
+      // Member Profile roots own installed talents. Keep their order and trust
+      // while adding the physical packaged root required by ASAR assets.
+      roots: hasShippedRoot ? roots : [...roots, { path: shippedRoot, trust: 'system' }],
     }
     patches.push({ id: AGENT_PRESETS_ROW_ID, config })
   }

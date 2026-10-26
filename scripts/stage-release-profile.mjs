@@ -175,15 +175,22 @@ export async function stageReleaseProfile(options = {}) {
   const videoUpgrade = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.1.0.json'), 'utf8'))
   const previousDesktop = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.1.1.json'), 'utf8'))
   const geoDesktop = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.2.1.json'), 'utf8'))
+  // Preserve the installed GEO-assistant release before rebuilding its UI, so
+  // subsequent packages can reconcile its exact stock and audited mixed trees.
+  const geoAssistantDesktop = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.3.0.json'), 'utf8'))
+  // Frozen, independently audited local 3.3.0 repairs are an exact release
+  // baseline. Never derive these hashes from the machine running this builder.
+  const interactionDesktop = JSON.parse(await readFile(path.join(sourceRoot, 'profile', 'workspace-upgrade-3.3.0-interactions.json'), 'utf8'))
   const releaseManifest = {
     schemaVersion: 1,
     profile: profileName,
     productVersion: profileManifest.version,
     dshVersion: '0.1.2-rc.1',
-    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? []), videoUpgrade.manifestDigest, previousDesktop.manifestDigest, geoDesktop.manifestDigest],
+    supersedes: [...supersededReleaseManifests, workspaceUpgrade.manifestDigest, ...(workspaceUpgrade.additionalManifestDigests ?? []), videoUpgrade.manifestDigest, previousDesktop.manifestDigest, geoDesktop.manifestDigest, geoAssistantDesktop.manifestDigest, interactionDesktop.manifestDigest],
     workspacePreviousFiles: workspaceUpgrade.files,
-    workspacePreviousInventories: [...(workspaceUpgrade.inventories ?? []), videoUpgrade.platformFiles, previousDesktop.platformFiles, geoDesktop.platformFiles],
-    workspacePreviousGeoInventories: [geoDesktop.geoFiles],
+    workspacePreviousInventories: [...(workspaceUpgrade.inventories ?? []), videoUpgrade.platformFiles, previousDesktop.platformFiles, geoDesktop.platformFiles, geoAssistantDesktop.platformFiles, interactionDesktop.platformFiles],
+    workspacePreviousPlatformPackageHashes: [interactionDesktop.platformPackageSha256, ...(interactionDesktop.additionalPlatformPackageHashes ?? [])],
+    workspacePreviousGeoInventories: [geoDesktop.geoFiles, geoAssistantDesktop.geoFiles],
     workspacePreviousVideoFiles: videoUpgrade.videoFiles,
     platformContract: foundation.platformContract,
     files: fileHashes,

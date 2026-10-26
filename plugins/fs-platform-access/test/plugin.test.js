@@ -107,18 +107,20 @@ test('client registers Settings access and a mandatory login gate', () => {
 
   applyClient({ slots,inject:(_services,callback)=>callback({effect:()=>{}}) })
 
-  assert.deepEqual(slotNames, ['sidebar.settings', 'sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
+  assert.deepEqual(slotNames, ['sidebar.settings', 'sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'conversation.chat.turnTail', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
   assert.deepEqual(registrations, [
     { name: 'sidebar.brand.mark', priority: -100 },
     { name: 'sidebar.brand.name', priority: -100 },
     { name: 'conversation.hero.brand.mark', priority: -100 },
     { name: 'conversation.chat.node', key: 'context', priority: -100 },
     { name: 'settings.section', id: 'futurestaff-access', order: -10, label: 'FutureStaff' },
+    { name: 'settings.section', id: 'futurestaff-agent-market', order: -9, label: 'Agent 市场' },
     { name: 'shell.overlay', id: 'futurestaff-login-gate', order: -100 },
     { name: 'tool.call.toolview', key: 'call_erp_api' },
     { name: 'tool.call.toolview', key: 'erp_query' },
     { name: 'tool.call.toolview', key: 'erp_order_form' },
     { name: 'tool.call.toolview', key: 'erp_prepare_action' },
+    { name:'conversation.chat.turnTail',priority:-85,select:registrations.find(row=>row.name==='conversation.chat.turnTail'&&row.priority===-85).select },
     { name: 'shell.overlay', id: 'futurestaff-erp-window', order: 20 },
     { name: 'shell.overlay', id: 'futurestaff-erp-view-events', order: 19 },
     { name: 'tool.call.toolview', key: 'shop_call' },
@@ -126,6 +128,8 @@ test('client registers Settings access and a mandatory login gate', () => {
     { name: 'tool.call.toolview', key: 'shop_recommend_products' },
     { name:'conversation.chat.turnTail',priority:-90,select:registrations.find(row=>row.name==='conversation.chat.turnTail'&&row.priority===-90).select },
     { name: 'shell.overlay', id: 'futurestaff-shop-operation', order: 21 },
+    { name: 'tool.call.toolview', key: 'agent_message_card' },
+    { name:'conversation.chat.turnTail',priority:-80,select:registrations.find(row=>row.name==='conversation.chat.turnTail'&&row.priority===-80).select },
     { name: 'tool.call.toolview', key: 'fashion_image_generate', priority: -100 },
     { name: 'tool.call.toolview', key: 'fashion_image_process', priority: -100 },
     { name: 'tool.call.toolview', key: 'fashion_image_download', priority: -100 },
@@ -150,7 +154,7 @@ test('client registers Settings access and a mandatory login gate', () => {
   assert.equal(context.props.node.data.provenance.label, 'FutureStaff 系统提示词')
   assert.equal(context.props.node.data.source.plugin, 'FutureStaff 系统提示词')
   const settings = components[4]()
-  const gate = components[5]()
+  const gate = components[6]()
   assert.equal(settings.props.controller, gate.props.controller)
   const second = []
   applyClient({ inject:(_services,callback)=>callback({effect:()=>{}}),slots: {
@@ -255,7 +259,30 @@ test('desktop Host mounts one exact loopback callback and persists a fake DEV ex
     provide: (name, value) => { if (name === 'platformDevLogin') loginService = value; return () => {} },
     webServer: { host: '127.0.0.1', port: 43821, register: route => { registrations.push(route); return () => {} } },
   })
-  assert.equal(registrations.length, 17)
+  const originalPaths = [
+    '/_futurestaff/platform-mock/desktop/v1/auth/callback',
+    '/_futurestaff/platform-mock/desktop/v1/auth/refresh',
+    '/_futurestaff/platform-mock/desktop/v1/auth/logout',
+    '/_futurestaff/platform-mock/desktop/v1/tenants',
+    '/_futurestaff/platform-mock/desktop/v1/profile',
+    '/_futurestaff/platform-mock/desktop/v1/tenants/switch',
+    '/_futurestaff/platform-mock/desktop/v1/apps',
+    '/_futurestaff/platform-dev/environment',
+    '/_futurestaff/platform-dev/login',
+    '/_futurestaff/platform-dev/auth/password',
+    '/_futurestaff/platform-dev/auth/remembered',
+    '/_futurestaff/platform-dev/auth/tenant',
+    '/_futurestaff/platform-dev/session',
+    '/_futurestaff/platform-dev/session/refresh',
+    '/_futurestaff/platform-dev/session/switch',
+    '/_futurestaff/platform-dev/session/logout',
+    '/_futurestaff/platform-dev/apps/product_hub/token',
+  ]
+  const candidatePath = '/_futurestaff/governance/candidate-window'
+  assert.equal(registrations.length, originalPaths.length + 1)
+  assert.deepEqual(registrations.map(route => route.path).sort(), [...originalPaths, candidatePath].sort(), 'the original seventeen routes remain and only the candidate metadata route is added')
+  assert.ok(registrations.every(route => route.kind === 'exact'), 'no wildcard route is introduced')
+  assert.equal(registrations.find(route => route.path === candidatePath).kind, 'exact')
   assert.ok(registrations.some(route => route.path === '/_futurestaff/platform-dev/auth/remembered'))
   assert.ok(registrations.some(route => route.path === '/_futurestaff/platform-dev/auth/tenant'))
   const startRoute = registrations.find(item => item.path === '/_futurestaff/platform-dev/login')
@@ -268,6 +295,19 @@ test('desktop Host mounts one exact loopback callback and persists a fake DEV ex
   await new Promise(resolve => startServer.listen(0, '127.0.0.1', resolve))
   t.after(() => startServer.close())
   const startAddress = startServer.address()
+  // Loopback, Origin, Host and a renderer-looking header cannot replace the
+  // launcher-owned capability, which this non-Electron fixture does not have.
+  for (const rendererHeaders of [{}, { 'x-dsh-desktop-renderer': 'x'.repeat(43) }]) {
+    const rejectedCandidate = await originalFetch(`http://127.0.0.1:${startAddress.port}${candidatePath}`, {
+      method: 'POST', headers: { 'content-type': 'application/json',
+        host: '127.0.0.1:43821', origin: 'http://127.0.0.1:43821',
+        'x-futurestaff-candidate-window': '1', ...rendererHeaders },
+      body: JSON.stringify({ action: 'list', sessionId: 'synthetic-current-session' }),
+    })
+    assert.equal(rejectedCandidate.status, 403)
+    assert.deepEqual(await rejectedCandidate.json(), { error: 'CANDIDATE_WINDOW_UNAVAILABLE' })
+  }
+
   const startResponse = await originalFetch(`http://127.0.0.1:${startAddress.port}/_futurestaff/platform-dev/login`, {
     method: 'POST', headers: { 'x-futurestaff-login': '1' },
   })

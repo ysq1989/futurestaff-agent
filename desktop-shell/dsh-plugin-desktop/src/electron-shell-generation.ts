@@ -1,3 +1,5 @@
+import { DesktopConsentWindowController } from './desktop-consent-window.ts'
+import type { NativeConsentWindowRequest, NativeConsentWindowSession, NativeConsentWindowState } from './desktop-consent-window-contract.ts'
 import { DesktopModuleWindow } from './module-window.ts'
 import { DesktopVideoWindow } from './video-window.ts'
 import { DesktopSystemViews } from './system-views.ts'
@@ -176,6 +178,7 @@ export interface ElectronShellGenerationOptions {
 
 /** Own one BrowserWindow and Tray generation, including every native listener. */
 export class ElectronShellGeneration {
+  private consentWindow: DesktopConsentWindowController | undefined
   private systemViews:DesktopSystemViews|undefined
   private window: BrowserWindow | undefined
   private tray: Tray | undefined
@@ -188,6 +191,15 @@ export class ElectronShellGeneration {
   private cleanupListeners: (() => void) | undefined
 
   constructor(private readonly options: ElectronShellGenerationOptions) {}
+
+  /** Only trusted Host calls this method; the main renderer popup handler remains deny. */
+  openCandidateConsent(request: NativeConsentWindowRequest, onState?: (state: NativeConsentWindowState) => void): NativeConsentWindowSession | null {
+    if (this.released || !this.mounted || !this.window || this.window.isDestroyed()) return null
+    const policy = this.options.spec.resolveCandidateConsentPolicy?.() ?? undefined
+    if (!policy) return null
+    this.consentWindow ??= new DesktopConsentWindowController(new URL(this.options.spec.url).origin)
+    return this.consentWindow.open(request, policy, onState)
+  }
 
   async mount(beforeInteractive?: () => void): Promise<void> {
     if (this.mounted || this.window !== undefined) {
@@ -422,6 +434,7 @@ export class ElectronShellGeneration {
     let removeRendererAccessHeader: (() => void) | undefined
     this.cleanupListeners = () => {
       systemViews?.dispose()
+      this.consentWindow?.dispose(); this.consentWindow = undefined
       moduleWindow.close()
       videoWindow.close()
       app.off('activate', activate)

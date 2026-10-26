@@ -1,0 +1,3704 @@
+{
+  "synthetic_only": true,
+  "no_live_authority": true,
+  "cases": [
+    {
+      "name": "enterprise_knowledge/multi-evidence-null-explicit",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "enterprise_knowledge/selected-fields-reversed-rehashed",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "f1e55ea2952b6f77bfd2a664077114b73ff1ed890efee28950859b7f190dc1bd",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "evidence",
+          "scope",
+          "base_version_id",
+          "basis",
+          "proposed_content",
+          "title",
+          "kind"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "enterprise_knowledge/selected-fields-reversed-stale-hash",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "evidence",
+          "scope",
+          "base_version_id",
+          "basis",
+          "proposed_content",
+          "title",
+          "kind"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "CONSENT_CONTENT_CHANGED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/source-versions-only-reversed-rehashed",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "bc3cb017011385f230091f37473c93be23cfbadd97de423fbfd4604e3ad66c17",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/evidence-and-versions-reversed-rehashed",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "c4342c49b6f68bd6b18dfa3a7162c2ccfe6403e4a647f6f3636e574afa3b4ad0",
+        "evidence_manifest_hash": "d1a805159e82c1b0cd3ab329d2de158508aa74766a6ec2f6e6b9fb001dc11466",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "enterprise_knowledge/duplicate-source-same-version",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "b0b63cd83c3c6d447eb5b70c73f6afb112354247188e2843f567d1db360c7cc7",
+        "evidence_manifest_hash": "898f19cf8526e7a93c1f52f0693e7ee16097119eeff5e1ee9000caaa232e26c8",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/duplicate-source-different-version",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "524a3bd18c80a05d3b751b62acdb306dfba73b0cca3131f6218ddeba4db74449",
+        "evidence_manifest_hash": "757b864ed3078bc999a1a3a9e08b350f5d13e780a7dce69aaa18076c5b798843",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "different:v3"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "different:v3",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"different:v3\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/duplicate-selected-field",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "8718cac06e35b630cd3643545fb039c004b9f7adff03862dc179bf2d9ed67558",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence",
+          "kind"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "SELECTED_FIELDS_MISMATCH"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/raw-excerpt-hash-invalid",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "fd474064523c8c18e952fc11ede95cfa3c258297befbcae0f50e507c9ce62fe1",
+        "evidence_manifest_hash": "d66567ae45077bd6360f32ad36f0159cf76c98839050f8248f7857a2d44a924f",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_CONTENT_CHANGED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/missing-nullable-no-default",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "73ac647a01973e5eae00b069b6593395dd929bb46bb434613ae746c4b278c319",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "INVALID_REQUEST",
+        "layer": "Pydantic model_validate_json before validate_payload"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/assets-not-enabled",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "f2b64ea0e62b28ac114b160c68fa49cf7347005468ba0d70f6676d119ddd1766",
+        "evidence_manifest_hash": "0d087ec396713367f9a5314761614524c67f7750fcb4263c7102fa656d5729e4",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": [
+              {
+                "synthetic": "blocked"
+              }
+            ]
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[{\"synthetic\":\"blocked\"}],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "INVALID_REQUEST",
+        "layer": "Pydantic model_validate_json before validate_payload"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/self-reported-resource-verified",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "c1abb34c60a4a93b716640c6d058373c60e45be23b4fd47e6c8eae19e6178d40",
+        "evidence_manifest_hash": "3261bc00fd5ef5757ac02fbda8170a5d867f116d4366d270789bf0746c8655be",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "resource_verified",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"resource_verified\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "SELF_REPORTED_VERIFICATION_NOT_ALLOWED"
+      }
+    },
+    {
+      "name": "enterprise_knowledge/scope-mismatch",
+      "domain": "enterprise_knowledge",
+      "manifest": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "payload_hash": "faa27ac2ffd0e91e6bfb6a0964c074ae72314a9a51d700c5c7db3600e9d9ae00",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "kind": "expression",
+        "title": "消费者圈层宣传表达（合成）",
+        "proposed_content": "让团队专注更有价值的工作。",
+        "basis": "explicit_user",
+        "base_version_id": null,
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "partner"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"partner\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "CONSENT_SCOPE_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/multi-evidence-null-explicit",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "platform_product_feedback/selected-fields-reversed-rehashed",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "dfdb8d54e4c21dfcf7e709cb79d0cb79335acb13a071672ead0492de19b4a1fe",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "evidence",
+          "repro_steps",
+          "pixel_size",
+          "aspect_ratio",
+          "capability_status",
+          "basis",
+          "subcategory",
+          "category",
+          "versions",
+          "entrypoint",
+          "actual",
+          "expected",
+          "goal"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "platform_product_feedback/selected-fields-reversed-stale-hash",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "evidence",
+          "repro_steps",
+          "pixel_size",
+          "aspect_ratio",
+          "capability_status",
+          "basis",
+          "subcategory",
+          "category",
+          "versions",
+          "entrypoint",
+          "actual",
+          "expected",
+          "goal"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "CONSENT_CONTENT_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/source-versions-only-reversed-rehashed",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "4e658b9272858315b137eae121a1366cbb3b2cfdba5fdfaa33b4fd5b03a3ef8f",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/evidence-and-versions-reversed-rehashed",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "d71bc2f16032dbae6720ea732416d457bd76dba10e7494cf53b10789c4c57c8b",
+        "evidence_manifest_hash": "d1a805159e82c1b0cd3ab329d2de158508aa74766a6ec2f6e6b9fb001dc11466",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "platform_product_feedback/duplicate-source-same-version",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "f20ca7f5c5ad0628fe63a91efbfdb612ef557f025ff6b13420d25c00ea89238c",
+        "evidence_manifest_hash": "898f19cf8526e7a93c1f52f0693e7ee16097119eeff5e1ee9000caaa232e26c8",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/duplicate-source-different-version",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "583e19ceca524f6bbe2ba02b1141c06f55c8713973927cee7c47fb712395ec26",
+        "evidence_manifest_hash": "757b864ed3078bc999a1a3a9e08b350f5d13e780a7dce69aaa18076c5b798843",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "different:v3"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "different:v3",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"different:v3\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_VERSION_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/duplicate-selected-field",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "834530e0e5f2573530671f46bd6528870a7a1030d68f072de7991890d6db7599",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence",
+          "goal"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "SELECTED_FIELDS_MISMATCH"
+      }
+    },
+    {
+      "name": "platform_product_feedback/raw-excerpt-hash-invalid",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "c032ae0b30f3fe32821f8afbc9ba6b6ade27c00d92ac2616911da59d454b87fd",
+        "evidence_manifest_hash": "d66567ae45077bd6360f32ad36f0159cf76c98839050f8248f7857a2d44a924f",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 412,
+        "code": "SOURCE_CONTENT_CHANGED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/missing-nullable-no-default",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "235e5df80f72b914eede71b8ee252229d58b11322dc5b10fa12b7855af36eeb5",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "INVALID_REQUEST",
+        "layer": "Pydantic model_validate_json before validate_payload"
+      }
+    },
+    {
+      "name": "platform_product_feedback/assets-not-enabled",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "2103849dbedf64c80e3344f5a9da5b9042514b05e197df93f2731eab01a7c99f",
+        "evidence_manifest_hash": "0d087ec396713367f9a5314761614524c67f7750fcb4263c7102fa656d5729e4",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": [
+              {
+                "synthetic": "blocked"
+              }
+            ]
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[{\"synthetic\":\"blocked\"}],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "INVALID_REQUEST",
+        "layer": "Pydantic model_validate_json before validate_payload"
+      }
+    },
+    {
+      "name": "platform_product_feedback/self-reported-resource-verified",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "0d90bb72dbabd7167763ee8d30b56069976b1008a7b18682827a68559d2d0574",
+        "evidence_manifest_hash": "3261bc00fd5ef5757ac02fbda8170a5d867f116d4366d270789bf0746c8655be",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "resource_verified",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"resource_verified\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "SELF_REPORTED_VERIFICATION_NOT_ALLOWED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/self-reported-capability-verified",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "c53396978a5c59141863531bfc1e106fd33202149b0c426602606a1418bc42cb",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "verified_gap",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          "打开合成图像入口",
+          "查找2:3选项"
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"verified_gap\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": false,
+        "status": 422,
+        "code": "SELF_REPORTED_VERIFICATION_NOT_ALLOWED"
+      }
+    },
+    {
+      "name": "platform_product_feedback/empty-repro-step-backend-local-difference",
+      "domain": "platform_product_feedback",
+      "manifest": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "payload_hash": "1a8cc9160ac4ef6db4918d5dadbc38b0c187832e10d8e03e2e3cad5053d4ec4f",
+        "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false
+      },
+      "payload": {
+        "goal": "制作竖版宣传图（合成）",
+        "expected": "宽高比 2:3；像素尺寸尚未指定",
+        "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+        "entrypoint": "synthetic/agent/image-options",
+        "versions": {
+          "application": "synthetic-1",
+          "client": "synthetic-3.1.1",
+          "agent": "synthetic-v1",
+          "tool": null
+        },
+        "category": "feature_request",
+        "subcategory": "capability_gap_pending_verification",
+        "basis": "explicit_user",
+        "capability_status": "unknown",
+        "aspect_ratio": {
+          "width": 2,
+          "height": 3
+        },
+        "pixel_size": null,
+        "repro_steps": [
+          ""
+        ],
+        "evidence": [
+          {
+            "evidence_id": "00000002-0000-4000-8000-000000000001",
+            "source": {
+              "source_id": "00000003-0000-4000-8000-000000000001",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "statement-1",
+              "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          },
+          {
+            "evidence_id": "00000000-0000-4000-8000-000000000092",
+            "source": {
+              "source_id": "00000000-0000-4000-8000-000000000093",
+              "kind": "user_statement",
+              "resource_app": null,
+              "opaque_locator": null,
+              "version": "synthetic:v2",
+              "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+              "observed_at": "2026-10-25T12:00:00Z",
+              "verification_status": "reported",
+              "rights_basis": "user-selected excerpt; tenant use only"
+            },
+            "excerpt": "Second synthetic evidence; no private data.",
+            "basis": "explicit_user",
+            "relation": "supports",
+            "sensitivity": "ordinary",
+            "redaction_status": "not_needed",
+            "redaction_version": "v1",
+            "asset_refs": []
+          }
+        ]
+      },
+      "payload_json": "{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}}",
+      "expected_backend": {
+        "accepted": true
+      }
+    }
+  ],
+  "canonical_cases": [
+    {
+      "name": "unicode-decomposed",
+      "value": "é",
+      "canonical_utf8": "\"é\"",
+      "utf8_hex": "2265cc8122",
+      "sha256": "3d68ce21f2899a475713cdbe7562ba9bdb6b1dfde8af1f221bdff4a0935b53b2"
+    },
+    {
+      "name": "unicode-precomposed",
+      "value": "é",
+      "canonical_utf8": "\"é\"",
+      "utf8_hex": "22c3a922",
+      "sha256": "f2886017e9c7abacf804b54d64787dce2b611c9544ba21f3affdd126a6e50086"
+    },
+    {
+      "name": "unicode-controls",
+      "value": {
+        "text": "中文🙂\n\t\"\\ /",
+        "null": null,
+        "bool": false,
+        "integer": 1
+      },
+      "canonical_utf8": "{\"bool\":false,\"integer\":1,\"null\":null,\"text\":\"中文🙂\\n\\t\\\"\\\\ /\"}",
+      "utf8_hex": "7b22626f6f6c223a66616c73652c22696e7465676572223a312c226e756c6c223a6e756c6c2c2274657874223a22e4b8ade69687f09f99825c6e5c745c225c5ce280a82f227d",
+      "sha256": "abe880e4a158120cad7174abea2470babad8e2d0b7c9036dfd3b9c12d0ccc682"
+    },
+    {
+      "name": "object-key-order",
+      "value": {
+        "z": [
+          2,
+          1
+        ],
+        "a": {
+          "b": 2,
+          "a": 1
+        }
+      },
+      "canonical_utf8": "{\"a\":{\"a\":1,\"b\":2},\"z\":[2,1]}",
+      "utf8_hex": "7b2261223a7b2261223a312c2262223a327d2c227a223a5b322c315d7d",
+      "sha256": "2562423e834a5622f157761a59a3d2824336e5a7447a9bf99b755c93030aabe3"
+    },
+    {
+      "name": "empty-null",
+      "value": {
+        "empty": "",
+        "array": [],
+        "null": null
+      },
+      "canonical_utf8": "{\"array\":[],\"empty\":\"\",\"null\":null}",
+      "utf8_hex": "7b226172726179223a5b5d2c22656d707479223a22222c226e756c6c223a6e756c6c7d",
+      "sha256": "bc9e24bed171c77dac8635e82b92a3333611436781c97b8b09d3687e240dae24"
+    }
+  ],
+  "differences": [
+    {
+      "name": "enterprise_knowledge/timestamp-model-dump",
+      "input": "2026-10-26T08:00:00+08:00",
+      "normalized": "2026-10-26T08:00:00+08:00",
+      "rule": "Hash model_dump(mode=json); do not hash raw wire or convert independently."
+    },
+    {
+      "name": "platform_product_feedback/timestamp-model-dump",
+      "input": "2026-10-26T08:00:00+08:00",
+      "normalized": "2026-10-26T08:00:00+08:00",
+      "rule": "Hash model_dump(mode=json); do not hash raw wire or convert independently."
+    }
+  ],
+  "exact_model_field_order": {
+    "KnowledgePayload": [
+      "kind",
+      "title",
+      "proposed_content",
+      "basis",
+      "base_version_id",
+      "scope",
+      "evidence"
+    ],
+    "FeedbackPayload": [
+      "goal",
+      "expected",
+      "actual",
+      "entrypoint",
+      "versions",
+      "category",
+      "subcategory",
+      "basis",
+      "capability_status",
+      "aspect_ratio",
+      "pixel_size",
+      "repro_steps",
+      "evidence"
+    ]
+  },
+  "hash_bindings": [
+    {
+      "domain": "enterprise_knowledge",
+      "payload_preimage": {
+        "domain": "enterprise_knowledge",
+        "recipient": "tenant_knowledge_intake",
+        "purpose": "knowledge_candidate_review",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "kind",
+          "title",
+          "proposed_content",
+          "basis",
+          "base_version_id",
+          "scope",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false,
+        "payload": {
+          "kind": "expression",
+          "title": "消费者圈层宣传表达（合成）",
+          "proposed_content": "让团队专注更有价值的工作。",
+          "basis": "explicit_user",
+          "base_version_id": null,
+          "scope": {
+            "policy_id": "00000000-0000-4000-8000-000000000002",
+            "policy_version": 1,
+            "audiences": [
+              "customer"
+            ],
+            "purpose": "answer_current_task",
+            "valid_until": null
+          },
+          "evidence": [
+            {
+              "evidence_id": "00000002-0000-4000-8000-000000000001",
+              "source": {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "statement-1",
+                "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            },
+            {
+              "evidence_id": "00000000-0000-4000-8000-000000000092",
+              "source": {
+                "source_id": "00000000-0000-4000-8000-000000000093",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "synthetic:v2",
+                "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "Second synthetic evidence; no private data.",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            }
+          ]
+        }
+      },
+      "payload_canonical_utf8": "{\"allow_cross_tenant_aggregation\":false,\"domain\":\"enterprise_knowledge\",\"payload\":{\"base_version_id\":null,\"basis\":\"explicit_user\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"kind\":\"expression\",\"proposed_content\":\"让团队专注更有价值的工作。\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"title\":\"消费者圈层宣传表达（合成）\"},\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"knowledge_candidate_review\",\"recipient\":\"tenant_knowledge_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"kind\",\"title\",\"proposed_content\",\"basis\",\"base_version_id\",\"scope\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"},{\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"version\":\"synthetic:v2\"}]}",
+      "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+      "target_preimage": {
+        "action": "desktop.intake.consent",
+        "contract_version": 1,
+        "task_authorization_revision": 1,
+        "request_id": "00000000-0000-4000-8000-000000000003",
+        "domain": "enterprise_knowledge",
+        "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+        "desktop_facts": {
+          "actor_id": "00000000-0000-4000-8000-000000000005",
+          "tenant_id": "00000000-0000-4000-8000-000000000006",
+          "identity_id": "00000000-0000-4000-8000-000000000007",
+          "role": "employee",
+          "session_id": "synthetic-session-not-a-token",
+          "client_id": "futurestaff-desktop",
+          "issued_at": 1792972800,
+          "token_expires_at": "2026-10-26T00:10:00+00:00",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "client_policy_hash": "22a878f50f23f8b32ee8416989afec41f6dd74b9436f488d20d9333853c6b078",
+          "authority": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      },
+      "target_canonical_utf8": "{\"action\":\"desktop.intake.consent\",\"contract_version\":1,\"desktop_facts\":{\"actor_id\":\"00000000-0000-4000-8000-000000000005\",\"authority\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"client_id\":\"futurestaff-desktop\",\"client_policy_hash\":\"22a878f50f23f8b32ee8416989afec41f6dd74b9436f488d20d9333853c6b078\",\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"identity_id\":\"00000000-0000-4000-8000-000000000007\",\"issued_at\":1792972800,\"role\":\"employee\",\"session_id\":\"synthetic-session-not-a-token\",\"tenant_id\":\"00000000-0000-4000-8000-000000000006\",\"token_expires_at\":\"2026-10-26T00:10:00+00:00\"},\"domain\":\"enterprise_knowledge\",\"payload_hash\":\"ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f\",\"request_id\":\"00000000-0000-4000-8000-000000000003\",\"task_authorization_revision\":1}",
+      "target_hash": "93d962c64c34ff71ad41b280f9109196705af6e618a5b5be8378ab0a6816ff80",
+      "preview_preimage": {
+        "action": "desktop.intake.consent",
+        "server_task_id": "00000000-0000-4000-8000-000000000008",
+        "task_authorization_revision": 1,
+        "authority_source": "explicit_web_single_candidate_approval",
+        "target_hash": "93d962c64c34ff71ad41b280f9109196705af6e618a5b5be8378ab0a6816ff80",
+        "expires_at": "2026-10-26T00:05:00+00:00",
+        "proposal": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "enterprise_knowledge",
+            "recipient": "tenant_knowledge_intake",
+            "purpose": "knowledge_candidate_review",
+            "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+            "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              },
+              {
+                "source_id": "00000000-0000-4000-8000-000000000093",
+                "version": "synthetic:v2"
+              }
+            ],
+            "selected_fields": [
+              "kind",
+              "title",
+              "proposed_content",
+              "basis",
+              "base_version_id",
+              "scope",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "source_identity_id": "00000000-0000-4000-8000-000000000007",
+        "client_id": "futurestaff-desktop",
+        "desktop_session_hash": "25054767a516541745900e0d270bf567f89e60be4f485cadbcf8315cc4b6c241",
+        "client_version_attested": false,
+        "formal_knowledge_permission": false,
+        "agent_query_permission": false
+      },
+      "preview_canonical_utf8": "{\"action\":\"desktop.intake.consent\",\"agent_query_permission\":false,\"authority_source\":\"explicit_web_single_candidate_approval\",\"client_id\":\"futurestaff-desktop\",\"client_version_attested\":false,\"desktop_session_hash\":\"25054767a516541745900e0d270bf567f89e60be4f485cadbcf8315cc4b6c241\",\"expires_at\":\"2026-10-26T00:05:00+00:00\",\"formal_knowledge_permission\":false,\"proposal\":{\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"manifest\":{\"allow_cross_tenant_aggregation\":false,\"domain\":\"enterprise_knowledge\",\"evidence_manifest_hash\":\"7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377\",\"payload_hash\":\"ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f\",\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"knowledge_candidate_review\",\"recipient\":\"tenant_knowledge_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"kind\",\"title\",\"proposed_content\",\"basis\",\"base_version_id\",\"scope\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"},{\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"version\":\"synthetic:v2\"}]},\"request_id\":\"00000000-0000-4000-8000-000000000003\"},\"server_task_id\":\"00000000-0000-4000-8000-000000000008\",\"source_identity_id\":\"00000000-0000-4000-8000-000000000007\",\"target_hash\":\"93d962c64c34ff71ad41b280f9109196705af6e618a5b5be8378ab0a6816ff80\",\"task_authorization_revision\":1}",
+      "preview_hash": "db01adc4ba2f69795bffe29185c90c0228d28fcc787a6a1115849f0ac4022128",
+      "public_pending_response": {
+        "request_id": "00000000-0000-4000-8000-000000000003",
+        "server_task_id": "00000000-0000-4000-8000-000000000008",
+        "task_authorization_revision": 1,
+        "authority_source": "none",
+        "action": "desktop.intake.consent",
+        "domain": "enterprise_knowledge",
+        "payload_hash": "ba34cdb267aea89e6d6b2211b1983c55066182d1d15b80c3382f7f81debe307f",
+        "target_hash": "93d962c64c34ff71ad41b280f9109196705af6e618a5b5be8378ab0a6816ff80",
+        "status": "pending",
+        "expires_at": "2026-10-26T00:05:00+00:00",
+        "receipt": null,
+        "formal_knowledge_permission": false,
+        "agent_query_permission": false
+      },
+      "content_hash": {
+        "value": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+        "canonical_utf8": "\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\"",
+        "sha256": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+        "raw_text_sha256_NOT_CONTENT_HASH": "29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224"
+      }
+    },
+    {
+      "domain": "platform_product_feedback",
+      "payload_preimage": {
+        "domain": "platform_product_feedback",
+        "recipient": "tenant_feedback_intake",
+        "purpose": "product_feedback_triage",
+        "scope": {
+          "policy_id": "00000000-0000-4000-8000-000000000002",
+          "policy_version": 1,
+          "audiences": [
+            "customer"
+          ],
+          "purpose": "answer_current_task",
+          "valid_until": null
+        },
+        "source_versions": [
+          {
+            "source_id": "00000003-0000-4000-8000-000000000001",
+            "version": "statement-1"
+          },
+          {
+            "source_id": "00000000-0000-4000-8000-000000000093",
+            "version": "synthetic:v2"
+          }
+        ],
+        "selected_fields": [
+          "goal",
+          "expected",
+          "actual",
+          "entrypoint",
+          "versions",
+          "category",
+          "subcategory",
+          "basis",
+          "capability_status",
+          "aspect_ratio",
+          "pixel_size",
+          "repro_steps",
+          "evidence"
+        ],
+        "privacy_transform_version": "redaction-v1",
+        "policy_version": "governance-private-text-v1",
+        "allow_cross_tenant_aggregation": false,
+        "payload": {
+          "goal": "制作竖版宣传图（合成）",
+          "expected": "宽高比 2:3；像素尺寸尚未指定",
+          "actual": "在本次入口未找到比例选项；尚未核实工具支持情况",
+          "entrypoint": "synthetic/agent/image-options",
+          "versions": {
+            "application": "synthetic-1",
+            "client": "synthetic-3.1.1",
+            "agent": "synthetic-v1",
+            "tool": null
+          },
+          "category": "feature_request",
+          "subcategory": "capability_gap_pending_verification",
+          "basis": "explicit_user",
+          "capability_status": "unknown",
+          "aspect_ratio": {
+            "width": 2,
+            "height": 3
+          },
+          "pixel_size": null,
+          "repro_steps": [
+            "打开合成图像入口",
+            "查找2:3选项"
+          ],
+          "evidence": [
+            {
+              "evidence_id": "00000002-0000-4000-8000-000000000001",
+              "source": {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "statement-1",
+                "content_hash": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            },
+            {
+              "evidence_id": "00000000-0000-4000-8000-000000000092",
+              "source": {
+                "source_id": "00000000-0000-4000-8000-000000000093",
+                "kind": "user_statement",
+                "resource_app": null,
+                "opaque_locator": null,
+                "version": "synthetic:v2",
+                "content_hash": "b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426",
+                "observed_at": "2026-10-25T12:00:00Z",
+                "verification_status": "reported",
+                "rights_basis": "user-selected excerpt; tenant use only"
+              },
+              "excerpt": "Second synthetic evidence; no private data.",
+              "basis": "explicit_user",
+              "relation": "supports",
+              "sensitivity": "ordinary",
+              "redaction_status": "not_needed",
+              "redaction_version": "v1",
+              "asset_refs": []
+            }
+          ]
+        }
+      },
+      "payload_canonical_utf8": "{\"allow_cross_tenant_aggregation\":false,\"domain\":\"platform_product_feedback\",\"payload\":{\"actual\":\"在本次入口未找到比例选项；尚未核实工具支持情况\",\"aspect_ratio\":{\"height\":3,\"width\":2},\"basis\":\"explicit_user\",\"capability_status\":\"unknown\",\"category\":\"feature_request\",\"entrypoint\":\"synthetic/agent/image-options\",\"evidence\":[{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000002-0000-4000-8000-000000000001\",\"excerpt\":\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"verification_status\":\"reported\",\"version\":\"statement-1\"}},{\"asset_refs\":[],\"basis\":\"explicit_user\",\"evidence_id\":\"00000000-0000-4000-8000-000000000092\",\"excerpt\":\"Second synthetic evidence; no private data.\",\"redaction_status\":\"not_needed\",\"redaction_version\":\"v1\",\"relation\":\"supports\",\"sensitivity\":\"ordinary\",\"source\":{\"content_hash\":\"b49bfb736ef849712a3ed27ce7c724cfa7cc3690c51aaa18c26dcd380f02d426\",\"kind\":\"user_statement\",\"observed_at\":\"2026-10-25T12:00:00Z\",\"opaque_locator\":null,\"resource_app\":null,\"rights_basis\":\"user-selected excerpt; tenant use only\",\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"verification_status\":\"reported\",\"version\":\"synthetic:v2\"}}],\"expected\":\"宽高比 2:3；像素尺寸尚未指定\",\"goal\":\"制作竖版宣传图（合成）\",\"pixel_size\":null,\"repro_steps\":[\"打开合成图像入口\",\"查找2:3选项\"],\"subcategory\":\"capability_gap_pending_verification\",\"versions\":{\"agent\":\"synthetic-v1\",\"application\":\"synthetic-1\",\"client\":\"synthetic-3.1.1\",\"tool\":null}},\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"product_feedback_triage\",\"recipient\":\"tenant_feedback_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"goal\",\"expected\",\"actual\",\"entrypoint\",\"versions\",\"category\",\"subcategory\",\"basis\",\"capability_status\",\"aspect_ratio\",\"pixel_size\",\"repro_steps\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"},{\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"version\":\"synthetic:v2\"}]}",
+      "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+      "target_preimage": {
+        "action": "desktop.intake.consent",
+        "contract_version": 1,
+        "task_authorization_revision": 1,
+        "request_id": "00000000-0000-4000-8000-000000000003",
+        "domain": "platform_product_feedback",
+        "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+        "desktop_facts": {
+          "actor_id": "00000000-0000-4000-8000-000000000005",
+          "tenant_id": "00000000-0000-4000-8000-000000000006",
+          "identity_id": "00000000-0000-4000-8000-000000000007",
+          "role": "employee",
+          "session_id": "synthetic-session-not-a-token",
+          "client_id": "futurestaff-desktop",
+          "issued_at": 1792972800,
+          "token_expires_at": "2026-10-26T00:10:00+00:00",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "client_policy_hash": "22a878f50f23f8b32ee8416989afec41f6dd74b9436f488d20d9333853c6b078",
+          "authority": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      },
+      "target_canonical_utf8": "{\"action\":\"desktop.intake.consent\",\"contract_version\":1,\"desktop_facts\":{\"actor_id\":\"00000000-0000-4000-8000-000000000005\",\"authority\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"client_id\":\"futurestaff-desktop\",\"client_policy_hash\":\"22a878f50f23f8b32ee8416989afec41f6dd74b9436f488d20d9333853c6b078\",\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"identity_id\":\"00000000-0000-4000-8000-000000000007\",\"issued_at\":1792972800,\"role\":\"employee\",\"session_id\":\"synthetic-session-not-a-token\",\"tenant_id\":\"00000000-0000-4000-8000-000000000006\",\"token_expires_at\":\"2026-10-26T00:10:00+00:00\"},\"domain\":\"platform_product_feedback\",\"payload_hash\":\"adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168\",\"request_id\":\"00000000-0000-4000-8000-000000000003\",\"task_authorization_revision\":1}",
+      "target_hash": "668311266b29ec9bbbc031bd12feecf76e823a2cf8e10374307f75087cc8fc23",
+      "preview_preimage": {
+        "action": "desktop.intake.consent",
+        "server_task_id": "00000000-0000-4000-8000-000000000008",
+        "task_authorization_revision": 1,
+        "authority_source": "explicit_web_single_candidate_approval",
+        "target_hash": "668311266b29ec9bbbc031bd12feecf76e823a2cf8e10374307f75087cc8fc23",
+        "expires_at": "2026-10-26T00:05:00+00:00",
+        "proposal": {
+          "request_id": "00000000-0000-4000-8000-000000000003",
+          "context": {
+            "agent_id": "00000000-0000-4000-8000-000000000001",
+            "agent_version": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "agent_release_version": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "client_version": "3.2.0",
+            "client_task_id": "synthetic-session:turn-1"
+          },
+          "manifest": {
+            "domain": "platform_product_feedback",
+            "recipient": "tenant_feedback_intake",
+            "purpose": "product_feedback_triage",
+            "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+            "evidence_manifest_hash": "7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377",
+            "scope": {
+              "policy_id": "00000000-0000-4000-8000-000000000002",
+              "policy_version": 1,
+              "audiences": [
+                "customer"
+              ],
+              "purpose": "answer_current_task",
+              "valid_until": null
+            },
+            "source_versions": [
+              {
+                "source_id": "00000003-0000-4000-8000-000000000001",
+                "version": "statement-1"
+              },
+              {
+                "source_id": "00000000-0000-4000-8000-000000000093",
+                "version": "synthetic:v2"
+              }
+            ],
+            "selected_fields": [
+              "goal",
+              "expected",
+              "actual",
+              "entrypoint",
+              "versions",
+              "category",
+              "subcategory",
+              "basis",
+              "capability_status",
+              "aspect_ratio",
+              "pixel_size",
+              "repro_steps",
+              "evidence"
+            ],
+            "privacy_transform_version": "redaction-v1",
+            "policy_version": "governance-private-text-v1",
+            "allow_cross_tenant_aggregation": false
+          }
+        },
+        "source_identity_id": "00000000-0000-4000-8000-000000000007",
+        "client_id": "futurestaff-desktop",
+        "desktop_session_hash": "25054767a516541745900e0d270bf567f89e60be4f485cadbcf8315cc4b6c241",
+        "client_version_attested": false,
+        "formal_knowledge_permission": false,
+        "agent_query_permission": false
+      },
+      "preview_canonical_utf8": "{\"action\":\"desktop.intake.consent\",\"agent_query_permission\":false,\"authority_source\":\"explicit_web_single_candidate_approval\",\"client_id\":\"futurestaff-desktop\",\"client_version_attested\":false,\"desktop_session_hash\":\"25054767a516541745900e0d270bf567f89e60be4f485cadbcf8315cc4b6c241\",\"expires_at\":\"2026-10-26T00:05:00+00:00\",\"formal_knowledge_permission\":false,\"proposal\":{\"context\":{\"agent_id\":\"00000000-0000-4000-8000-000000000001\",\"agent_release_version\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"agent_version\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"client_task_id\":\"synthetic-session:turn-1\",\"client_version\":\"3.2.0\"},\"manifest\":{\"allow_cross_tenant_aggregation\":false,\"domain\":\"platform_product_feedback\",\"evidence_manifest_hash\":\"7055e2f68661ce8c576217afa4662203dfb28ea9ececc547505124877f68d377\",\"payload_hash\":\"adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168\",\"policy_version\":\"governance-private-text-v1\",\"privacy_transform_version\":\"redaction-v1\",\"purpose\":\"product_feedback_triage\",\"recipient\":\"tenant_feedback_intake\",\"scope\":{\"audiences\":[\"customer\"],\"policy_id\":\"00000000-0000-4000-8000-000000000002\",\"policy_version\":1,\"purpose\":\"answer_current_task\",\"valid_until\":null},\"selected_fields\":[\"goal\",\"expected\",\"actual\",\"entrypoint\",\"versions\",\"category\",\"subcategory\",\"basis\",\"capability_status\",\"aspect_ratio\",\"pixel_size\",\"repro_steps\",\"evidence\"],\"source_versions\":[{\"source_id\":\"00000003-0000-4000-8000-000000000001\",\"version\":\"statement-1\"},{\"source_id\":\"00000000-0000-4000-8000-000000000093\",\"version\":\"synthetic:v2\"}]},\"request_id\":\"00000000-0000-4000-8000-000000000003\"},\"server_task_id\":\"00000000-0000-4000-8000-000000000008\",\"source_identity_id\":\"00000000-0000-4000-8000-000000000007\",\"target_hash\":\"668311266b29ec9bbbc031bd12feecf76e823a2cf8e10374307f75087cc8fc23\",\"task_authorization_revision\":1}",
+      "preview_hash": "7e3e6a8d04c8fb1e0e320acb9f09432d96dfd5bd43ab80876f928beb0f2c64ee",
+      "public_pending_response": {
+        "request_id": "00000000-0000-4000-8000-000000000003",
+        "server_task_id": "00000000-0000-4000-8000-000000000008",
+        "task_authorization_revision": 1,
+        "authority_source": "none",
+        "action": "desktop.intake.consent",
+        "domain": "platform_product_feedback",
+        "payload_hash": "adf05324d85b9cbbf6e34964f1f85f0b72235a58878663101b14621e8d62e168",
+        "target_hash": "668311266b29ec9bbbc031bd12feecf76e823a2cf8e10374307f75087cc8fc23",
+        "status": "pending",
+        "expires_at": "2026-10-26T00:05:00+00:00",
+        "receipt": null,
+        "formal_knowledge_permission": false,
+        "agent_query_permission": false
+      },
+      "content_hash": {
+        "value": "合成证据：2:3 宽高比；不是像素。🙂 é é\n引号\" 反斜线\\ 结束",
+        "canonical_utf8": "\"合成证据：2:3 宽高比；不是像素。🙂 é é\\n引号\\\" 反斜线\\\\ 结束\"",
+        "sha256": "b527d6b0035e1c113c0f8962a8138cab3d37170e5bf9c4727dd697dcc6f48262",
+        "raw_text_sha256_NOT_CONTENT_HASH": "29a735f54cf185da5f1dbe09fe53f3b71662290e71fd7cd1b14ed49c2bcbf224"
+      }
+    }
+  ],
+  "local_wire_negatives": [
+    {
+      "name": "duplicate-key",
+      "payload_json": "{\"a\":1,\"a\":2}",
+      "expected": "LOCAL_CONTENT_INVALID"
+    },
+    {
+      "name": "non-canonical-whitespace",
+      "payload_json": "{ \"a\":1}",
+      "expected": "LOCAL_CONTENT_INVALID"
+    },
+    {
+      "name": "float",
+      "payload_json": "{\"a\":1.5}",
+      "expected": "LOCAL_CONTENT_INVALID"
+    },
+    {
+      "name": "unsafe-integer",
+      "payload_json": "{\"a\":9007199254740992}",
+      "expected": "LOCAL_CONTENT_INVALID"
+    },
+    {
+      "name": "lone-surrogate",
+      "payload_json": "{\"a\":\"\\ud800\"}",
+      "expected": "LOCAL_CONTENT_INVALID"
+    }
+  ]
+}

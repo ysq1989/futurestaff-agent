@@ -34,3 +34,15 @@ test('video workspace signals track logout and tool cancellation',async()=>{
   const second=fixture();cancel.abort()
   await assert.rejects(second.resolver.authorize('session-2',cancel.signal))
 })
+
+test('version-isolated sessions resolve assets in their authorized snapshot workspace',async()=>{
+  const snapshotVersion='c'.repeat(64)
+  const isolated=path.resolve('fixtures/member/agents',agentId,'snapshots',snapshotVersion,'workspace')
+  const {resolver}=fixture({
+    resolveBinding:async()=>({agentId,version,snapshotVersion}),
+    workspacePath:async(id,release,currentSnapshot)=>currentSnapshot===snapshotVersion
+      ?isolated:path.resolve('fixtures/member/agents',id,'workspace'),
+  })
+  const result=await resolver.authorize('snapshot-session')
+  assert.equal(result.workspacePath,isolated)
+})

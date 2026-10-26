@@ -1,3 +1,4 @@
+import type { NativeConsentWindowPolicy, NativeConsentWindowRequest, NativeConsentWindowSession, NativeConsentWindowState } from './desktop-consent-window-contract.ts'
 import type { Context } from '@deepseek-ai/cordis'
 import type { SystemViewResolver } from './system-view-contract.ts'
 import type { DesktopRendererAccessHeader } from './desktop-browser-access.ts'
@@ -148,6 +149,8 @@ export interface DesktopTerminalSpec {
 export interface DesktopShellSpec extends DesktopWindowConfig {
   /** Resolve a business page from the product Host's current authenticated session. */
   resolveSystemApplication?: SystemViewResolver
+  /** Independent Host-reviewed policy; absence keeps native candidate confirmation closed. */
+  resolveCandidateConsentPolicy?(): NativeConsentWindowPolicy | null
   /** Actual material after platform and Windows-build capability gating. */
   material: DesktopWindowMaterial
   /** Windows build used for material capability reporting, when applicable. */
@@ -180,6 +183,8 @@ export interface DesktopShellSpec extends DesktopWindowConfig {
 export interface DesktopRuntime {
   /** Host-only requests through the application's existing isolated SSO session. */
   requestSystem?(appId:string,path:string,init:RequestInit):Promise<Response>
+  /** Host-only, already authenticated/bound candidate. A window transfer is never receipt approval. */
+  openCandidateConsent?(request: NativeConsentWindowRequest, onState?: (state: NativeConsentWindowState) => void): NativeConsentWindowSession | null
   /** Immutable launcher policy for the FutureStaff distribution; omitted by generic adapters. */
   readonly desktopPolicy?: DesktopSetupWizardSelection | undefined
   /** Current Electron platform. */

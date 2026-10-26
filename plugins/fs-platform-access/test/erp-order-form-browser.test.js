@@ -16,6 +16,7 @@ test('ERP draft prefills, explains missing price, preserves edits and only saves
  const dir=await mkdtemp(path.join(os.tmpdir(),'fs-erp-draft-')),calls=[]
  const data={partners:[{id:'customer',name:'测试客户',code:'K002'}],items:[{id:'product',name:'测试产品',unit:'套',stock_qty:0,unit_price:null}],draft:{customer_id:'customer',items:[{product_id:'product',quantity:200}]}}
  const form={viewId:'form-1',sessionId:'fixture',kind:'form',resource:'sales-orders',title:'销售订单',data}
+ let preparedPreview
  const bundle=await build({stdin:{resolveDir:root,loader:'tsx',contents:`
   import React from'react';import{createRoot}from'react-dom/client';import{applyErpClient}from'./plugins/fs-platform-access/src/client/erp.tsx';import{appearanceTokens}from'./plugins/fs-platform-access/src/client/appearance.ts';
   const entries=[];applyErpClient({effect:()=>{},slots:{inject:(_n,cb)=>cb(),register:(options,component)=>{entries.push({options,component});return()=>{}}}});
@@ -26,9 +27,9 @@ test('ERP draft prefills, explains missing price, preserves edits and only saves
  `},bundle:true,write:false,format:'iife',jsx:'automatic'})
  const server=createServer(async(req,res)=>{
   if(req.url==='/_futurestaff/erp'){let text='';for await(const chunk of req)text+=chunk;const body=JSON.parse(text);calls.push(body);res.setHeader('content-type','application/json');
-   if(body.action==='prepare'){await pause(40);return res.end(JSON.stringify({...form,viewId:'preview-1',kind:'preview',data:{operation:'sales.create',body:body.input.body,references:[{id:'customer',name:'测试客户'},{id:'product',name:'测试产品'}]}}))}
+   if(body.action==='prepare'){await pause(40);preparedPreview={...form,viewId:'preview-1',kind:'preview',data:{operation:'sales.create',body:body.input.body,references:[{id:'customer',name:'测试客户'},{id:'product',name:'测试产品'}]}};return res.end(JSON.stringify(preparedPreview))}
    if(body.action==='confirm')return res.end(JSON.stringify({...form,kind:'entity',data:{order_no:'fixture-order',status:'草稿',items:[]},conversationUpdated:true}))
-   return res.end(JSON.stringify(form))
+   return res.end(JSON.stringify(body.viewId==='preview-1'&&preparedPreview?preparedPreview:form))
   }
   res.setHeader('content-type',req.url==='/app.js'?'text/javascript':'text/html;charset=utf-8');res.end(req.url==='/app.js'?bundle.outputFiles[0].text:'<!doctype html><html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>body{margin:0;font:14px Segoe UI}*{box-sizing:border-box}</style><div id="root"></div><script src="/app.js"></script></html>')
  })
@@ -62,6 +63,7 @@ test('ERP draft prefills, explains missing price, preserves edits and only saves
   assert.equal(calls.find(call=>call.action==='prepare').input.body.items[0].quantity,200)
   assert.equal(calls.some(call=>call.action==='confirm'),false)
   await cdp.evaluate(()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='返回修改').click()||true,null)
+  await waitFor(()=>!!document.querySelector('.fs-erp-form'))
   assert.equal(await cdp.evaluate(()=>document.querySelectorAll('input[type=number]')[1].value,null),'26.5')
   await cdp.call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await cdp.evaluate(()=>{window.dark();return true},null)
   assert.equal(await cdp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.querySelector('.fs-erp-window').scrollWidth<=390,null),true)

@@ -17,10 +17,11 @@ test('Shop native preview requires a click, submits once, escapes data, and clea
  const dir=await mkdtemp(path.join(os.tmpdir(),'fs-shop-operation-')),calls=[]
  const preview={schemaVersion:1,module:'shop',sessionId:'fixture',viewId:'preview',title:'新增测试商品',kind:'preview',data:{state:'prepared',arguments:{body:{store_name:'<img src=x onerror=window.unsafe=true>',is_show:0,items:[],attrs:[{price:10,stock:0,pic:'https://shop-test.fsstory.net/'+('long-public-image/'.repeat(30))}]}}}}
  const bundle=await build({stdin:{resolveDir:root,loader:'tsx',contents:`
-  import React from'react';import{createRoot}from'react-dom/client';import{applyShopOperationClient}from'./plugins/fs-platform-access/src/client/shop-operations.tsx';import{appearanceTokens}from'./plugins/fs-platform-access/src/client/appearance.ts';
+  import React from'react';import{createRoot}from'react-dom/client';import{applyShopOperationClient}from'./plugins/fs-platform-access/src/client/shop-operations.tsx';import{appearanceTokens}from'./plugins/fs-platform-access/src/client/appearance.ts';import{messageCardCss}from'./plugins/fs-platform-access/src/client/message-card.tsx';
   const entries=[],listeners=[];let snapshot={phase:'ready',activeTenantId:'test',user:{userId:'member'}};
   applyShopOperationClient({inject:(_names,fn)=>fn({effect:fn=>fn(),uiConversation:{events:{register:()=>()=>{}}}}),effect:fn=>fn(),platformClientSession:{getSnapshot:()=>snapshot,subscribe:fn=>{listeners.push(fn);return()=>{}}},slots:{inject:(_n,cb)=>cb(),register:(options,component)=>{entries.push({options,component});return()=>{}}}});
   for(const[key,value]of Object.entries(appearanceTokens))document.documentElement.style.setProperty(key,value.light);
+  const cardStyle=document.createElement('style');cardStyle.textContent=messageCardCss;document.head.append(cardStyle);
   window.dark=()=>{for(const[key,value]of Object.entries(appearanceTokens))document.documentElement.style.setProperty(key,value.dark)};
   window.logout=()=>{snapshot={phase:'signed_out'};listeners.forEach(fn=>fn())};
   const Window=entries.find(e=>e.options.id==='futurestaff-shop-operation').component,Card=entries.find(e=>e.options.key==='shop_call').component;

@@ -15,6 +15,25 @@ export function toolBusiness(name:string):BusinessSystem|undefined{
  return undefined
 }
 export function businessToolAllowed(name:string,scope:readonly BusinessSystem[]|undefined):boolean{
+ if(name==='agent_message_card')return true
  const system=toolBusiness(name)
  return scope===undefined||system===undefined||scope.includes(system)
+}
+/** Agent administration is a controlled application, separate from business scopes. */
+export function toolSystem(name:string):BusinessSystem|'agent'|undefined{
+ return name==='call_agent_admin_api'||name.startsWith('agent_admin_')?'agent':toolBusiness(name)
+}
+/** Recipe grants constrain system tools; native DSH tools retain composition-owned permissions. */
+export function templateToolAllowed(name:string,tools:readonly string[]|undefined,scope:readonly BusinessSystem[]):boolean{
+ // A fixed, data-only interface capability is available to every managed role.
+ // This does not authorize business tools or broaden any module prefix.
+ if(name==='agent_message_card')return true
+ const system=toolSystem(name)
+ if(system===undefined){
+  // A new/unknown module cannot obtain native-tool treatment merely by missing a classifier.
+  return !/^(?:call_[A-Za-z0-9_]+_api(?:$|_)|(?:mcp|module|futurestaff|fs)[_:])/.test(name)
+ }
+ if(!tools?.includes(name))return false
+ // The Host resolves agent application/capability authorization before giving this exact grant.
+ return system==='agent'||scope.includes(system)
 }

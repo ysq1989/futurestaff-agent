@@ -7,6 +7,7 @@ type SelectHook<S> = <T>(select: (state: S) => T) => T
 /** The existing settings slot's injected face; section data and commands remain owner-provided. */
 export interface SettingsPageProps {
   wide: boolean
+  loginRequired?: boolean
   reconnect(): void
   useConnectionState: SelectHook<string | undefined>
   useSections: SelectHook<readonly SettingsRow[]>
@@ -51,7 +52,9 @@ export const settingsPageCss = `
 .fs-settings-page .futurestaff-access .fs-panel{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .fs-settings-page .futurestaff-access .fs-tenant{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .fs-settings-page .futurestaff-access .fs-tenant p{max-width:48ch}
-.dshDesktopSidebarSurface:has(.fs-settings-page){overflow:visible;z-index:1001}
+/* The account menu also raises this surface; settings must win its specificity
+   so mounted desktop chat overlays remain behind the full settings page. */
+.dshDesktopSidebarSurface:has(.fs-settings-page),.dshDesktopSidebarSurface:has(.fs-sidebar-account[data-open] .fs-settings-page){overflow:visible;z-index:1001}
 @media(max-width:760px){.fs-settings-page{--fs-settings-nav-width:200px}.fs-settings-nav{padding:20px 10px;gap:20px}.fs-settings-toolbar{padding:10px 16px}.fs-settings-scroll{padding:28px 20px 48px}.fs-settings-content>h2{font-size:24px}.fs-settings-page .futurestaff-access .fs-tenant{grid-template-columns:1fr}}
 @media(max-width:560px){.fs-settings-page{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}.fs-settings-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px;border-right:0;border-bottom:1px solid var(--border-default)}.fs-settings-nav h1{grid-column:2;grid-row:1;margin:0;text-align:right;font-size:20px}.fs-settings-search{grid-column:1/-1;margin:0}.fs-settings-links{grid-column:1/-1;flex-direction:row;overflow:auto;padding:3px 0}.fs-settings-page .fs-settings-link{width:auto;white-space:nowrap;padding:8px 10px}.fs-settings-toolbar{justify-content:flex-start;min-height:48px}.fs-settings-scroll{padding:24px 16px 40px}.fs-settings-content>h2{margin-bottom:24px}.fs-settings-page .futurestaff-access .fs-app-grid{grid-template-columns:1fr}}
 `
@@ -83,7 +86,7 @@ function suspendCoveredContent(page: HTMLElement) {
 }
 
 export function FutureStaffSettingsRoot(props: SettingsPageProps) {
-  const { wide, renderSlot, useSections, useConnectionState, useOnboardingSteps, useSessions, reconnect, t } = props
+  const { wide, loginRequired = false, renderSlot, useSections, useConnectionState, useOnboardingSteps, useSessions, reconnect, t } = props
   // Platform agents own role, knowledge and skills. Keep legacy preset execution
   // and persisted preferences intact, but omit its upstream configuration page.
   const sections = useSections(state => state)
@@ -93,6 +96,7 @@ export function FutureStaffSettingsRoot(props: SettingsPageProps) {
   const onboardingActive = useSessions(state => state.phase === 'ready' && (state.current === undefined || state.byId[state.current]?.blank === true))
   const [completed, setCompleted] = useState<ReadonlySet<string>>(() => new Set())
   const [open, setOpen] = useState(false)
+  const visible = open && !loginRequired
   const [selected, setSelected] = useState<string>()
   const [query, setQuery] = useState('')
   const page = useRef<HTMLDivElement>(null)
@@ -107,8 +111,9 @@ export function FutureStaffSettingsRoot(props: SettingsPageProps) {
   const wasOpen = useRef(false)
 
   useEffect(() => { if (!onboardingActive) setCompleted(new Set()) }, [onboardingActive])
+  useLayoutEffect(() => { if (loginRequired && open) close() }, [loginRequired, open, close])
   useLayoutEffect(() => {
-    if (!open || !page.current) return
+    if (!visible || !page.current) return
     const node = page.current
     const updateTop = () => {
       const caption = document.querySelector('.dshDesktopWindowsCaptionRow,.dshDesktopMacCaptionRow,.dshDesktopFrameTitlebar')
@@ -119,20 +124,20 @@ export function FutureStaffSettingsRoot(props: SettingsPageProps) {
     back.current?.focus()
     window.addEventListener('resize', updateTop)
     return () => { restore(); window.removeEventListener('resize', updateTop) }
-  }, [open])
+  }, [visible])
   useEffect(() => {
-    if (wasOpen.current && !open) trigger.current?.focus()
-    wasOpen.current = open
-  }, [open])
+    if (wasOpen.current && !visible && !loginRequired) trigger.current?.focus()
+    wasOpen.current = visible
+  }, [visible, loginRequired])
   useEffect(() => { scroll.current?.scrollTo(0, 0) }, [active?.id])
 
   return <>
     <style>{settingsPageCss}</style>
     <div className="fs-settings-trigger-row">
-      <button ref={trigger} data-settings-trigger type="button" className="fs-settings-trigger" aria-expanded={open} onClick={() => { setOpen(true) }}>{renderSlot('settings.trigger', { wide })}</button>
+      <button ref={trigger} data-settings-trigger type="button" className="fs-settings-trigger" aria-expanded={visible} onClick={() => { setOpen(true) }}>{renderSlot('settings.trigger', { wide })}</button>
       {connection !== undefined && connection !== 'connected' && <button type="button" className="fs-settings-connection" onClick={reconnect} aria-label={t('connection.reconnect')}>{t(connection === 'connecting' ? 'connection.connecting' : 'connection.retry')}</button>}
     </div>
-    {open && <div ref={page} className="fs-settings-page" role="region" aria-label="设置">
+    {visible && <div ref={page} className="fs-settings-page" role="region" aria-label="设置">
       <div className="fs-settings-brand" aria-label="FutureStaff Agent"><img src={futureStaffLogoUrl} alt=""/><span>FutureStaff<b>.Agent</b></span></div>
       <nav className="fs-settings-nav" aria-label="设置分类">
         <button ref={back} type="button" className="fs-settings-back" aria-label="返回工作台" onClick={close}><SettingsIcon kind="back"/>返回工作台</button>
@@ -153,6 +158,6 @@ export function FutureStaffSettingsRoot(props: SettingsPageProps) {
         </div>
       </div>
     </div>}
-    {step && renderSlot('settings.onboarding', { stepId: step.id, complete: () => { setCompleted(previous => new Set([...previous, step.id])) }, openSection }, { only: step.id })}
+    {!loginRequired && step && renderSlot('settings.onboarding', { stepId: step.id, complete: () => { setCompleted(previous => new Set([...previous, step.id])) }, openSection }, { only: step.id })}
   </>
 }

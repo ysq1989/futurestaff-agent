@@ -1,9 +1,8 @@
 import type {Context} from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-tools'
-import type {ImageIdentity} from './agent-images.js'
-import {WebsiteService} from './website.js'
+import {WebsiteService, type WebsiteIdentity} from './website.js'
 
-export function mountWebsite(ctx:Context,origin:string,authorize:(sessionId:string)=>Promise<ImageIdentity>){
+export function mountWebsite(ctx:Context,origin:string,authorize:(sessionId:string,tool:string)=>Promise<WebsiteIdentity>){
  const service=new WebsiteService(origin,authorize)
  ctx.inject(['tools'],toolCtx=>{
   for(const definition of [

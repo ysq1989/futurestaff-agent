@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "reviewedAt": "2026-10-21",
-  "review": "docs/specs/persistent-agents-v3-acceptance.md",
+  "reviewedAt": "2026-10-26",
+  "review": "docs/validation/governance-desktop-window-20261026.md",
   "files": [
     {
       "path": "electron-runtime.ts",
-      "reason": "FutureStaff signed update confirmation uses its branded dialog; upstream Beta retains its original update UI. Product-only Shop broker delegates exact allowlisted calls into the existing isolated business session.",
-      "stableSha256": "8f0abbe552c18581a8cc8aa6cd9f372a2c16f790cc5b14b79719c6715c1298d4",
+      "reason": "FutureStaff signed update confirmation uses its branded dialog; upstream Beta retains its original update UI. Product-only Shop broker delegates exact allowlisted calls into the existing isolated business session. Reviewed dedicated one-shot knowledge-consent window contract; ordinary popup denial and identity isolation remain enforced.",
+      "stableSha256": "2bf676b840363af0591e4685a8982084b114ff9a9a6aeeb4fa4d72303dbf106a",
       "betaSha256": "497ba5cdb9e40582aa037fc195004ddab694d334ebe3ce4cdb5fc19d160f1c8c"
     },
     {
       "path": "electron-shell-generation.ts",
-      "reason": "FutureStaff owns authenticated system views, exact module and private video preview windows, renderer capability scopes and Windows workbench sizing.",
-      "stableSha256": "08e42085571eef034d497d0bbccb34610d8f19a73dbc8493fa7efb63e011b488",
+      "reason": "FutureStaff owns authenticated system views, exact module and private video preview windows, renderer capability scopes and Windows workbench sizing. Reviewed dedicated one-shot knowledge-consent window contract; ordinary popup denial and identity isolation remain enforced.",
+      "stableSha256": "c9541e1e0e79a68aeec37f894f4333c0a5aac48f9f031d8e3ac4fc60f1d6323e",
       "betaSha256": "5c930513cdc488893aabfffce7804dce66610f25df8c89da4823ec4693b68762"
     },
     {
@@ -59,8 +59,8 @@
     },
     {
       "path": "runtime.ts",
-      "reason": "Product-only authenticated system application resolver contract.",
-      "stableSha256": "b319a0429b90df491e782fa339de706524015e10b371cb1e2673b4397c8199e2",
+      "reason": "Product-only authenticated system application resolver contract. Reviewed dedicated one-shot knowledge-consent window contract; ordinary popup denial and identity isolation remain enforced.",
+      "stableSha256": "e7e5fd1189016df827ce49b0f95e2ad248d12a22e04c830ade1edee375317518",
       "betaSha256": "2faed92ff5ba80a8b33ec3585cea0c2dab02bf1c9caeb680732a5fbdf379bc78"
     },
     {
@@ -91,6 +91,24 @@
       "path": "video-window.ts",
       "reason": "Product-only private video preview reuses the authenticated native session; exact current-carrier capabilities, blocked external navigation and generation-owned renderer cleanup.",
       "stableSha256": "33ad5c1178e55750caaea0462203d3b6d0bd101c35e051d175e2226e862742ee",
+      "betaSha256": null
+    },
+    {
+      "path": "desktop-consent-window.ts",
+      "reason": "Product-only controlled knowledge-consent window. Fixed Host-approved HTTPS target, isolated ephemeral Session and one-shot in-memory handoff; no provider leaves it disconnected.",
+      "stableSha256": "0a79e4b80b4334cc7e28a25f8b85132516aeae8c46e83f66ff1344066da3e129",
+      "betaSha256": null
+    },
+    {
+      "path": "desktop-consent-window-contract.ts",
+      "reason": "Product-only controlled knowledge-consent window. Fixed Host-approved HTTPS target, isolated ephemeral Session and one-shot in-memory handoff; no provider leaves it disconnected.",
+      "stableSha256": "9b8dff99d60773d490a706203552fae8823767dbb1ce00681bed3a44e8838323",
+      "betaSha256": null
+    },
+    {
+      "path": "desktop-consent-window-document.ts",
+      "reason": "Product-only controlled knowledge-consent window. Fixed Host-approved HTTPS target, isolated ephemeral Session and one-shot in-memory handoff; no provider leaves it disconnected.",
+      "stableSha256": "e1aa67d5995111195185b83af3c13245c9fcc27b0ba0e09076cbeca7a9dc8db4",
       "betaSha256": null
     }
   ]

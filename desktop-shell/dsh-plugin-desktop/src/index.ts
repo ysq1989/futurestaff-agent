@@ -1,3 +1,4 @@
+import type { NativeConsentWindowPolicy } from './desktop-consent-window-contract.ts'
 /** DSH Desktop Host plugin: owns the selected native shell generation. */
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -481,6 +482,10 @@ export function apply(ctx: Context, config: Config): void {
           const service = ctx.get('platformDevLogin') as { resolveSystemApplication?: (id: string) => Promise<{url:string;owner:string;signal:AbortSignal}> } | undefined
           if (!service?.resolveSystemApplication) throw new Error('SYSTEM_VIEW_UNAVAILABLE')
           return service.resolveSystemApplication(appId)
+        },
+        resolveCandidateConsentPolicy: () => {
+          const service = ctx.get('platformCandidateConsent') as {nativeWindowPolicy?(): NativeConsentWindowPolicy | null} | undefined
+          return service?.nativeWindowPolicy?.() ?? null
         },
         authenticationUrl: ctx.connection.authenticatedUrl(new URL(url).origin),
         rendererAccessHeader: browserAccess.rendererHeader,

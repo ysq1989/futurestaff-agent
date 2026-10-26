@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { requireApplications } from '../lib/system-policy.js'
 
 import {
   InMemoryTenantResources,
@@ -140,6 +141,53 @@ class FakeVault {
   async save(value) { this.value = value; this.saves.push(value) }
   async clear() { this.cleared = true; this.value = undefined }
 }
+
+test('template authority rereads current applications and keeps stable snapshots until grants change', async () => {
+  const api = new FakeDevApi(), access = new PlatformDevAccessController(api, new FakeVault(), new InMemoryTenantResources())
+  await access.restore()
+  let items = [application(tenantId), { ...application(tenantId), appId: 'erp', capabilities: ['erp.read'] }]
+  api.listApplications = async () => ({ activeTenantId: tenantId, items })
+  const first = await access.authorizeTemplates()
+  assert.deepEqual(first.applications.map(app => app.appId), ['agent', 'erp'])
+  const snapshot = access.getSnapshot()
+  await access.authorizeTemplates()
+  assert.equal(access.getSnapshot(), snapshot, 'identical server grants must not retrigger renderer effects')
+  items = [application(tenantId)]
+  assert.deepEqual((await access.authorizeTemplates()).applications.map(app => app.appId), ['agent'])
+  assert.deepEqual(access.getSnapshot().applications.map(app => app.appId), ['agent'])
+  api.listApplications = async () => ({ activeTenantId: otherTenantId, items: [{ ...application(otherTenantId) }] })
+  await assert.rejects(access.authorizeTemplates())
+  api.listApplications = async () => { throw new PlatformApiError('PLATFORM_UNAVAILABLE', 'offline', true, 503) }
+  await assert.rejects(access.authorizeTemplates(), 'no stale grants on network failure')
+  access.dispose()
+})
+
+test('discovered application revocation cancels only old operations that claim that application', async () => {
+  const api = new FakeDevApi(), access = new PlatformDevAccessController(api, new FakeVault(), new InMemoryTenantResources())
+  await access.restore()
+  let items = ['agent', 'erp', 'shop'].map(appId => ({ ...application(tenantId), appId, capabilities: [appId === 'shop' ? 'shop.admin' : `${appId}.read`] }))
+  api.listApplications = async () => ({ activeTenantId: tenantId, items })
+  const pending = await access.authorizeTemplates(), erp = await access.authorizeTemplates(), shop = await access.authorizeTemplates(), generic = await access.authorizeTemplates()
+  requireApplications(erp, ['erp']); requireApplications(shop, ['shop']); requireApplications(generic, [])
+  await access.authorizeTemplates()
+  assert.equal(erp.signal.aborted, false, 'identical grant refreshes do not cancel each other')
+  const sameErp = await access.authorizeTemplates(); requireApplications(sameErp, ['erp'])
+  assert.equal(sameErp.signal, erp.signal, 'stable grants preserve the scope signal used by business credential caches')
+  items = items.filter(app => app.appId !== 'erp')
+  const after = await access.authorizeTemplates()
+  assert.equal(erp.signal.aborted, true, 'an in-flight ERP operation must stop before activation or session admission')
+  assert.equal(shop.signal.aborted, false, 'an unrelated application keeps its operation')
+  assert.equal(generic.signal.aborted, false, 'generic local work has no business dependency')
+  assert.throws(() => requireApplications(pending, ['erp']), 'a queued operation cannot claim an authority epoch revoked before it started')
+  requireApplications(after, [])
+  items.push({ ...application(tenantId), appId: 'erp', capabilities: ['erp.read'] })
+  const regranted = await access.authorizeTemplates(); requireApplications(regranted, ['erp'])
+  assert.equal(regranted.signal.aborted, false)
+  assert.equal(erp.signal.aborted, true, 'reopening an application never revives old authority')
+  await access.logout()
+  assert.equal(generic.signal.aborted, true)
+  access.dispose()
+})
 
 class FakeDevApi {
   order = []

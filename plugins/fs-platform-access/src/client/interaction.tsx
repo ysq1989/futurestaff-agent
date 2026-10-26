@@ -17,7 +17,7 @@ export function InteractionTable({rows, columns, onDetail, emptyText='当前范�
     {columns.map(column => <th scope="col" key={column.key}>{column.label}</th>)}{onDetail && <th scope="col">操作</th>}
   </tr></thead><tbody>{rows.slice(0,100).map((row,index) => <tr key={String(row.id ?? index)}>
     {columns.map(column => <td key={column.key}>{column.format ? column.format(row[column.key], row) : row[column.key] == null ? '—' : String(row[column.key])}</td>)}
-    {onDetail && <td>{typeof row.id === 'string' && <button onClick={() => onDetail(row.id as string)}>查看详情</button>}</td>}
+    {onDetail && <td>{typeof row.id === 'string' && <button type="button" onClick={() => onDetail(row.id as string)}>查看详情</button>}</td>}
   </tr>)}</tbody></table></div>
 }
 
@@ -50,7 +50,7 @@ export function InteractionWindow({title, children, onClose, busy=false, mode='s
   },[onClose])
   return <div className={`fs-interaction-backdrop fs-interaction-${mode}`}>
     <section ref={section} tabIndex={-1} className={`fs-interaction-window ${className}`} role="dialog" aria-modal="true" aria-label={title} aria-busy={busy}>
-      <header><h2>{title}</h2><button disabled={busy} onClick={onClose} aria-label="关闭业务窗口">关闭</button></header>{children}
+      <header><h2>{title}</h2><button type="button" disabled={busy} onClick={onClose} aria-label="关闭业务窗口">关闭</button></header>{children}
     </section>
   </div>
 }

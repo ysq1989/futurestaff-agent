@@ -1,3 +1,4 @@
+import type { NativeConsentWindowRequest, NativeConsentWindowSession, NativeConsentWindowState } from './desktop-consent-window-contract.ts'
 /** Electron implementation of the launcher-provided desktop runtime capability. */
 
 import {
@@ -386,6 +387,10 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   }
 
   /** @inheritdoc */
+  openCandidateConsent(request: NativeConsentWindowRequest, onState?: (state: NativeConsentWindowState) => void): NativeConsentWindowSession | null {
+    return this.generation?.openCandidateConsent(request, onState) ?? null
+  }
+
   reloadRenderer(): void {
     if (this.generation === undefined) {
       throw new Error('dsh-plugin-desktop: renderer reload requires an active shell generation')

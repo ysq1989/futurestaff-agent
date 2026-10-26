@@ -17,22 +17,25 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 test('settings is a full page with section search, independent scrolling, return focus and preserved onboarding', { skip: !executable, timeout: 30000 }, async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'fs-settings-page-'))
   const bundle = await build({ stdin: { resolveDir: root, loader: 'tsx', contents: `
-    import React,{useState} from 'react';import{createRoot}from'react-dom/client';
-    import{FutureStaffSettingsRoot}from'./plugins/fs-platform-access/src/client/settings-page.tsx';
+    import React,{useState,useSyncExternalStore} from 'react';import{createRoot}from'react-dom/client';
     import{appearanceTokens}from'./plugins/fs-platform-access/src/client/appearance.ts';
+    import{sidebarCss}from'./plugins/fs-platform-access/src/client/sidebar.tsx';
+    import{installDesktopOwnedStyles}from'./desktop-shell/dsh-plugin-desktop/src/client/styles.ts';
+    import{createPlatformSettingsRoot,shouldShowPlatformLoginGate}from'./plugins/fs-platform-access/src/client/index.tsx';
     const rows=[{id:'futurestaff-access',label:'FutureStaff',order:-10},{id:'futurestaff-agent-market',label:'Agent 市场',order:-9},{id:'general',label:'通用设置',order:0},{id:'agent-presets',label:'Agent 预设',order:1}];
-    function App(){const[items,setItems]=useState(rows);window.removeGeneral=()=>setItems(rows.filter(r=>r.id!=='general'));
+    const listeners=new Set();let snapshot={phase:'ready'};const controller={subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn)},getSnapshot:()=>snapshot};window.setAccessPhase=phase=>{snapshot={phase};listeners.forEach(fn=>fn())};const PlatformSettingsRoot=createPlatformSettingsRoot(controller);
+    function App(){const[items,setItems]=useState(rows),access=useSyncExternalStore(controller.subscribe,controller.getSnapshot);window.removeGeneral=()=>setItems(rows.filter(r=>r.id!=='general'));const loginRequired=shouldShowPlatformLoginGate(access);
       window.theme=mode=>{for(const[k,v]of Object.entries(appearanceTokens))document.body.style.setProperty(k,v[mode])};
-      return <aside className="fs-sidebar"><header className="fs-sidebar-brand" id="old-brand">工作台品牌和折叠按钮</header><button id="chat">原有聊天</button><FutureStaffSettingsRoot wide reconnect={()=>{window.reconnected=true}}
+      return <div className="dshDesktopFrame" data-desktop-mode="advanced" data-desktop-platform="win32" style={{gridTemplateColumns:'264px minmax(0,1fr)'}}><aside className="dshDesktopSidebarSurface"><aside className="fs-sidebar"><style>{sidebarCss}</style><header className="fs-sidebar-brand" id="old-brand">工作台品牌和折叠按钮</header><button id="chat">原有聊天</button><div className="fs-sidebar-account" data-open="true"><PlatformSettingsRoot wide reconnect={()=>{window.reconnected=true}}
        useConnectionState={s=>s('connected')} useSections={s=>s(items)} useOnboardingSteps={s=>s([{id:'welcome',order:0}])}
        useSessions={s=>s({phase:'ready',current:undefined,byId:{}})} t={key=>key}
        renderSlot={(name,props,options)=>name==='settings.trigger'?'设置':name==='settings.header'?'设置':name==='settings.action'?<button>导出诊断信息</button>:
         name==='settings.onboarding'?<button id="onboarding" onClick={()=>props.openSection('general')}>引导打开设置</button>:
-        name==='settings.section'?<div><p>现有设置内容：{options.only}</p><label>设置值<input id="setting-value" defaultValue="保留值"/></label>{Array.from({length:28},(_,i)=><p key={i}>设置内容 {i}</p>)}</div>:null}/></aside>}
-    createRoot(document.getElementById('root')).render(<App/>);` }, bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic' })
+        name==='settings.section'?<div><p>现有设置内容：{options.only}</p><label>设置值<input id="setting-value" defaultValue="保留值"/></label>{Array.from({length:28},(_,i)=><p key={i}>设置内容 {i}</p>)}</div>:null}/></div></aside></aside><main className="dshDesktopConversationSurface">原有会话内容</main><div className="dshDesktopWindowsCaptionRow"><button id="native-caption">原生窗口控件</button></div><div className="dshDesktopOverlay"><div id="chat-composer" style={{position:'fixed',bottom:40,left:320,right:40,height:120,background:'#fff'}}>后台聊天输入与时间线</div>{loginRequired&&<button id="login-gate" style={{position:'fixed',inset:0}}>必须先登录</button>}</div></div>}
+    installDesktopOwnedStyles();createRoot(document.getElementById('root')).render(<App/>);` }, bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic' })
   const server = createServer((request, response) => {
     response.setHeader('content-type', request.url === '/app.js' ? 'text/javascript' : 'text/html')
-    response.end(request.url === '/app.js' ? bundle.outputFiles[0].text : '<html><body style="margin:0;font-family:Segoe UI"><div class="dshDesktopWindowsCaptionRow" style="height:32px">FutureStaff Agent</div><div id="root"></div><script src="/app.js"></script></body></html>')
+    response.end(request.url === '/app.js' ? bundle.outputFiles[0].text : '<html><body style="margin:0;font-family:Segoe UI"><div id="root"></div><script src="/app.js"></script></body></html>')
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const browser = spawn(executable, ['--headless=new', '--disable-background-networking', '--no-first-run', '--remote-debugging-port=0', `--user-data-dir=${dir}/browser`, 'about:blank'], { windowsHide: true, stdio: 'ignore' })
@@ -49,6 +52,7 @@ test('settings is a full page with section search, independent scrolling, return
     await cdp.evaluate(() => { window.theme('light'); document.querySelector('[data-settings-trigger]').click(); return true }, null)
     await pause(100)
     assert.deepEqual(await cdp.evaluate(() => { const el = document.querySelector('.fs-settings-page'), r = el.getBoundingClientRect(); return { x:r.x,y:r.y,width:r.width,height:r.height,modal:!!document.querySelector('[aria-modal=true]'),inert:document.getElementById('chat').inert } }, null), { x:0,y:32,width:1440,height:868,modal:false,inert:true })
+    assert.deepEqual(await cdp.evaluate(() => { const surface=document.querySelector('.dshDesktopSidebarSurface'),overlay=document.querySelector('.dshDesktopOverlay');return{settingsAboveChat:Number(getComputedStyle(surface).zIndex)>Number(getComputedStyle(overlay).zIndex),chatMounted:!!document.querySelector('#chat-composer'),chatInert:overlay.inert,captionInert:document.querySelector('.dshDesktopWindowsCaptionRow').inert} }, null), {settingsAboveChat:true,chatMounted:true,chatInert:true,captionInert:false})
     assert.equal(await cdp.evaluate(() => document.activeElement.getAttribute('aria-label'), null), '返回工作台')
     assert.equal(await cdp.evaluate(() => document.querySelectorAll('[data-settings-section="agent-presets"]').length, null), 0)
     assert.deepEqual(await cdp.evaluate(() => { const brand=document.querySelector('.fs-settings-brand'),r=brand.getBoundingClientRect(),logo=brand.querySelector('img').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,logoFits:logo.top>=r.top&&logo.bottom<=r.bottom,oldHidden:getComputedStyle(document.getElementById('old-brand')).visibility==='hidden',buttons:brand.querySelectorAll('button').length} }, null), {x:0,y:0,width:264,height:32,logoFits:true,oldHidden:true,buttons:0})
@@ -74,5 +78,18 @@ test('settings is a full page with section search, independent scrolling, return
     assert.equal(await cdp.evaluate(() => document.activeElement.hasAttribute('data-settings-trigger'), null), true)
     await cdp.evaluate(() => { document.querySelector('#onboarding').click(); return true }, null);await pause(50)
     assert.equal(await cdp.evaluate(() => !!document.querySelector('.fs-settings-page'), null), true)
+    for (const phase of ['no_apps','ready']) {
+      await cdp.evaluate(phase => {window.setAccessPhase(phase);return true},phase);await pause(50)
+      assert.equal(await cdp.evaluate(() => !!document.querySelector('.fs-settings-page'),null),true)
+    }
+    await cdp.evaluate(() => {window.setAccessPhase('expired');return true},null);await pause(50)
+    assert.deepEqual(await cdp.evaluate(() => ({settingsOpen:!!document.querySelector('.fs-settings-page'),overlayInert:document.querySelector('.dshDesktopOverlay').inert,loginPresent:!!document.querySelector('#login-gate'),loginOnTop:document.elementFromPoint(innerWidth/2,innerHeight/2)?.id==='login-gate'}),null),{settingsOpen:false,overlayInert:false,loginPresent:true,loginOnTop:true})
+    for (const phase of ['signed_out','loading','selecting_tenant','error']) {
+      await cdp.evaluate(() => {window.setAccessPhase('ready');return true},null);await pause(50)
+      assert.equal(await cdp.evaluate(() => !!document.querySelector('.fs-settings-page'),null),false,'renewed access must not reopen settings')
+      await cdp.evaluate(() => {document.querySelector('[data-settings-trigger]').click();return true},null);await pause(50)
+      await cdp.evaluate(phase => {window.setAccessPhase(phase);return true},phase);await pause(50)
+      assert.deepEqual(await cdp.evaluate(() => ({settingsOpen:!!document.querySelector('.fs-settings-page'),overlayInert:document.querySelector('.dshDesktopOverlay').inert,loginOnTop:document.elementFromPoint(innerWidth/2,innerHeight/2)?.id==='login-gate'}),null),{settingsOpen:false,overlayInert:false,loginOnTop:true})
+    }
   } finally { cdp?.close(); browser.kill(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
 })
