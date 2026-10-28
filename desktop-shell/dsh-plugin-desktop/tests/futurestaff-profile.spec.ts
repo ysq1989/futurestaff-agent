@@ -50,6 +50,26 @@ function fixture(fileCount = 0) {
 }
 
 describe('bundled FutureStaff Profile', () => {
+  it('retains complete audited migration inventories above one MiB within a two MiB bound', () => {
+    const value = fixture()
+    try {
+      const file = join(value.source, 'release-manifest.json')
+      const manifest = JSON.parse(readFileSync(file, 'utf8'))
+      manifest.workspacePreviousInventories = Array.from({ length: 30 }, (_, release) =>
+        Object.fromEntries(Array.from({ length: 400 }, (_, index) => [
+          `node_modules/@futurestaff/fs-platform-access/lib/history-${index}.js`,
+          createHash('sha256').update(`${release}:${index}`).digest('hex'),
+        ])))
+      const bytes = JSON.stringify(manifest)
+      expect(Buffer.byteLength(bytes)).toBeGreaterThan(1024 * 1024)
+      expect(Buffer.byteLength(bytes)).toBeLessThan(2 * 1024 * 1024)
+      writeFileSync(file, bytes)
+      expect(() => validateBundledFutureStaffProfile(value.source)).not.toThrow()
+      writeFileSync(file, bytes + ' '.repeat(2 * 1024 * 1024))
+      expect(() => validateBundledFutureStaffProfile(value.source)).toThrow()
+    } finally { rmSync(value.root, { recursive: true, force: true }) }
+  })
+
   it('preserves a dangling bundled Profile link instead of treating it as a first installation', () => {
     const value = fixture()
     try {

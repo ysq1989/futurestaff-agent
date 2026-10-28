@@ -1,7 +1,7 @@
 import type { PlatformModel } from './contracts.js'
 import { assertPlatformOrigin } from './environment.js'
 import { createHash, randomUUID } from 'node:crypto'
-import { LlmAdapter, LlmError, ProviderRequestId, ToolCallId } from '@deepseek-ai/dsh-llm'
+import { CONTEXT_WINDOW_EXCEEDED_CODE, LlmAdapter, LlmError, ProviderRequestId, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { PlatformProtectedSecrets } from './session-vault.js'
 import {businessToolAllowed,decodeBusinessSystems,templateToolAllowed,type BusinessSystem} from './business-scope.js'
@@ -61,6 +61,32 @@ function validateTemplateBinding(binding:ChatTemplateBinding):void {
 
 const unavailable = () => new LlmError('平台聊天服务暂时不可用，请检查登录状态或联系管理员。', 'FUTURESTAFF_CHAT')
 const invalid = () => new LlmError('平台聊天响应不完整或版本不兼容。', 'FUTURESTAFF_CONTRACT')
+// Effective capacity of this transport, not a claim about the engine's native
+// context window. The 512 KiB text endpoint needs an early compaction threshold;
+// exact serialized-byte admission below also covers UTF-8 and JSON escaping.
+const TRANSPORT_CONTEXT_WINDOW = 32768
+const TEXT_REQUEST_BYTES = 512 * 1024
+const contextExceeded = () => new LlmError('会话内容过长，需要压缩上下文后继续；若仍失败，请减少本次输入或新建会话。原始会话记录保留。', CONTEXT_WINDOW_EXCEEDED_CODE)
+
+/** Only a bounded, recognized pre-inference rejection authorizes recovery. */
+async function rejectionCode(response:Response):Promise<string|undefined> {
+  if(!response.headers.get('content-type')?.startsWith('application/json')||!response.body)return undefined
+  const reader=response.body.getReader()
+  let timer:ReturnType<typeof setTimeout>|undefined
+  const read=async():Promise<string|undefined>=>{
+    try{
+      const chunks:Uint8Array[]=[];let size=0
+      while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.byteLength;if(size>2048)return undefined;chunks.push(chunk.value)}
+      const value:unknown=JSON.parse(Buffer.concat(chunks).toString('utf8'))
+      if(!record(value)||value.contractVersion!=='0.1.0'||!record(value.error))return undefined
+      const code=value.error.code
+      return code==='REQUEST_TOO_LARGE'||code==='AGENT_CONTEXT_TOO_LARGE'?code:undefined
+    }catch{return undefined}
+    finally{void reader.cancel().catch(()=>{});try{reader.releaseLock()}catch{/* A timed-out read is being cancelled. */}}
+  }
+  try{return await Promise.race([read(),new Promise<undefined>(resolve=>{timer=setTimeout(()=>{void reader.cancel().catch(()=>{});resolve(undefined)},1000)})])}
+  finally{clearTimeout(timer)}
+}
 const messageCardInstructions = '交互消息卡片：需要展示信息、让用户选择或补全简单字段时，使用 agent_message_card 提供结构化数据，由客户端绘制卡片；不要输出 HTML、脚本或伪造按钮。用户点击或提交后，其真实响应会返回原会话，请据此继续处理。卡片按钮不授予任何业务写入权限；商品推荐、ERP 确认和图片成果优先使用对应的专用工具与既有授权、预览及确认流程，通用卡片不能替代业务确认。'
 const textOnly = (blocks: readonly ContentBlock[]): string => blocks.map(block => {
   if (block.type !== 'text') throw new LlmError('当前平台聊天仅支持文字，请移除图片或其他附件。', 'FUTURESTAFF_TEXT_ONLY')
@@ -170,7 +196,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     if (provider !== 'futurestaff') throw unavailable()
     const selected = (await this.listModels()).find(item => item.id === model)
     if (!selected) throw unavailable()
-    return { ...selected, defaultMaxTokens: 4096 }
+    return { ...selected, context: {contextWindow:TRANSPORT_CONTEXT_WINDOW}, defaultMaxTokens: 4096 }
   }
   override async prepareCall(provider: string, model: string, signal?: AbortSignal) {
     const metadata = await this.resolveModel(provider, model)
@@ -312,7 +338,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',...(agent.releaseVersion?{agentReleaseVersion:agent.releaseVersion}:{}),
         modelSelection:options.model==='default'?'agent-default':'session-explicit' } : {}),
       messages: wireMessages, tools: options.tools ?? [], maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
-    if (Buffer.byteLength(body) > 9 * 1024 * 1024) throw new LlmError('会话内容过长，请新建会话。', 'FUTURESTAFF_LIMIT')
+    const requestBytes=Buffer.byteLength(body)
     const abort = new AbortController()
     const timeout = setTimeout(() => abort.abort(), 130_000)
     timeout.unref()
@@ -321,6 +347,8 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
     try {
       signal.throwIfAborted()
+      if(requestBytes>9*1024*1024)throw new LlmError('会话内容过长，请减少附件或新建会话。', 'FUTURESTAFF_LIMIT')
+      if(!wireMessages.some(message=>record(message)&&Array.isArray(message.images)&&message.images.length>0)&&requestBytes>TEXT_REQUEST_BYTES)throw contextExceeded()
       let response: Response
       try {
         response = await this.fetcher(`${this.origin}/desktop/v1/chat`, { method: 'POST', redirect: 'error', cache: 'no-store', signal,
@@ -328,10 +356,16 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       } catch { signal.throwIfAborted(); throw unavailable() }
       httpStatus=response.status
       if (!response.ok) {
+        if(response.status===413){
+          const code=await rejectionCode(response)
+          await response.body?.cancel().catch(()=>{})
+          if(code==='REQUEST_TOO_LARGE')throw contextExceeded()
+          if(code==='AGENT_CONTEXT_TOO_LARGE'&&agent)throw new LlmError('智能体知识超过当前上下文限制，请减少知识文件后重试。','FUTURESTAFF_AGENT_LIMIT')
+          throw new LlmError('会话请求内容过长，请压缩上下文、减少输入或附件后重试。原始会话记录保留。','FUTURESTAFF_LIMIT')
+        }
         await response.body?.cancel()
         if (response.status === 401) throw new LlmError('平台登录已失效，请在设置 → FutureStaff 重新登录。', 'FUTURESTAFF_AUTH')
         if (response.status === 403) throw new LlmError(agent ? '当前主体无权使用所选智能体或模型，请检查平台授权。' : '当前租户无权使用所选模型，请联系管理员，或退出后重新选择租户登录。', 'FUTURESTAFF_MODEL_ACCESS')
-        if (response.status === 413 && agent) throw new LlmError('智能体知识或会话超过当前上下文限制，请减少知识文件或新建会话。', 'FUTURESTAFF_AGENT_LIMIT')
         if (response.status === 429) throw new LlmError('平台聊天请求过于频繁或额度已用尽，请稍后重试。', 'FUTURESTAFF_CHAT_LIMIT')
         if (response.status === 409 && agent) throw new LlmError('智能体配置已更新，请重新选择智能体并新建会话。原会话记录仍保留。', 'FUTURESTAFF_AGENT_VERSION')
         throw unavailable()
@@ -410,7 +444,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       const failure=error instanceof LlmError?error:invalid()
       if(!credentials.signal.aborted&&!this.#lifetime.signal.aborted&&!binding?.signal?.aborted&&!options.signal?.aborted){
         try{
-          this.reportDiagnostic?.({category:'llm',operation:'chat',code:failure.code,
+          this.reportDiagnostic?.({category:'llm',operation:'chat',code:failure.code===CONTEXT_WINDOW_EXCEEDED_CODE?'FUTURESTAFF_LIMIT':failure.code,
             sessionId:options.sessionId,requestId,durationMs:Math.min(Date.now()-requestStarted,3600000),requestBytes:Buffer.byteLength(body),
             ...(httpStatus!==undefined?{httpStatus}:{})})
           if(this.reportDiagnostic)markDiagnosticRequestReported(requestId)

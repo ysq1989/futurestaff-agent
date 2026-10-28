@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-desktop",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "FutureStaff Agent: a secure desktop client for tenant-aware AI workflows",
   "license": "MIT",
   "publishConfig": {

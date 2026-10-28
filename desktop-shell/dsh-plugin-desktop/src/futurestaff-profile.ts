@@ -23,7 +23,9 @@ const RELEASE_MANIFEST = 'release-manifest.json'
 const EXPECTED_SCHEMA_VERSION = 1
 const EXPECTED_PRODUCT_VERSION = '0.1.0'
 const EXPECTED_DSH_VERSION = '0.1.2-rc.1'
-const MAX_MANIFEST_BYTES = 1024 * 1024
+// Complete audited release inventories grow with supported upgrade history.
+// Keep the byte cap bounded without dropping any hash/path/count validation.
+const MAX_MANIFEST_BYTES = 2 * 1024 * 1024
 // Product modules now ship more than 256 files. Keep a bounded whole-Profile
 // budget independent of the smaller per-workspace upgrade-code inventories.
 export const MAX_PROFILE_FILES = 1024

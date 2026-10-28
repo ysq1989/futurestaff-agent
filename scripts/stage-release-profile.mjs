@@ -3,6 +3,7 @@ import { cp, lstat, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/prom
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { appendPublishedReleaseLineage } from './release-lineage.mjs'
 import { validateBundledFutureStaffProfile } from '../desktop-shell/dsh-plugin-desktop/src/futurestaff-profile.ts'
 
 const scriptRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -200,6 +201,7 @@ export async function stageReleaseProfile(options = {}) {
     platformContract: foundation.platformContract,
     files: fileHashes,
   }
+  await appendPublishedReleaseLineage(releaseManifest, sourceRoot)
   await writeFile(path.join(target, 'release-manifest.json'), `${JSON.stringify(releaseManifest, null, 2)}\n`)
   await verifyReleaseProfile(outputRoot, sourceRoot)
   validateBundledFutureStaffProfile(target)
