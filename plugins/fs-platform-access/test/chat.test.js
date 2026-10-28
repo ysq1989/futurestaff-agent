@@ -235,7 +235,48 @@ test('managed chat distinguishes tenant model access and provider failures witho
   const provider = setup(async () => response([{ type: 'error', code: 'PROVIDER_UNAVAILABLE' }]))
   await assert.rejects(() => collect(provider.adapter.stream(options())), error => {
     assert.equal(error.code, 'FUTURESTAFF_PROVIDER')
-    assert.match(error.message, /供应商连接/)
+    assert.match(error.message, /模型请求失败/)
+    return true
+  })
+})
+
+test('provider failure retains only the submitted safe request id and never reports partial text as success', async () => {
+  let submitted, calls = 0, failure
+  const bench = setup(async (_url, init) => {
+    calls++; submitted = JSON.parse(init.body)
+    return response([{ type: 'text', text: 'partial' }, { type: 'error', code: 'PROVIDER_UNAVAILABLE' }])
+  })
+  const chunks = []
+  try { for await (const chunk of bench.adapter.stream(options())) chunks.push(chunk) }
+  catch (error) { failure = error }
+  assert.equal(calls, 1)
+  assert.match(submitted.requestId, /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/)
+  assert.equal(failure?.code, 'FUTURESTAFF_PROVIDER')
+  assert.equal(failure?.failure.requestId, submitted.requestId)
+  assert.ok(failure.message.includes(submitted.requestId))
+  assert.doesNotMatch(failure.message, /配置|供应商连接/)
+  assert.doesNotMatch(JSON.stringify(failure.failure), /host-only|tenant-a|user-a/)
+  assert.equal(chunks.some(chunk => chunk.type === 'finish'), false)
+  assert.equal(bench.adapter.providerRetryPolicy().maxRetries, 0)
+})
+
+test('native LLM failure exposes the same local correlation id without accepting arbitrary server diagnostics', async t => {
+  let requestId
+  const ctx = new Context()
+  t.after(() => ctx.fiber.dispose())
+  await ctx.plugin(LlmRuntime)
+  const bench = setup(async (_url, init) => {
+    requestId = JSON.parse(init.body).requestId
+    return response([{ type: 'error', code: 'PROVIDER_UNAVAILABLE' }])
+  })
+  ctx.llm.registerAdapter(['futurestaff'], bench.adapter)
+  const chunks = await collect(ctx.llm.stream(options()))
+  assert.equal(chunks.at(-1).reason.kind, 'error')
+  assert.equal(chunks.at(-1).reason.failure.requestId, requestId)
+  const unsafe = setup(async () => response([{ type: 'error', code: 'PROVIDER_UNAVAILABLE', message: 'private provider detail', requestId: 'untrusted upstream id' }]))
+  await assert.rejects(collect(unsafe.adapter.stream(options())), error => {
+    assert.equal(error.code, 'FUTURESTAFF_CONTRACT')
+    assert.doesNotMatch(error.message, /private provider detail|untrusted upstream id/)
     return true
   })
 })

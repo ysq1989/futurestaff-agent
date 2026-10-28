@@ -1,4 +1,7 @@
 import {mountCandidateConsent} from './governance-desktop-window-host.js'
+import {mountDiagnosticsHost} from './diagnostics-host.js'
+import {mountDiagnosticsObservers} from './diagnostics-observers.js'
+import type {DiagnosticInput} from './diagnostics.js'
 import {canonicalContractJson} from './governance-desktop-contract.js'
 import { platformOrigin, type PlatformEnvironment } from './environment.js'
 import { mountMarket } from './market-host.js'
@@ -75,7 +78,7 @@ async function readBody(request: IncomingMessage): Promise<Buffer> {
   return Buffer.concat(chunks)
 }
 
-export interface PlatformAccessConfig { readonly embeddedMock?: boolean; readonly environment?: PlatformEnvironment }
+export interface PlatformAccessConfig { readonly embeddedMock?: boolean; readonly environment?: PlatformEnvironment; readonly diagnosticsEnabled?:boolean }
 
 export interface PlatformDevLoginService {
   resolveSystemApplication(appId: string): Promise<{ url: string; owner: string; signal: AbortSignal; prepare: (fetcher: import('./system-sso.js').SystemFetch) => Promise<boolean> }>
@@ -121,13 +124,14 @@ function loginJson(response: ServerResponse, status: number, body: unknown): voi
   response.end(payload)
 }
 
-function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
+function mountDevLogin(ctx: Context, environment: PlatformEnvironment,diagnosticsEnabled=true): void {
   if (typeof (ctx as unknown as { get?: unknown }).get !== 'function') return
   const secrets = ctx.get('desktopProtectedSecrets') as unknown
   if (!protectedSecrets(secrets)) return
   const origin = platformOrigin(environment)
   const remembered = new RememberedLogin(secrets, environment)
-  const api = new PlatformDevApi(globalThis.fetch, origin)
+  let captureDiagnostic:(input:DiagnosticInput)=>void=()=>{}
+  const api = new PlatformDevApi(globalThis.fetch, origin,input=>captureDiagnostic(input))
   const profiles = ctx.get('desktopProfiles') as ConstructorParameters<typeof DesktopLoginWorkspace>[0] | undefined
   if (environment === 'production' && !profiles) throw new Error('TENANT_WORKSPACE_SERVICE_REQUIRED')
   const identity = profiles ? readWorkspaceIdentity(profiles.current.dir, environment) : undefined
@@ -140,6 +144,22 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     pkce: new PlatformPkceTransaction({ environment }), api, vault,
   })
   const initialized = access.restore()
+  const runtime=ctx.get('desktopRuntime') as unknown as {platform?:string;updates?:{currentVersion?:string};onDiagnostic?:(listener:(input:DiagnosticInput)=>void)=>()=>void}|undefined
+  const diagnostics=identity&&diagnosticsEnabled?mountDiagnosticsHost(ctx,{directory:workspaceDirectory(identity)+'/diagnostics',identity,origin,
+    appVersion:runtime?.updates?.currentVersion??'0.0.0',platform:runtime?.platform??process.platform,
+    authorize:async()=>{await initialized;return access.authorizeDiagnostics()}}):undefined
+  if(diagnostics){
+    captureDiagnostic=input=>diagnostics.capture(input)
+    if(typeof ctx.on==='function')mountDiagnosticsObservers(ctx,captureDiagnostic)
+    if(runtime?.onDiagnostic)ctx.effect(()=>runtime.onDiagnostic!(captureDiagnostic),'FutureStaff native error observations')
+    ctx.effect(()=>{
+      const timer=setInterval(()=>{if(['ready','no_apps'].includes(access.getSnapshot().phase))void diagnostics.flush()},60000)
+      timer.unref()
+      return()=>clearInterval(timer)
+    },'FutureStaff diagnostics credential readiness probe')
+    void initialized.then(()=>diagnostics.flush()).catch(()=>{})
+  }
+  const resumeDiagnostics=async<T>(operation:Promise<T>):Promise<T>=>{const result=await operation;void diagnostics?.flush();return result}
   const authorizeSystem = async (application: SystemApplicationId) => {
     await initialized
     const credentials = await access.authorizeTemplates()
@@ -232,7 +252,7 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
         if(!binding)throw Error('AGENT_BINDING_REQUIRED')
         return agents.workspacePath(binding)
       }) : undefined,
-      async()=>{await initialized;return access.authorizeTemplates()})
+      async()=>{await initialized;return access.authorizeTemplates()},input=>captureDiagnostic(input))
     llmCtx.effect(() => {
       const unregister = llmCtx.llm.registerAdapter(['futurestaff'], adapter)
       return () => { adapter.dispose(); unregister() }
@@ -304,9 +324,9 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment): void {
     },
     snapshot: async () => { await initialized; return access.synchronizeProfile() },
     loginWithPassword: (loginIdentifier: string, password: string, tenantId?: string, rememberPassword?: boolean) =>
-      remembered.login({ loginIdentifier, password, ...(tenantId ? { tenantId } : {}) }, rememberPassword, input => access.login(input)),
-    selectLoginTenant: (tenantId: string) => access.selectLoginTenant(tenantId),
-    refresh: () => access.refresh(),
+      resumeDiagnostics(remembered.login({ loginIdentifier, password, ...(tenantId ? { tenantId } : {}) }, rememberPassword, input => access.login(input))),
+    selectLoginTenant: (tenantId: string) => resumeDiagnostics(access.selectLoginTenant(tenantId)),
+    refresh: () => resumeDiagnostics(access.refresh()),
     switchTenant: (tenantId: string) => access.switchTenant(tenantId),
     logout: () => access.logout(),
     issueApplicationToken: (appId: string) => access.issueApplicationToken(appId),
@@ -541,7 +561,7 @@ export function apply(ctx: Context, config: PlatformAccessConfig = {}): void {
       handler: (request, response) => proxy(request, response, path, config.embeddedMock === true),
     }), `futurestaff-platform-access: local Mock bridge ${path}`)
   }
-  mountDevLogin(ctx, config.environment ?? 'dev')
+  mountDevLogin(ctx, config.environment ?? 'dev',config.diagnosticsEnabled!==false)
 }
 
 declare module '@deepseek-ai/cordis' {

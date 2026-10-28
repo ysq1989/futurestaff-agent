@@ -1,4 +1,5 @@
 import type { CurrentSnapshotCard } from '../agent-snapshot-host.js'
+import { diagnosticFetch, diagnosticJson } from './diagnostics-request.js'
 
 export type CurrentSnapshotTalent = CurrentSnapshotCard
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
@@ -8,10 +9,10 @@ const invalid = () => Error('当前商城助手目录格式不兼容，请检查
 
 async function request(route: string, signal: AbortSignal, body?: unknown) {
   signal.throwIfAborted()
-  const response = await fetch('/_futurestaff/agents/' + route, { method: body === undefined ? 'GET' : 'POST', headers: { 'x-futurestaff-agent': '1', 'content-type': 'application/json' }, cache: 'no-store', signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
+  const response = await diagnosticFetch('/_futurestaff/agents/' + route, { method: body === undefined ? 'GET' : 'POST', headers: { 'x-futurestaff-agent': '1', 'content-type': 'application/json' }, cache: 'no-store', signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }, { ignoreStatuses: route === 'current-snapshots' ? [404] : [] })
   // Older Hosts have no additive current-role directory.
   if (route === 'current-snapshots' && response.status === 404) return { items: [] }
-  const data: unknown = await response.json(); signal.throwIfAborted()
+  const data: unknown = await diagnosticJson(response); signal.throwIfAborted()
   if (!response.ok) {
     const messages: Record<string, string> = { AGENT_SNAPSHOT_CHANGED: '平台版本已更新，请检查更新后安装当前版本。', AGENT_APPLICATION_REQUIRED: '当前账号无权使用商城助手。', AGENT_SNAPSHOT_LOCAL_CONFLICT: '本机工作区存在不同文件，已保留原文件，请检查后重试。' }
     throw Error(object(data) && typeof data.error === 'string' ? messages[data.error] ?? '商城助手操作未完成，请检查当前版本与使用权限后重试。' : '商城助手操作未完成，请检查更新后重试。')

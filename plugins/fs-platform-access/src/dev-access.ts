@@ -421,6 +421,16 @@ export class PlatformDevAccessController {
     })
   }
 
+  /** Host-only diagnostics authority, independent of app and model entitlements. */
+  async authorizeDiagnostics(): Promise<{accessToken:string;tenantId:string;userId:string;signal:AbortSignal}> {
+    // Telemetry never initiates refresh I/O or occupies the business operation queue.
+    // Foreground/profile refresh owns renewal; a later readiness probe resumes us.
+    if(this.#disposed||!this.#session||!this.#user||!['ready','no_apps'].includes(this.#snapshot.phase)
+      ||this.#request.signal.aborted||this.#accessExpiresAt<=Date.now()+5000
+      ||this.#snapshot.activeTenantId!==this.#session.activeTenantId)throw Error('PLATFORM_LOGIN_REQUIRED')
+    return {accessToken:this.#session.accessToken,tenantId:this.#session.activeTenantId,userId:this.#user.userId,signal:this.#request.signal}
+  }
+
   authorizeChat(selectedModelId?: string): Promise<ChatCredentials> {
     return this.#enqueue(async () => {
       await this.#renewIfNeeded()

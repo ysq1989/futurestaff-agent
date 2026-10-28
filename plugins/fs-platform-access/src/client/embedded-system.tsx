@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { reportClientDiagnostic } from './diagnostics.js'
 
 interface EmbeddedBridge {
   request(input: { action: 'show' | 'hide' | 'close' | 'reload'; appId: string; bounds?: { x: number; y: number; width: number; height: number } }): Promise<{ ok: boolean; error?: string }>
@@ -13,9 +14,12 @@ export function EmbeddedSystemPage({ appId, title, visible }: { appId: string; t
   const [retry, setRetry] = useState(0)
   useEffect(() => {
     const bridge = window.futurestaffSystems
-    if (!bridge) { setError('请更新 Agent 桌面客户端以启用系统内嵌页面。'); return }
+    if (!bridge) { reportClientDiagnostic({ category: 'system', operation: 'system', code: 'CONTRACT_MISMATCH' }); setError('请更新 Agent 桌面客户端以启用系统内嵌页面。'); return }
     if (!visible) { void bridge.request({ action: 'hide', appId }).catch(() => {}); return }
-    let live = true, pending = 0, sequence = 0
+    let live = true, pending = 0, sequence = 0, failureReported = false
+    const reportFailure = (code: 'NETWORK_ERROR' | 'UNCLASSIFIED') => {
+      if (!failureReported) { failureReported = true; reportClientDiagnostic({ category: 'system', operation: 'system', code }) }
+    }
     let fallback: number | undefined
     const update = async () => {
       const current = ++sequence
@@ -45,10 +49,15 @@ export function EmbeddedSystemPage({ appId, title, visible }: { appId: string; t
         const result = await bridge.request({ action: 'show', appId, bounds: { x, y, width, height } })
         if (live && current === sequence) {
           setReady(result.ok)
+          if (result.ok) failureReported = false
+          else reportFailure('UNCLASSIFIED')
           const guidance:Record<string,string>={SYSTEM_SSO_NOT_ENROLLED:'该系统尚未接入 Agent 单点登录，请更新系统服务后重试。',SYSTEM_SSO_UNAVAILABLE:'平台单点登录接口尚未就绪，请更新平台服务后重试。',SYSTEM_SSO_CONTRACT_MISMATCH:'系统登录接入配置不匹配，请联系管理员。',SYSTEM_SSO_EXCHANGE_FAILED:'系统登录交接失败，请重试。'}
           setError(result.ok?'':guidance[result.error??'']??'系统页面暂时无法加载，请重试。')
         }
-      } catch { if (live && current === sequence) setError('系统页面连接失败，请重试。') }
+      } catch (cause) { if (live && current === sequence) {
+        if (!(cause instanceof Error && cause.name === 'AbortError')) reportFailure('NETWORK_ERROR')
+        setError('系统页面连接失败，请重试。')
+      } }
     }
     const flush = () => {
       cancelAnimationFrame(pending)
@@ -74,7 +83,7 @@ export function EmbeddedSystemPage({ appId, title, visible }: { appId: string; t
   return <section style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }} aria-label={`${title}内嵌页面`}>
     <style>{`.fs-embedded-tools{position:absolute;top:7px;right:12px;z-index:2}.fs-embedded-tools button{display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer}.fs-embedded-tools button:hover{background:var(--bg-hover);color:var(--text-primary)}.fs-embedded-tools button:focus-visible{outline:2px solid var(--accent-primary);outline-offset:2px}.fs-embedded-error{padding:24px;font-size:13px}.fs-embedded-error button{padding:6px 12px;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-secondary);color:var(--text-primary);font:inherit;cursor:pointer}`}</style>
     <div className="fs-embedded-tools">
-      <button type="button" title={`刷新${title}`} onClick={() => { void window.futurestaffSystems?.request({ action: 'reload', appId }).then(result => { if (!result.ok) setError('系统刷新失败，请重试。') }).catch(() => setError('系统刷新失败，请重试。')) }} aria-label={`刷新${title}`}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5 M20 12a8 8 0 1 0-2 5 M20 7l-3-2"/></svg></button>
+      <button type="button" title={`刷新${title}`} onClick={() => { void window.futurestaffSystems?.request({ action: 'reload', appId }).then(result => { if (!result.ok) { reportClientDiagnostic({ category: 'system', operation: 'system', code: 'UNCLASSIFIED' }); setError('系统刷新失败，请重试。') } }).catch(cause => { if (!(cause instanceof Error && cause.name === 'AbortError')) reportClientDiagnostic({ category: 'system', operation: 'system', code: 'NETWORK_ERROR' }); setError('系统刷新失败，请重试。') }) }} aria-label={`刷新${title}`}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5 M20 12a8 8 0 1 0-2 5 M20 7l-3-2"/></svg></button>
     </div>
     <div ref={area} style={{ flex: 1, minHeight: 0, position: 'relative' }}>
       {error ? <div role="status" className="fs-embedded-error"><p>{error}</p><button type="button" onClick={() => { setError(''); setRetry(value => value + 1) }}>重试</button></div>

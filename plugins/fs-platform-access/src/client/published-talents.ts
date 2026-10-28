@@ -1,6 +1,8 @@
 import type { DistributionCard } from '../agent-distribution.js'
 import { notifyInstalledTalentsChanged } from './installed-talents.js'
 import {talentApplicationIds} from './talent-market-model.js'
+import { diagnosticFetch, diagnosticJson } from './diagnostics-request.js'
+import { reportClientDiagnostic } from './diagnostics.js'
 
 export interface PublishedTalent extends DistributionCard {
   installedVersion: string | null
@@ -25,18 +27,24 @@ const systems = new Set(['shop', 'erp', 'product-hub', 'geo', 'visa', 'web'])
 async function request(route: string, signal: AbortSignal, body?: unknown): Promise<Record<string, unknown>> {
   signal.throwIfAborted()
   let response: Response
-  try { response = await fetch('/_futurestaff/agents/' + route, { method: body === undefined ? 'GET' : 'POST',
+  try { response = await diagnosticFetch('/_futurestaff/agents/' + route, { method: body === undefined ? 'GET' : 'POST',
     headers: { 'x-futurestaff-agent': '1', 'content-type': 'application/json' }, cache: 'no-store', signal,
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }) }) }
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }) }, { ignoreStatuses: [409] }) }
   catch { signal.throwIfAborted(); throw new PublishedTalentFailure('平台智能体连接暂不可用，请刷新后重试。') }
   let data: unknown
-  try { data = await response.json() } catch { throw invalid() }
+  try { data = await diagnosticJson(response) } catch {
+    if (response.status === 409 && !signal.aborted) reportClientDiagnostic({ category: 'network', operation: 'discovery', code: 'HTTP_ERROR', httpStatus: 409 })
+    throw invalid()
+  }
   signal.throwIfAborted()
   if (!response.ok) {
     if (record(data) && data.error === 'AGENT_PERMISSION_CONFIRMATION_REQUIRED' && Array.isArray(data.capabilities)
       && data.capabilities.length <= 20 && data.capabilities.every(value => text(value, 100) && /^[a-z][a-z0-9_.-]*$/.test(value))) {
       throw new PublishedCapabilityConfirmation([...new Set(data.capabilities)] as string[])
     }
+    // Capability confirmation is an expected business branch. Other 409s are
+    // failed operations and are reported after that branch is excluded.
+    if (response.status === 409) reportClientDiagnostic({ category: 'network', operation: 'discovery', code: 'HTTP_ERROR', httpStatus: 409 })
     const messages: Record<string, string> = {
       AGENT_DISTRIBUTION_UPGRADE_REQUIRED: '平台发布服务暂不可用，请稍后刷新目录。',
       AGENT_RELEASE_CHANGED: '平台版本已更新，请刷新目录后重试。',

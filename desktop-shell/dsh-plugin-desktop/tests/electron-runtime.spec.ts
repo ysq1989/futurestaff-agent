@@ -329,6 +329,42 @@ const spec: DesktopShellSpec = {
 }
 
 describe('Electron desktop runtime', () => {
+  it('projects native renderer failures into fixed Host diagnostics without private details', async () => {
+    const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
+    const runtime = new ElectronDesktopRuntime(async () => {})
+    const observed = vi.fn()
+    runtime.onDiagnostic(observed)
+    const release = runtime.schedule(spec)
+    await runtime.mountScheduled()
+    const gone = electron.webContents.on.mock.calls.find(([event]) => event === 'render-process-gone')?.[1]
+    const failed = electron.webContents.on.mock.calls.find(([event]) => event === 'did-fail-load')?.[1]
+    expect(gone).toBeTypeOf('function')
+    expect(failed).toBeTypeOf('function')
+    gone!({}, { reason: 'crashed', exitCode: 9 })
+    failed!({}, -102, 'private load detail', 'https://private.example/token', true)
+    failed!({}, -3, 'normal cancellation', 'https://private.example/token', true)
+    failed!({}, -102, 'subframe detail', 'https://private.example/token', false)
+    expect(observed.mock.calls).toEqual([
+      [{ code: 'NATIVE_RENDERER_PROCESS_GONE', category: 'crash', operation: 'runtime', severity: 'fatal' }],
+      [{ code: 'NATIVE_RENDERER_LOAD_FAILED', category: 'system', operation: 'runtime', severity: 'error' }],
+    ])
+    expect(JSON.stringify(observed.mock.calls)).not.toMatch(/private|token|exitCode|https/)
+    await release()
+  })
+
+  it('reports failed renderer boot once without plugin names or exception text', async () => {
+    const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
+    const runtime = new ElectronDesktopRuntime(async () => {}, () => true)
+    const observed = vi.fn()
+    runtime.onDiagnostic(observed)
+    const result = runtime.beginRendererBootMonitoring({ commitHealthy: async () => {} })
+    runtime.reportRendererBoot({ status: 'failed', plugins: ['private-plugin'], error: 'private exception' })
+    await result
+    expect(observed).toHaveBeenCalledExactlyOnceWith({
+      code: 'NATIVE_RENDERER_BOOT_FAILED', category: 'system', operation: 'bootstrap', severity: 'fatal',
+    })
+  })
+
   it.each(['background', 'later', 'install', 'spawn-error', 'tamper', 'feed-change'] as const)
   ('handles prepared updates safely: %s', async action => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('win32')

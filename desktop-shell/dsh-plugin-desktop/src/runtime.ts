@@ -3,6 +3,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { SystemViewResolver } from './system-view-contract.ts'
 import type { DesktopRendererAccessHeader } from './desktop-browser-access.ts'
 import type { RendererBootReport } from './renderer-boot-contract.ts'
+import type { DesktopRuntimeDiagnostic } from './runtime-diagnostics.ts'
+export type { DesktopRuntimeDiagnostic, DesktopRuntimeDiagnosticCode } from './runtime-diagnostics.ts'
 import type { DesktopReleaseChannel, UpdateCheckResult, UpdateRequest } from './update-checker.ts'
 import type { DesktopSetupWizardSelection } from './setup-wizard-contract.ts'
 import type { DesktopInstallationId } from './desktop-installation-id.ts'
@@ -181,6 +183,8 @@ export interface DesktopShellSpec extends DesktopWindowConfig {
 
 /** Electron bootstrap capability supplied before the profile tree mounts. */
 export interface DesktopRuntime {
+  /** Host-only fixed native error observations; release with the subscribing profile. */
+  onDiagnostic?(listener: (event: DesktopRuntimeDiagnostic) => void): () => void
   /** Host-only requests through the application's existing isolated SSO session. */
   requestSystem?(appId:string,path:string,init:RequestInit):Promise<Response>
   /** Host-only, already authenticated/bound candidate. A window transfer is never receipt approval. */

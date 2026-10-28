@@ -32,6 +32,7 @@ import type {
   DesktopUpdateAdapter,
 } from './runtime.ts'
 import type { RendererBootReport } from './renderer-boot-contract.ts'
+import { DesktopRuntimeDiagnosticChannel, type DesktopRuntimeDiagnostic } from './runtime-diagnostics.ts'
 import {
   DesktopRendererHealthGate,
   type DesktopRendererHealthGateOptions,
@@ -140,6 +141,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     private readonly mainWindowState: MainWindowStateStore = new FileMainWindowStateStore(app.getPath('userData')),
     installationId?: DesktopInstallationId,
     readonly desktopPolicy?: DesktopSetupWizardSelection,
+    private readonly diagnosticChannel = new DesktopRuntimeDiagnosticChannel(),
   ) {
     this.platformStrategy = electronPlatformStrategy()
     this.platform = this.platformStrategy.platform
@@ -188,6 +190,11 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   private logError(message: string): void {
     if (this.logger !== undefined) this.logger.error(message)
     else process.stderr.write(`${message}\n`)
+  }
+
+  /** @inheritdoc */
+  onDiagnostic(listener: (event: DesktopRuntimeDiagnostic) => void): () => void {
+    return this.diagnosticChannel.subscribe(listener)
   }
 
   /** @inheritdoc */
@@ -269,6 +276,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
         stopRendererBootMonitoring: () => { this.stopRendererBootMonitoring() },
         abortRendererBootMonitoring: cause => { this.rendererHealthGate?.stop(cause) },
         failRendererBoot: error => { this.failRendererBoot('renderer-failed', error) },
+        reportDiagnostic: code => { this.diagnosticChannel.report(code) },
         logError: message => { this.logError(message) },
         mainWindowState: this.mainWindowState,
       })
@@ -447,6 +455,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
 
   private handleRendererBootVerdict(report: RendererBootReport): void {
     if (report.status === 'failed') {
+      this.diagnosticChannel.report('NATIVE_RENDERER_BOOT_FAILED')
       const plugins = report.plugins.length === 0 ? 'Unknown client plugin' : report.plugins.join(', ')
       const error = report.error === undefined ? 'The client Loader did not provide an error message.' : report.error
       this.logError(`dsh-plugin-desktop: renderer boot failed (plugins: ${plugins}): ${error}`)

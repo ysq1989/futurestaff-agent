@@ -1,4 +1,5 @@
 import {applyGovernanceCandidates} from './governance-candidates.js'
+import {mountClientDiagnostics,reportClientDiagnostic} from './diagnostics.js'
 import { futureStaffLogoUrl, futureStaffAgentWordmarkPaths } from '../brand.js'
 import { applyErpClient } from './erp.js'
 import {applyShopOperationClient} from './shop-operations.js'
@@ -343,6 +344,7 @@ export class PlatformDevClientController {
   }
 
   #publishFailure(): void {
+    reportClientDiagnostic({category:'network',operation:'discovery',code:'PLATFORM_UNAVAILABLE'})
     this.#publish({
       ...initialDevSnapshot,
       phase: 'error',
@@ -521,6 +523,7 @@ export function apply(ctx: ClientContext): void {
     entry => (entry.options.priority ?? 0) === 0,
     () => createAgentPicker(controller,openAgentCenter,openAgentSession)))
   if (typeof ctx.provide === 'function') ctx.provide('platformClientSession', controller)
+  mountClientDiagnostics(ctx)
   if (typeof ctx.provide === 'function') ctx.provide('platformSystemPages', pages)
   ctx.slots.inject('sidebar', () => watchSlotComponents(ctx.slots, 'sidebar',
     entry => entry.locale === 'sidebar' && (entry.options.priority ?? 0) === 0,

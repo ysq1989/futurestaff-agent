@@ -1,4 +1,5 @@
 import { assertPlatformOrigin } from './environment.js'
+import type {DiagnosticInput} from './diagnostics.js'
 import {
   assertMeta,
   assertSession,
@@ -178,6 +179,7 @@ abstract class PlatformApiClient {
     private readonly fetcher: Fetch,
     baseUrl: string,
     private readonly responseContract: ResponseContract,
+    private readonly reportDiagnostic?: (input:DiagnosticInput)=>void,
   ) { this.baseUrl = baseUrl }
 
   async login(input: AuthCallbackInput, signal?: AbortSignal): Promise<AuthResult> {
@@ -303,6 +305,19 @@ abstract class PlatformApiClient {
   }
 
   protected async request(path: string, init: RequestInit): Promise<unknown> {
+    const started=Date.now()
+    try{return await this.performRequest(path,init)}catch(error){
+      if(!init.signal?.aborted&&!(error instanceof Error&&error.name==='AbortError')){
+        const operation=path.includes('/auth/password')||path.includes('/auth/callback')?'login':path.includes('/auth/refresh')?'refresh':'discovery'
+        try{this.reportDiagnostic?.({category:operation==='discovery'?'network':'auth',operation,
+          code:error instanceof PlatformApiError?error.code:'NETWORK_ERROR',durationMs:Math.min(Date.now()-started,3600000),
+          ...(error instanceof PlatformApiError&&error.status?{httpStatus:error.status}:{})})}catch{/* Reporting never changes the API outcome. */}
+      }
+      throw error
+    }
+  }
+
+  private async performRequest(path:string,init:RequestInit):Promise<unknown>{
     let response: Response
     try {
       response = await this.fetcher(`${this.baseUrl}${path}`, {
@@ -368,7 +383,11 @@ abstract class PlatformApiClient {
   }
 
   protected decode<T>(decoder: () => T): T {
-    try { return decoder() } catch { throw this.mismatch('platform response does not match the pinned contract') }
+    try { return decoder() } catch {
+      // HTTP success is not contract success; callers often turn this into UI state.
+      try{this.reportDiagnostic?.({category:'network',operation:'discovery',code:'CONTRACT_MISMATCH'})}catch{/* Nonthrowing observation. */}
+      throw this.mismatch('platform response does not match the pinned contract')
+    }
   }
 }
 
@@ -386,14 +405,14 @@ export class PlatformMockApi extends PlatformApiClient {
 }
 
 export class PlatformDevApi extends PlatformApiClient {
-  constructor(fetcher: Fetch = globalThis.fetch, baseUrl: string = PLATFORM_DEV_BASE_URL) {
+  constructor(fetcher: Fetch = globalThis.fetch, baseUrl: string = PLATFORM_DEV_BASE_URL,reportDiagnostic?:(input:DiagnosticInput)=>void) {
     super(fetcher, assertPlatformOrigin(baseUrl), {
       version: PLATFORM_DEV_CONTRACT_VERSION,
       simulated: false,
       requireMockProof: false,
       unavailableCode: 'PLATFORM_UNAVAILABLE',
       unavailableMessage: 'FutureStaff 平台暂时不可用。',
-    })
+    },reportDiagnostic)
   }
 
   async loginWithPassword(input: PasswordLoginInput, signal?: AbortSignal): Promise<AuthResult> {

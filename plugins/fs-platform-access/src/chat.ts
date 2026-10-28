@@ -1,13 +1,15 @@
 import type { PlatformModel } from './contracts.js'
 import { assertPlatformOrigin } from './environment.js'
 import { createHash, randomUUID } from 'node:crypto'
-import { LlmAdapter, LlmError, ToolCallId } from '@deepseek-ai/dsh-llm'
+import { LlmAdapter, LlmError, ProviderRequestId, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { PlatformProtectedSecrets } from './session-vault.js'
 import {businessToolAllowed,decodeBusinessSystems,templateToolAllowed,type BusinessSystem} from './business-scope.js'
 import {shopSelectionInstructions,shopSelectionTurnContext} from './shop-selection.js'
 import {shopThemeInstructions,normalizeThemeCatalogHistory,shopThemeCompletion,shopImageRecovery} from './shop-theme-guidance.js'
 import type { AgentModelPolicy } from './agents.js'
+import type {DiagnosticInput} from './diagnostics.js'
+import {markDiagnosticRequestReported} from './diagnostics-observers.js'
 
 export interface ChatCredentials {
   readonly accessToken: string
@@ -149,6 +151,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     private readonly agentBinding?: (sessionId: string) => Promise<ChatBinding | undefined>,
     private readonly readImage?: ChatImageReader,
     private readonly identitySnapshot?: () => Promise<ChatIdentity>,
+    private readonly reportDiagnostic?: (input:DiagnosticInput)=>void,
   ) { super(); assertPlatformOrigin(origin) }
 
   dispose(): void { this.#lifetime.abort() }
@@ -302,7 +305,10 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       if(!selected?.supportsVision)throw new LlmError('当前模型不支持图片，请选择支持图片的模型。','FUTURESTAFF_IMAGES')
     }
     const wireMessages=await messages(options,this.readImage,credentials.signal)
-    const body = JSON.stringify({ requestId: randomUUID(), modelId: credentials.modelId,
+    const requestId = randomUUID()
+    const requestStarted=Date.now()
+    let httpStatus:number|undefined
+    const body = JSON.stringify({ requestId, modelId: credentials.modelId,
       ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',...(agent.releaseVersion?{agentReleaseVersion:agent.releaseVersion}:{}),
         modelSelection:options.model==='default'?'agent-default':'session-explicit' } : {}),
       messages: wireMessages, tools: options.tools ?? [], maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
@@ -320,6 +326,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
         response = await this.fetcher(`${this.origin}/desktop/v1/chat`, { method: 'POST', redirect: 'error', cache: 'no-store', signal,
           headers: { authorization: `Bearer ${credentials.accessToken}`, 'content-type': 'application/json', accept: 'application/x-ndjson', 'x-futurestaff-chat-heartbeat':'1' }, body })
       } catch { signal.throwIfAborted(); throw unavailable() }
+      httpStatus=response.status
       if (!response.ok) {
         await response.body?.cancel()
         if (response.status === 401) throw new LlmError('平台登录已失效，请在设置 → FutureStaff 重新登录。', 'FUTURESTAFF_AUTH')
@@ -361,7 +368,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
             yield { type: 'text-delta', index, text: event.text }
           } else if (event.type === 'error') {
             if (Object.keys(event).sort().join(',') !== 'code,type' || event.code !== 'PROVIDER_UNAVAILABLE') throw invalid()
-            throw new LlmError('当前租户的模型服务调用失败，请联系平台管理员检查模型配置与供应商连接。', 'FUTURESTAFF_PROVIDER')
+            throw new LlmError(`本次模型请求失败，请联系平台管理员并提供请求编号：${requestId}。`, 'FUTURESTAFF_PROVIDER', { requestId: ProviderRequestId(requestId) })
           } else if (event.type === 'result') {
             if (Object.keys(event).sort().join(',') !== 'content,finishReason,toolCalls,type'
               || typeof event.content !== 'string' || !Array.isArray(event.toolCalls)
@@ -399,9 +406,18 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       }
       throw invalid() // EOF without an explicit terminal result is never success.
     } catch (error) {
+      // Keep bounded transport facts, without copying bodies or user text.
+      const failure=error instanceof LlmError?error:invalid()
+      if(!credentials.signal.aborted&&!this.#lifetime.signal.aborted&&!binding?.signal?.aborted&&!options.signal?.aborted){
+        try{
+          this.reportDiagnostic?.({category:'llm',operation:'chat',code:failure.code,
+            sessionId:options.sessionId,requestId,durationMs:Math.min(Date.now()-requestStarted,3600000),requestBytes:Buffer.byteLength(body),
+            ...(httpStatus!==undefined?{httpStatus}:{})})
+          if(this.reportDiagnostic)markDiagnosticRequestReported(requestId)
+        }catch{/* Reporting never alters a model request. */}
+      }
       signal.throwIfAborted()
-      if (error instanceof LlmError) throw error
-      throw invalid()
+      throw new LlmError(failure.message,failure.code,{...failure.failure,requestId:ProviderRequestId(requestId),...(httpStatus!==undefined?{status:httpStatus}:{})})
     } finally {
       clearTimeout(timeout)
       await reader?.cancel().catch(() => {})

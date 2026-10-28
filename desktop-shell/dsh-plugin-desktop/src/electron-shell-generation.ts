@@ -20,6 +20,7 @@ import { showDesktopMessageBox } from './desktop-dialog-window.ts'
 import { applicationNeedsReveal, revealApplication } from './electron-reveal.ts'
 import type { ElectronPlatformStrategy } from './electron-platform.ts'
 import type { DesktopNotification, DesktopShellSpec } from './runtime.ts'
+import type { DesktopRuntimeDiagnosticCode } from './runtime-diagnostics.ts'
 import { prepareTrayIcon } from './tray-icons.ts'
 import { desktopWindowOptions } from './window-options.ts'
 import type { DesktopRendererAccessHeader } from './desktop-browser-access.ts'
@@ -172,6 +173,7 @@ export interface ElectronShellGenerationOptions {
   readonly stopRendererBootMonitoring: () => void
   readonly abortRendererBootMonitoring: (cause: unknown) => void
   readonly failRendererBoot: (error: string) => void
+  readonly reportDiagnostic?: (code: DesktopRuntimeDiagnosticCode) => void
   readonly logError: (message: string) => void
   readonly mainWindowState: MainWindowStateStore
 }
@@ -380,6 +382,9 @@ export class ElectronShellGeneration {
       if (targetOrigin !== origin) event.preventDefault()
     }
     const rendererGone = (_event: Electron.Event, details: Electron.RenderProcessGoneDetails): void => {
+      if (!this.options.isQuitting() && details.reason !== 'clean-exit') {
+        this.options.reportDiagnostic?.('NATIVE_RENDERER_PROCESS_GONE')
+      }
       const detail = `renderer process gone (reason: ${details.reason}, exitCode: ${formatDesktopExitCode(details.exitCode)})`
       this.options.logError(`dsh-plugin-desktop: ${detail}`)
       this.options.failRendererBoot(detail)
@@ -393,6 +398,7 @@ export class ElectronShellGeneration {
     ): void => {
       this.options.logError(`dsh-plugin-desktop: renderer failed to load (${errorCode}: ${errorDescription})`)
       if (isMainFrame === true && errorCode !== -3) {
+        if (!this.options.isQuitting()) this.options.reportDiagnostic?.('NATIVE_RENDERER_LOAD_FAILED')
         this.options.failRendererBoot(
           `renderer main frame failed to load (${String(errorCode)}: ${errorDescription})`,
         )

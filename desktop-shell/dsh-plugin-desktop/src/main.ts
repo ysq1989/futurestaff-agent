@@ -25,6 +25,7 @@ import {
   installDesktopPnpmRuntime,
 } from './desktop-runtime-environment.ts'
 import { desktopProductVersion, ElectronDesktopRuntime } from './electron-runtime.ts'
+import { DesktopRuntimeDiagnosticChannel } from './runtime-diagnostics.ts'
 import { getOrCreateDesktopInstallationId } from './desktop-installation-id.ts'
 import {
   ElectronStderrLogger,
@@ -471,6 +472,7 @@ async function start(): Promise<void> {
   } catch (cause) {
     electronLogger.error(`${BIN_NAME}: local crash reporting unavailable: ${cause instanceof Error ? cause.message : String(cause)}`)
   }
+  const runtimeDiagnostics = new DesktopRuntimeDiagnosticChannel()
   let desktopRun: DesktopRun | undefined
   try {
     desktopRun = beginDesktopRun(
@@ -483,6 +485,7 @@ async function start(): Promise<void> {
     )
     const previousRun = desktopRun.previousRun
     if (previousRun !== undefined) {
+      runtimeDiagnostics.report('PREVIOUS_RUN_ABNORMAL')
       electronLogger.error('unreadable' in previousRun
         ? `${BIN_NAME}: previous desktop run did not shut down cleanly (active run marker unreadable)`
         : `${BIN_NAME}: previous desktop run did not shut down cleanly (startedAt: ${previousRun.startedAt}, pid: ${String(previousRun.pid)}, version: ${previousRun.version})`)
@@ -543,7 +546,7 @@ async function start(): Promise<void> {
     // Main owns every pre-health failure branch. Returning true prevents the
     // legacy Renderer recovery dialog from racing the native startup window.
     return report.status === 'failed'
-  }, electronLogger, undefined, undefined, installationId, futureStaffDesktopPolicy(process.platform, safeModePaths !== undefined))
+  }, electronLogger, undefined, undefined, installationId, futureStaffDesktopPolicy(process.platform, safeModePaths !== undefined), runtimeDiagnostics)
   const finalExit = (code: number): void => { nativeExit.finish(code) }
   shutdown = createDesktopShutdown(
     async () => { await generation.release() },

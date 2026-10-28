@@ -1,4 +1,5 @@
 import {talentApplicationIds,type TalentTemplate} from './talent-market-model.js'
+import { diagnosticFetch, diagnosticJson } from './diagnostics-request.js'
 
 export interface InstalledTalent extends TalentTemplate {presetId:string;path:string}
 export interface OpenedTalent {presetId:string;templateId:string;version:string;name:string;path:string;sessionId:string}
@@ -7,8 +8,8 @@ export const installedTalentsChanged='futurestaff:installed-talents-changed'
 export function notifyInstalledTalentsChanged(){if(typeof window!=='undefined')window.dispatchEvent(new Event(installedTalentsChanged))}
 
 export async function requestTalent(route:'catalog'|'mine'|'install'|'open'|'uninstall',signal:AbortSignal,body?:unknown):Promise<Record<string,unknown>>{
-  const response=await fetch('/_futurestaff/agent-market/'+route,{method:body===undefined?'GET':'POST',headers:{'x-futurestaff-market':'1','content-type':'application/json'},cache:'no-store',signal,...(body===undefined?{}:{body:JSON.stringify(body)})})
-  const data:unknown=await response.json()
+  const response=await diagnosticFetch('/_futurestaff/agent-market/'+route,{method:body===undefined?'GET':'POST',headers:{'x-futurestaff-market':'1','content-type':'application/json'},cache:'no-store',signal,...(body===undefined?{}:{body:JSON.stringify(body)})})
+  const data:unknown=await diagnosticJson(response)
   if(!response.ok)throw Error('本机人才操作未完成，请刷新目录后重试。')
   if(!data||typeof data!=='object'||Array.isArray(data))throw Error('本机人才目录格式不兼容。')
   signal.throwIfAborted()
