@@ -1,8 +1,9 @@
 # Automatic error diagnostics — local acceptance
 
-2026-10-28. Implemented in Agent client and FutureStaff-platform working trees.
-Not deployed, not installed into the running client, no public release or DB
-migration executed. Existing unrelated changes, accounts and histories preserved.
+2026-10-28. Implemented and directly released with explicit user authorization.
+Platform API 1.13.18 is enabled in DEV and PROD; Agent 3.3.3 is published and
+installed locally. The initial local acceptance below predates release; the final
+release evidence and remaining acceptance limits are recorded at the end.
 
 ## Delivered
 
@@ -55,5 +56,52 @@ Recorded checks:
   this machine, so real transaction/TTL/concurrency checks remain a release gate.
 
 Logs are ignored under `output/automatic-diagnostics-*`. The code is a reviewable
-local candidate. Enablement still requires the authorized server schema/release,
-isolated PG/Redis acceptance and a preservation-checked installed-client update.
+local acceptance evidence. The authorized release is recorded below.
+
+## Authorized release and installed acceptance
+
+- Feature commits: Agent `2988754d77`, version `c2064c87bc`; Platform
+  `cbea61d6`, release tools `d5d9d92d`. Both main branches pushed while preserving
+  unrelated dirty source. Public Agent built from the clean committed source.
+- Platform API 1.13.18: DEV generation79/schema17; PROD generation83/schema11.
+  Exact diagnostics-only live migration leaves, verified backups, phase-specific
+  runtime CAS and rollback images retained. Non-target containers preserved.
+  Isolated actual PostgreSQL/Redis concurrency, conflict, rate limit and TTL checks
+  passed in both environments. Actual HTTPS membership/receipt/duplicate/private
+  field rejection/revoked-session checks passed; synthetic rows and leases cleaned.
+- Signed stable feed publishes 3.3.3, with 3.3.2 rollback. Actual external HTTPS
+  retrieval verified the Ed25519 feed signature and fully streamed both installers,
+  checking size and SHA256. New installer: 142085117 bytes,
+  `6216177bacdcab75bb72bd4264becd536a42f0ebe273367d95ef6859d13b1e07`.
+  Evidence: ignored `output/automatic-error-diagnostics-20261028/` receipts
+  `public-publication.json` and `public-https-verification.json`.
+- Installed app exited normally; code backup retained; silent installation exited0.
+  Before first launch, all2509 original data files matched their prior hashes and
+  all91 session-history prefixes matched. Original account, profile, credentials
+  and workspaces were retained. Existing private Website preview/cloner code was
+  preserved in a separately recorded local variant; public installer stayed clean.
+  Local ASAR integrity was recomputed for that local variant.
+- Actual installed window shows version3.3.3, original administrator login/current
+  subject, model/application discovery and original failed conversation/history.
+  Host started normally. The owner-scoped diagnostics outbox exists, empty with
+  zero failed attempts/rejected events. Opening the account/settings UI verified
+  real authenticated discovery without a model call or business tool execution.
+- No artificial renderer crash or model failure was induced in the running user
+  session. A real installed-client error-to-PROD receipt, installed offline recovery
+  and account-switch cancellation remain unexercised end-to-end; these paths have
+  focused tests/local cross-process coverage. Empty outbox alone does not prove an
+  uploaded event. Post-launch full-file hashing hits Chromium locked files; the
+  complete hash preservation claim is specifically the pre-launch check above.
+
+## Original request failure
+
+Exact request `0b0847d9-7c74-4b62-8076-1c04a79e4e0d`: Portal ledger model
+`futurestaff`, `AI_RESULT_UNKNOWN`; exact failure event `transport_unknown`, no
+upstream HTTP status or engine request ID. About100.9 seconds elapsed against a
+live100-second HTTP timeout. This supports an upstream transport/timeout diagnosis,
+but the logged HTTPError superclass cannot prove a specific ReadTimeout or model
+defect. Evidence: `output/request-failure-20261028/server-trace.sanitized.json`.
+Paid inference remains without automatic replay because the result is unknown;
+the model engine might have processed/billed the request. Diagnostics delivery
+retries are separate. This release does not repair that timeout or the separate
+tool missing-argument errors. Collection remains bounded and best effort.
