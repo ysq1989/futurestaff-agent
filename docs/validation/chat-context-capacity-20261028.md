@@ -71,3 +71,41 @@ inventories, including this baseline. Their growth needs a bounded2MiB manifest
 budget; path/hash validation,32-history and file-count limits remain enforced.
 Regression verifies acceptance between1–2MiB and rejection above2MiB. The former
 1MiB limit would prevent preserving complete audited upgrade history.
+
+## Published and installed 3.3.4
+
+Clean source commit `a3a207412d`, with existing unrelated dirty source excluded.
+Clean desktop/native build and installer verification passed. Clean-source
+capacity/real-runtime cases13/13 and root74/74 passed; full product type checks
+passed. Working-tree release/profile checks3/3 passed after aligning the existing
+private test's byte-budget assertion with the2MiB native bound. The native
+file-symlink EPERM remains the single unchanged environment failure above.
+
+The3.3.3→3.3.4 upgrade was exercised against the full installer-extracted old
+Profile and an isolated canonical workspace. Every new Platform code hash matched;
+history sentinel and workspace selection stayed unchanged. Receipt:
+output/chat-capacity-20261028/profile-upgrade-verification.json.
+
+Published2026-10-28T10:45:59.312Z through the existing signed stable feed,
+https://fsstory.net/desktop-updates/stable.json. FeedSHA256:
+`b9951e47031c522c61dd107684091589c041dd4909b6da84fcff4df364419944`.
+Installer142093186 bytes, SHA256:
+`56928e43dc4d95bc33c89de207586541ba5c731e6c59aa724118e33e3e59ced7`.
+Previous3.3.3 retained as rollback. Operator-trust fingerprint unchanged. Actual
+external HTTPS fetch verified Ed25519 feed signature and complete SHA256/size of
+both installers. Publication and HTTPS receipts are in the same ignored directory.
+No Platform API/container/DB migration was needed.
+
+Local app quit normally; code backup retained; installer exited0. Before launching,
+all2508 baseline user data files matched and91 session-history prefixes were
+preserved. After separately preserving existing private Website functionality,
+the same2508/91 checks passed again. Public installer stayed unchanged; the local
+variant has recomputed ASAR integrity. Sixteen repaired code files across four
+canonical profiles matched their built source. Installed executable and actual
+renderer URL report3.3.4; original administrator login and failed conversation
+remain visible. No user task or business tool was automatically rerun. Actual
+model-generated summary quality/latency is not claimed by the offline replay.
+
+GitHub push attempts failed with TLS handshake/EOF errors through direct/proxy/SSH
+tunnel routes; the GitHub connector was also unavailable. Source remains committed
+locally; public binary/feed publication and installed verification succeeded.
