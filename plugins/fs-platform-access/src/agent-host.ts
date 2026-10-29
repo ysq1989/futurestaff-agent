@@ -66,7 +66,9 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
         return old
       }
       if(cwd){
-        const relative=path.relative(path.join(root,'agents'),cwd).split(path.sep)
+        // Native Windows app virtualization can redirect the root. Classify
+        // the suffix, then require the exact Host-owned canonical path below.
+        const relative=path.normalize(cwd).split(path.sep).slice(-4)
         if(relative.length===4&&relative[1]==='snapshots'&&relative[3]==='workspace'&&/^[a-f0-9]{64}$/.test(relative[2]??'')){
           const agentId=relative[0]!,version=relative[2]!,runtime=snapshotRuntime(version)
           // Only canonical Host-owned cwd may admit this namespace; no renderer path
