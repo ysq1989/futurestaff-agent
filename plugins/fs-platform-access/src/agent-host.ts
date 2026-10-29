@@ -10,6 +10,7 @@ import { mountAgentDistribution } from './agent-distribution-host.js'
 import { systemScopeAllowed, requireSystemScope } from './system-assistant-access.js'
 import type { LocalTemplatePrincipal } from './market-host.js'
 import { mountAgentSnapshots } from './agent-snapshot-host.js'
+import {mountPlatformAssistants} from './platform-assistants.js'
 
 type AgentBinding = NonNullable<Awaited<ReturnType<AgentWorkspaceStore['binding']>>> & { snapshotVersion?: string }
 
@@ -41,6 +42,7 @@ export function mountAgents(ctx: Context, origin: string, identity: WorkspaceIde
   const store=new AgentWorkspaceStore(root,identity)
   const installations=new AgentInstallationStore(root,identity)
   mountAgentDistribution(ctx,origin,installations,authorize,fetcher)
+  mountPlatformAssistants(ctx,origin,installations,authorize,fetcher)
   const snapshotRuntime=(version:string)=>new AgentWorkspaceStore(root,identity,undefined,version)
   const freshSnapshotAuthority=async(previous:AgentCredentials,systems:BusinessSystem[]|undefined)=>{
     previous.signal.throwIfAborted();const fresh=await authorize();previous.signal.throwIfAborted();fresh.signal.throwIfAborted()

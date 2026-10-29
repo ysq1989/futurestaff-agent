@@ -163,6 +163,7 @@ test('new session shows the authorized market and opens the selected template or
     await wait(() => !document.querySelector('[data-template-id="10000000-0000-4000-8000-000000000003"]'))
     await cdp.evaluate(() => { window.fixture.applications([{ appId: 'erp', tenantId: 'tenant', capabilities: ['erp.read'] }]); return true }, null)
     await wait(() => document.querySelectorAll('[data-template-id]').length === 3)
+    await wait(() => [...document.querySelectorAll('[data-template-id="10000000-0000-4000-8000-000000000001"] button')].some(button => !button.disabled && button.textContent.trim() === '下载并安装'))
     await click('[data-template-id="10000000-0000-4000-8000-000000000001"]', '下载并安装')
     await wait(() => !!document.querySelector('[data-template-id="10000000-0000-4000-8000-000000000001"][data-preset-id]'))
     assert.deepEqual(requests.findLast(item => item.path === '/_futurestaff/agent-market/install').body, { templateId: templates[0].templateId, version })

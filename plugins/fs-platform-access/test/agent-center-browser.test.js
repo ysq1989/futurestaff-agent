@@ -26,6 +26,7 @@ test('unified center installs, updates and uninstalls published agents, refreshe
  const ctx={effect:register=>register(),webServer:{register:route=>{routes.push(route);return()=>{}}},get:name=>name==='workspaceRegistry'?{create:async()=>{}}:undefined}
  const agents=mountAgents(ctx,'https://dev.fsstory.net',identity,path.join(directory,'member'),async()=>credentials,async url=>{
   const pathname=new URL(url).pathname
+  if(pathname==='/desktop/v1/platform-assistants')return Response.json({contractVersion:'1.0.0',activeTenantId:id,items:[]})
   if(pathname==='/desktop/v1/agents')return Response.json({contractVersion:'1.0.0',activeTenantId:id,items:[{agentId:id,name:current.payload.snapshot.name,description:current.payload.snapshot.description,available:enabled,unavailableReason:enabled?null:'平台已停用'},...Array.from({length:8},(_,index)=>({agentId:`30000000-0000-4000-8000-${String(index+1).padStart(12,'0')}`,name:`未安装平台助手${index+1}`,description:'只有授权，尚未本机安装',available:true,unavailableReason:null}))]})
   if(/^\/desktop\/v1\/agents\/[^/]+\/snapshot$/.test(pathname)){const agentId=pathname.split('/')[4];return Response.json({contractVersion:new URL(url).searchParams.get('contractVersion')??'1.0.0',activeTenantId:id,snapshot:agentId===id?current.payload.snapshot:{agentId,name:'未安装平台助手',description:'只有授权，尚未本机安装',version:'c'.repeat(64),files:[],businessSystems:[]}})}
   if(pathname==='/desktop/v1/agent-distribution'){distributionReads++;return Response.json({contractVersion:'2.0.0',activeTenantId:id,items:[{agentId:id,name:current.payload.snapshot.name,description:current.payload.snapshot.description,version:current.version,sha256:current.version,bytes:current.raw.length,notes:current.payload.notes,requirements:current.payload.requirements,publishedAt:null,available:enabled,unavailableReason:enabled?null:'平台已停用'}]})}
@@ -56,6 +57,7 @@ test('unified center installs, updates and uninstalls published agents, refreshe
   assert.equal(await cdp.evaluate(()=>[...document.querySelectorAll('#foreground-center [data-agent-center-root] button')].some(el=>el.textContent.trim()==='发布包管理'),null),false,'the center has no separate release-package management entry')
   assert.deepEqual(await cdp.evaluate(()=>[...document.querySelectorAll('#foreground-center nav[aria-label="助手分类"] button')].map(el=>el.textContent.trim()),null),['全部助手','系统助手','通用助手'])
   assert.equal(await cdp.evaluate(()=>document.querySelector('#foreground-center nav[aria-label="助手分类"] button[aria-pressed=true]').textContent,null),'全部助手')
+  await wait(()=>document.querySelector('#foreground-center nav[aria-label="安装状态"] button[aria-pressed=true]')?.textContent.trim()==='全部 · 1')
   assert.equal(await cdp.evaluate(()=>document.querySelector('#foreground-center nav[aria-label="安装状态"] button[aria-pressed=true]').textContent.trim(),null),'全部 · 1')
   await wait(()=>document.querySelectorAll('#foreground-center [data-published-agent-id]').length===1)
   assert.equal(await cdp.evaluate(()=>document.querySelector('#foreground-center [data-published-agent-id]').getAttribute('data-published-agent-id'),null),id)
