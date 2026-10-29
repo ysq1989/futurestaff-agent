@@ -25,7 +25,7 @@ const uuid = (value:string) => requireUuid({id:value},'id').toLowerCase()
 const invalid = () => Error('AGENT_DISTRIBUTION_INVALID')
 const object = (v:unknown):v is Record<string,unknown> => !!v&&typeof v==='object'&&!Array.isArray(v)
 export const desktopCapabilities = ['core.chat','local.files','video.production','geo.collection'] as const
-export function compatibleRequirements(value:unknown,clientVersion='3.3.4'): value is AgentReleasePackage['requirements'] {
+export function compatibleRequirements(value:unknown,clientVersion='3.3.5'): value is AgentReleasePackage['requirements'] {
   if(!object(value)||Object.keys(value).sort().join()!=='capabilities,minClientVersion'||typeof value.minClientVersion!=='string'
     ||!/^\d+\.\d+\.\d+$/.test(value.minClientVersion)||!Array.isArray(value.capabilities)||value.capabilities.length>20
     ||new Set(value.capabilities).size!==value.capabilities.length||!value.capabilities.every(v=>typeof v==='string'&&desktopCapabilities.includes(v as typeof desktopCapabilities[number])))return false
