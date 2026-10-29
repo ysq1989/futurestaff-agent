@@ -52,7 +52,7 @@ export async function inspectGarmentFile(root:string|undefined,input:string){
  return {width:meta.width,height:meta.height,format:meta.format?.toUpperCase(),bytes:bytes.length,hasAlpha:meta.hasAlpha,sha256:createHash('sha256').update(bytes).digest('hex'),scope:'pixel-specifications-only',garmentFidelityVerified:false}
 }
 
-export async function saveFashionImage(root:string|undefined,requestId:string,raw:Buffer,folder:'fashion-output'|'website-output'='fashion-output'):Promise<string>{
+export async function saveFashionImage(root:string|undefined,requestId:string,raw:Buffer,folder:'fashion-output'|'website-output'|'commerce-output'='fashion-output'):Promise<string>{
  if(!root||!/^[a-f0-9-]{36}$/.test(requestId))throw Error('FASHION_IMAGE_PATH_INVALID')
  const canonicalRoot=await realpath(root),directory=path.join(canonicalRoot,folder)
  await mkdir(directory,{recursive:true})

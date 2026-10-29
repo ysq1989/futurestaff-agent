@@ -70,7 +70,16 @@ export class AgentImageService {
   if(current.agentId!==identity.agentId||current.version!==identity.version||current.workspacePath!==identity.workspacePath)throw Error('AGENT_IMAGE_SESSION_CHANGED')
   return receipt
  }
- private async deliver(sessionId:string,receipt:Record<string,unknown>,signal:AbortSignal|undefined,identity:ImageIdentity,folder?:'website-output'){
+ async commerceGenerate(sessionId:string,input:{requestId:string;tool:string;prompt:string;size:string;imagePaths?:string[];freeOnly?:boolean},signal?:AbortSignal):Promise<Record<string,unknown>>{
+  const identity=await this.authorize(sessionId),catalog=await this.list(sessionId,signal,identity)
+  const selected=catalog.tools?.find((tool:{name:string})=>tool.name===input.tool)
+  if(catalog.agentVersion!==identity.version||!selected)throw Error('COMMERCE_IMAGE_TOOL_UNAVAILABLE')
+  if((input.imagePaths?.length??0)>Math.min(selected.referenceImages??0,2))throw Error('COMMERCE_REFERENCE_CAPABILITY_REQUIRED')
+  const references=[];for(const file of input.imagePaths??[])references.push(await garmentReference(identity.workspacePath,file))
+  const receipt=await this.generate(sessionId,{requestId:input.requestId,tool:input.tool,prompt:input.prompt,size:input.size,references,freeOnly:input.freeOnly??false},signal,identity)
+  return {...await this.deliver(sessionId,receipt,signal,identity,'commerce-output'),reviewStatus:'needs-review'}
+ }
+ private async deliver(sessionId:string,receipt:Record<string,unknown>,signal:AbortSignal|undefined,identity:ImageIdentity,folder?:'website-output'|'commerce-output'){
   if(receipt.status!=='succeeded'||typeof receipt.requestId!=='string')return receipt
   try{
    const downloaded=await this.fashionDownload(sessionId,{requestId:receipt.requestId,...folder?{folder}:{}},signal,identity)
@@ -98,7 +107,7 @@ export class AgentImageService {
   catch(error){identity.signal.throwIfAborted();signal?.throwIfAborted();const message=error instanceof Error?error.message:'';if(message.startsWith('AGENT_IMAGE_REQUEST_DENIED')&&!/DENIED: 5\d\d/.test(message))throw error;throw Error('AGENT_IMAGE_RESULT_UNCONFIRMED: requestId='+requestId+'，查询原请求，禁止重新抠图。')}
   return input.action==='remove_background'?this.deliver(sessionId,receipt,signal,identity):receipt
  }
- async fashionDownload(sessionId:string,input:{requestId:string;folder?:'website-output'},signal?:AbortSignal,expected?:ImageIdentity){
+ async fashionDownload(sessionId:string,input:{requestId:string;folder?:'website-output'|'commerce-output'},signal?:AbortSignal,expected?:ImageIdentity){
   const identity=await this.authorize(sessionId),requestId=imageRequestUuid(sessionId,identity.agentId,input.requestId)
   if(expected&&(identity.agentId!==expected.agentId||identity.version!==expected.version||identity.releaseVersion!==expected.releaseVersion||identity.workspacePath!==expected.workspacePath))throw Error('AGENT_IMAGE_SESSION_CHANGED')
   expected?.signal.throwIfAborted()

@@ -7,6 +7,7 @@ import { atomicJson, ensureTree, existingTree } from './agents.js'
 import { decodeRequiredApplications, type SystemApplicationId } from './system-policy.js'
 import { decodeBusinessSystems, toolBusiness, toolSystem, type BusinessSystem } from './business-scope.js'
 import { scopeApplications } from './system-policy.js'
+import { materializeCommerceSkills } from './bundled-commerce-skills.js'
 
 export interface RecipeSkill { path: string; content: string; sha256: string }
 
@@ -200,6 +201,7 @@ export class LocalRoleStore {
       || typeof state.enabled !== 'boolean') throw new Error('MARKET_INSTALLATION_CHANGED')
     if (!includeDisabled && (!state.enabled || state.presetId !== presetId)) throw new Error('MARKET_NOT_INSTALLED')
     await this.verifySkills(presetId, recipe)
+    await materializeCommerceSkills(this.workspacePath(presetId))
     return { presetId, recipe, path: this.workspacePath(presetId) }
   }
   async list(): Promise<LocalRole[]> {
@@ -250,6 +252,7 @@ export class LocalRoleStore {
         await atomicJson(path.join(target, installationManifest), files)
       }
       await this.verifySkills(id, recipe, true)
+      await materializeCommerceSkills(this.workspacePath(id), undefined, signal)
       await beforeActivate?.(id)
       await this.setEnabled(id, true, signal)
       return id

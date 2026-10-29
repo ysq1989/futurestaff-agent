@@ -47,7 +47,7 @@
   },
   "files": ["lib"],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node ../../scripts/build-managed-settings.mjs && node ../../scripts/build-dsh-client.mjs . @futurestaff/fs-platform-access",
+    "build": "tsc -p tsconfig.json && node ../../scripts/copy-bundled-commerce-skills.mjs && node ../../scripts/build-managed-settings.mjs && node ../../scripts/build-dsh-client.mjs . @futurestaff/fs-platform-access",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test --test-concurrency=1"
   },

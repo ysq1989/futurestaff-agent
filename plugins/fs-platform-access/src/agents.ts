@@ -4,6 +4,7 @@ import path from 'node:path'
 import { requireUuid } from './contracts.js'
 import { assertPlatformOrigin } from './environment.js'
 import type { WorkspaceIdentity } from './workspace.js'
+import { materializeCommerceSkills } from './bundled-commerce-skills.js'
 import {decodeBusinessSystems,type BusinessSystem} from './business-scope.js'
 import type { ApplicationAuthority } from './system-policy.js'
 
@@ -98,7 +99,7 @@ export class AgentWorkspaceStore {
   /** Match the native registry's canonical paths, including Windows app virtualization. */
   async workspacePath(agentId:string):Promise<string>{
     const directory=path.join(this.directory(agentId),'workspace')
-    try{await existingTree(directory);return await realpath(directory)}
+    try{await existingTree(directory);await materializeCommerceSkills(directory);return await realpath(directory)}
     catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')return directory;throw e}
   }
   private async materializeSnapshot(snapshot:AgentSnapshot,signal:AbortSignal,beforeCommit?:()=>Promise<void>):Promise<string>{

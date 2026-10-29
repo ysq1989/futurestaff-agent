@@ -16,6 +16,7 @@ test('stages a relocatable built-only FutureStaff Profile', async () => {
     const files = await verifyReleaseProfile(temporary, root)
     assert.ok(files.includes('node_modules/@futurestaff/fs-core/lib/index.js'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/index.js'))
+    assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/resources/commerce-skills.json'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/message-card.js'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/client/message-card.d.ts'))
     assert.ok(files.includes('node_modules/@futurestaff/fs-platform-access/lib/agent-message-card-contract.js'))

@@ -7,6 +7,7 @@ import type { PlatformProtectedSecrets } from './session-vault.js'
 import {businessToolAllowed,decodeBusinessSystems,templateToolAllowed,type BusinessSystem} from './business-scope.js'
 import {shopSelectionInstructions,shopSelectionTurnContext} from './shop-selection.js'
 import {shopThemeInstructions,normalizeThemeCatalogHistory,shopThemeCompletion,shopImageRecovery} from './shop-theme-guidance.js'
+import {commerceImageRecovery} from './commerce-recovery.js'
 import type { AgentModelPolicy } from './agents.js'
 import type {DiagnosticInput} from './diagnostics.js'
 import {markDiagnosticRequestReported} from './diagnostics-observers.js'
@@ -318,11 +319,13 @@ export class FutureStaffChatAdapter extends LlmAdapter {
         yield {type:'finish',reason:{kind:'stop'}}
         return
       }
-      if(recovery&&options.tools)options={...options,tools:options.tools.filter(tool=>!['agent_image_generate','fashion_image_generate','website_image_generate'].includes(tool.name))}
+      if(recovery&&options.tools)options={...options,tools:options.tools.filter(tool=>!['agent_image_generate','fashion_image_generate','website_image_generate','commerce_image_generate'].includes(tool.name))}
       const selection=shopSelectionTurnContext(options.messages)
       options={...options,system:[options.system,shopSelectionInstructions,shopThemeInstructions,selection,recovery?recovery.notice+' 本会话有待恢复图片，agent_image_generate暂不可用。先agent_image_status查询上述原请求，成功才继续上传；失败/unknown明确停止。':undefined].filter(Boolean).join('\n\n'),
         ...(selection&&options.tools?{tools:options.tools.filter(tool=>!['shop_call','ask_user_question'].includes(tool.name))}:{})}
     }
+    const commerceRecovery=!options.purpose&&commerceImageRecovery(options.messages)
+    if(commerceRecovery)options={...options,system:[options.system,commerceRecovery].filter(Boolean).join('\n\n'),...(options.tools?{tools:options.tools.filter(tool=>!['agent_image_generate','fashion_image_generate','website_image_generate','commerce_image_generate'].includes(tool.name))}:{})}
     if(!options.purpose&&options.tools?.some(tool=>tool.name==='agent_message_card')){
       options={...options,system:[options.system,messageCardInstructions].filter(Boolean).join('\n\n')}
     }

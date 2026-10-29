@@ -14,6 +14,7 @@ import { createVideoWorkspaceResolver, type VideoWorkspaceResolver } from './vid
 import { mountErp } from './erp-host.js'
 import { mountShop } from './shop-host.js'
 import { mountAgentImages } from './agent-images-host.js'
+import { mountCommerce } from './commerce-host.js'
 import { mountAgentMessageCards } from './agent-message-card-host.js'
 import { createAgentCardHistoryReader, type AgentCardHistoryQuery } from './agent-message-card-history.js'
 import { mountWebsite } from './website-host.js'
@@ -350,13 +351,15 @@ function mountDevLogin(ctx: Context, environment: PlatformEnvironment,diagnostic
       return {...credentials,agentId:principal.agentId,version:principal.version,...(principal.releaseVersion?{releaseVersion:principal.releaseVersion}:{}),workspacePath:await agents.workspacePath(principal)}
     })
     const shop=mountShop(ctx, async () => { const credentials=await authorizeSystem('shop'),target=await service.resolveSystemApplication('shop');credentials.signal.throwIfAborted();return {owner:target.owner,signal:credentials.signal,origin:new URL(target.url).origin} },sessionId=>agents.authorizeBusiness(sessionId,'shop'))
-    mountAgentImages(ctx,origin,async sessionId=>{
+    const authorizeCreative=async (sessionId:string)=>{
       await initialized
       const credentials=await access.authorizeTemplates(),binding=await agents.resolveBinding(sessionId)
       if(!binding)throw Error('AGENT_SESSION_REQUIRED')
       if(binding.snapshotVersion)await agents.boundSnapshot(binding.agentId,binding.releaseVersion,binding.snapshotVersion)
       return {...credentials,agentId:binding.agentId,version:binding.version,...(binding.releaseVersion?{releaseVersion:binding.releaseVersion}:{}),workspacePath:await agents.workspacePath(binding)}
-    },shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
+    }
+    const imageService=mountAgentImages(ctx,origin,authorizeCreative,shop,sessionId=>agents.authorizeBusiness(sessionId,'shop'),sessionId=>agents.authorizeBusiness(sessionId,'web'))
+    mountCommerce(ctx,origin,authorizeCreative,imageService)
   }
   ctx.effect(() => () => { access.dispose(); close() }, 'futurestaff-platform-access: login and callback lifecycle')
   ctx.effect(() => ctx.webServer.register({
