@@ -16,7 +16,7 @@ test('real registered image workflow validates metadata before generation and ar
   const png=await sharp({create:{width:64,height:64,channels:3,background:'#113355'}}).png().toBuffer()
   await writeFile(path.join(root,'product.png'),png);await writeFile(path.join(root,'commerce-output',requestId+'.png'),png)
   globalThis.fetch=async(url,init)=>{uploaded=JSON.parse(init.body);return Response.json({contractVersion:'1.0.0',tenantId:identity.tenantId,projectId,versionId:requestId,state:'draft',knowledgeStatus:'unverified-material',artifacts:uploaded.artifacts.map(({data,...file})=>file),manifestHash:'b'.repeat(64)})}
-  const tools=new Map(),effect=fn=>fn(),ctx={inject:(deps,fn)=>{if(deps.includes('tools'))fn({effect,tools:{register:def=>{tools.set(def.name,def);return ()=>{}}}})}}
+  const tools=new Map(),effect=fn=>fn(),ctx={inject:(deps,fn)=>{if(deps.includes('tools'))fn({effect,get:()=>undefined,tools:{register:def=>{tools.set(def.name,def);return ()=>{}}}})}}
   mountCommerce(ctx,'https://platform.fsstory.net',async()=>identity,{commerceGenerate:async()=>{generated++;return {requestId,status:'succeeded',downloadStatus:'succeeded',imagePath:'commerce-output/'+requestId+'.png'}}})
   const tool=tools.get('commerce_image_generate'),exec={agent:{id:'session'},callId:'call',signal:identity.signal}
   const input={projectId,requestId,title:'Product image',kind:'product-images',brief:'Merchant source; preserve shape',prompt:'Exact production prompt',tool:'current-ai-tool',size:'1024x1024',imagePaths:['product.png']}

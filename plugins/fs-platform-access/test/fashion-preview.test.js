@@ -33,12 +33,37 @@ test('gallery records only successful correlated fashion image outputs',()=>{
  assert.equal(fashionGalleryDefinition.update({state},{event:{...result,data:{message:{...result.data.message,source:{callId:'unrelated'}}}}}).items.length,1)
  assert.equal(fashionGalleryDefinition.update({state},{event:{...result,data:{message:{...result.data.message,content:[{...result.data.message.content[0],isError:true}]}}}}).items.length,1)
 })
+
+test('commerce images appear in the completed-turn gallery outside collapsed tool output',()=>{
+ for(const name of ['commerce_image_generate','commerce_image_compose','commerce_image_download','commerce_image_preview','creative_asset_download']){
+  let state=fashionGalleryDefinition.start({}, {event:{type:'turn/start',data:{turn:1}}})
+  state=fashionGalleryDefinition.update({state},{event:{type:'tool/call',data:{callId:'commerce',name}}})
+  state=fashionGalleryDefinition.update({state},{event:{type:'tool/result',seq:3,data:{message:{source:{callId:'commerce'},content:[{type:'tool-result',content:[{type:'image',attachment:{attachmentId:'picture'}}]}]}}}})
+  assert.equal(state.items.length,1,name)
+  assert.equal(state.items[0].toolName,name)
+ }
+})
+
+test('replaying historical read_image results restores only correlated commerce output attachments',()=>{
+ const replay=filePath=>{
+  let state=fashionGalleryDefinition.start({}, {event:{type:'turn/start',data:{turn:7}}})
+  state=fashionGalleryDefinition.update({state},{event:{type:'tool/call',data:{callId:'original-read',name:'read_image',arguments:JSON.stringify({file_path:filePath})}}})
+  return fashionGalleryDefinition.update({state},{event:{type:'tool/result',seq:617,data:{message:{source:{callId:'original-read'},content:[{type:'tool-result',content:[{type:'text',text:'<path>private absolute path</path>'},{type:'image',attachment:{attachmentId:'existing-attachment'}}]}]}}}})
+ }
+ const state=replay('commerce-output/original.png')
+ assert.equal(state.items.length,1)
+ assert.equal(state.items[0].toolName,'read_image')
+ const receipt=JSON.parse(state.items[0].content[0].text)
+ assert.equal(receipt.imagePath,'commerce-output/original.png');assert.equal(receipt.previewKind,'commerce')
+ assert.doesNotMatch(state.items[0].content[0].text,/private absolute path/)
+ for(const filePath of ['fashion-input/source.png','commerce-output/../../private.png','C:/private.png'])assert.equal(replay(filePath).items.length,0)
+})
 test('turn-tail uses the native matched currency and displays cards without expanding tools',()=>{
  let tail
  const slots={inject:(_name,callback)=>callback(),register:(options,component)=>{if(options.name==='conversation.chat.turnTail')tail=component;return ()=>{}}}
  mountFashionPreviews({slots,inject:(_services,callback)=>callback({effect:()=>{}})})
  const html=renderToStaticMarkup(createElement(tail,{sessionId:'s',openFile:()=>{},matched:[{seq:1,callId:'c',content:[{type:'text',text:'{}'},{type:'image',attachment:{attachmentId:'a',width:100,height:200}}]}]}))
- assert.match(html,/本轮生成图片/);assert.match(html,/data-fashion-preview/);assert.match(html,/100 × 200/)
+ assert.match(html,/本轮图片/);assert.match(html,/data-fashion-preview/);assert.match(html,/100 × 200/)
 })
 test('original export preserves bytes, is idempotent and refuses overwrite or path escape',async t=>{
  const root=await mkdtemp(path.join(os.tmpdir(),'fashion-export-'));t.after(()=>rm(root,{recursive:true,force:true}))

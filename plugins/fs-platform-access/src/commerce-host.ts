@@ -8,6 +8,8 @@ import {ensureTree,existingTree} from './agents.js'
 import {writeFile,readFile,lstat} from 'node:fs/promises'
 import path from 'node:path'
 import {composeCommerce,type CommerceLayout} from './commerce-compose.js'
+import {assertCommercePreviewPath,commerceImagePreview} from './commerce-preview.js'
+import {renderFashionResult} from './agent-images-host.js'
 
 const object=(properties:Record<string,unknown>,required:string[]=[])=>({type:'object',properties,required,additionalProperties:false})
 const identifier={type:'string',description:'真实UUID。首次项目可创建UUID，后续版本沿用projectId；requestId每次新版本唯一，重试保持。'}
@@ -28,21 +30,23 @@ export function mountCommerce(ctx:Context,origin:string,authorize:(sessionId:str
    {name:'creative_asset_select',description:'原作者明确选用已展示版本后记录创意选用。上一轮须通过get/archive读取并展示唯一完整版本，用户回复“采用这版”即可；Host核对真实用户消息和工具回执中的精确版本/hash，多版本歧义时先明确目标。选用不发布、不确认商品事实、不自动写长期品牌规则。',parameters:object({projectId:identifier,versionId:identifier,requestId:identifier,expectedHash:text,note:text},['projectId','versionId','requestId','expectedHash','note'])},
    {name:'commerce_image_generate',description:'按电商制作技能调用当前AI系统已授权图片能力，并自动保存图片、实际提示词和参考文件到企业素材草稿。先agent_image_tools读取真实tool、尺寸和referenceImages；商品图需真实参考，不支持参考的模型不能用于重绘商品。archiveStatus非saved时保留本地文件，用creative_asset_archive补存，绝不重新生图。',parameters:object({...metadata,tool:text,prompt:text,size:text,freeOnly:{type:'boolean'},imagePaths:{type:'array',maxItems:2,items:text}},[...required,'tool','prompt','size'])},
    {name:'commerce_image_download',description:'下载之前生成成功但未落盘的原请求到commerce-output，恢复下载不会调用模型。随后用creative_asset_archive归档。unknown必须查询agent_image_status，不重新生成。',parameters:object({requestId:identifier},['requestId'])},
+   {name:'commerce_image_preview',description:'读取当前工作区已有的PNG/JPEG/WebP图片并直接在对话中展示预览。imagePath使用工具真实返回的相对路径；不会重新生成、下载或归档，适合恢复只有路径却没显示的历史成果。文件不存在时不得声称已展示。',parameters:object({imagePath:text},['imagePath'])},
    {name:'commerce_image_compose',description:'将真实商品图片、背景、Logo与准确文字分层合成为PNG，保存可编辑layout.json。用于详情模块、Banner或长图拼接，不调用模型。坐标/尺寸为像素；文字lines显式换行，须预览核对横向溢出。完成后creative_asset_archive保存图片与布局。',parameters:object({requestId:identifier,width:{type:'integer'},height:{type:'integer'},background:text,layers:{type:'array',items:object({type:{type:'string',enum:['image','text']},imagePath:text,left:{type:'integer'},top:{type:'integer'},width:{type:'integer'},height:{type:'integer'},fit:{type:'string',enum:['contain','cover']},lines:{type:'array',items:text},fontSize:{type:'integer'},color:text,fontFamily:text,align:{type:'string',enum:['left','center','right']}},['type','left','top','width','height'])}},['requestId','width','height','background','layers'])},
   ]
   for(const definition of definitions)toolCtx.effect(()=>toolCtx.tools.register({name:definition.name,description:definition.description,parameters:definition.parameters,
-   output:{schema:{type:'object',additionalProperties:true},render:(_args,value)=>[{type:'text',text:JSON.stringify(value)}]},
+   output:{schema:{type:'object',additionalProperties:true},render:(_args,value)=>renderFashionResult(value)},
    execute:async(raw,exec)=>{
     if(!exec.agent)throw Error('COMMERCE_SESSION_REQUIRED')
-    const session=exec.agent.id,signal=exec.signal,input=raw as Record<string,unknown>
-    await authorize(session);signal.throwIfAborted()
-    switch(definition.name){
+    const agent=exec.agent,session=agent.id,signal=exec.signal,input=raw as Record<string,unknown>
+    const previewIdentity=await authorize(session);signal.throwIfAborted()
+    const value=await (async()=>{switch(definition.name){
      case 'creative_asset_archive':return assets.archive(session,raw as CreativeArchive,signal)
      case 'creative_asset_search':return assets.search(session,raw as Parameters<CommerceAssets['search']>[1],signal)
      case 'creative_asset_get':return assets.get(session,raw as Parameters<CommerceAssets['get']>[1],signal)
      case 'creative_asset_download':return assets.download(session,raw as Parameters<CommerceAssets['download']>[1],signal)
-     case 'creative_asset_select':return assets.select(session,raw as Parameters<CommerceAssets['select']>[1],exec.agent.session.deriveMessages(),signal)
+     case 'creative_asset_select':return assets.select(session,raw as Parameters<CommerceAssets['select']>[1],agent.session.deriveMessages(),signal)
      case 'commerce_image_download':return images.fashionDownload(session,{requestId:String(input.requestId),folder:'commerce-output'},signal)
+     case 'commerce_image_preview':assertCommercePreviewPath(input.imagePath);if(!/\.(png|jpe?g|webp)$/i.test(input.imagePath))throw Error('COMMERCE_IMAGE_INVALID');return {status:'succeeded',imagePath:input.imagePath,reviewStatus:'needs-review'}
      case 'commerce_image_compose':{const identity=await authorize(session);const value=await composeCommerce(identity.workspacePath,raw as CommerceLayout,signal);const current=await authorize(session);if(current.agentId!==identity.agentId||current.version!==identity.version||current.workspacePath!==identity.workspacePath)throw Error('CREATIVE_IDENTITY_CHANGED');return value}
      default:{
       assertCreativeMetadata(input)
@@ -59,7 +63,20 @@ export function mountCommerce(ctx:Context,origin:string,authorize:(sessionId:str
        return {...result,archiveStatus:receipt.archiveStatus,archive:receipt}
       }catch{signal.throwIfAborted();identity.signal.throwIfAborted();return {...result,archiveStatus:'unconfirmed',projectId:input.projectId,versionId:requestId,briefPath,recovery:'Preserve files; query this version then archive the same files with the same IDs. Do not regenerate.'}}
      }
-    }
+    }})() as Record<string,unknown>
+    const imageTool=['commerce_image_generate','commerce_image_compose','commerce_image_download','commerce_image_preview','creative_asset_download'].includes(definition.name)
+    if(!imageTool||typeof value.imagePath!=='string'||!(/\.(png|jpe?g|webp)$/i.test(value.imagePath))
+      ||value.status!==undefined&&value.status!=='succeeded')return value
+    const attachments=toolCtx.get('attachments')
+    if(!attachments){if(definition.name==='commerce_image_preview')throw Error('COMMERCE_PREVIEW_UNAVAILABLE');return {...value,previewKind:'commerce',previewStatus:'unavailable'}}
+    let preview
+    try{preview=await commerceImagePreview(previewIdentity.workspacePath,value.imagePath,attachments,signal)}
+    catch(error){signal.throwIfAborted();previewIdentity.signal.throwIfAborted();if(definition.name==='commerce_image_preview')throw error}
+    signal.throwIfAborted();previewIdentity.signal.throwIfAborted()
+    const current=await authorize(session)
+    if(current.tenantId!==previewIdentity.tenantId||current.userId!==previewIdentity.userId||current.agentId!==previewIdentity.agentId
+      ||current.version!==previewIdentity.version||current.workspacePath!==previewIdentity.workspacePath)throw Error('CREATIVE_IDENTITY_CHANGED')
+    return {...value,...(preview?{preview}:{}),previewKind:'commerce',previewStatus:preview?'succeeded':'unavailable'}
    },timeoutMs:300000}),'Enterprise commerce '+definition.name)
  })
  return assets

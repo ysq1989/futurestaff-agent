@@ -20,11 +20,11 @@ function preview(receipt, options = {}) {
     slots: {inject: (_name, callback) => callback(), register: (settings, component) => {views.set(settings.key ?? settings.name, component); return () => {}}},
     inject: (_services, callback) => callback({effect: () => {}}),
   })
-  const Card = views.get('fashion_image_generate')
+  const Card = views.get(options.toolName??'fashion_image_generate')
   const content = [{type: 'text', text: JSON.stringify(receipt)}]
   if (options.image) content.push({type: 'image', attachment: {attachmentId: 'sha256:' + 'a'.repeat(64), width: 800, height: 1200}})
   return renderToStaticMarkup(createElement(Card, {
-    sessionId: 'session', openFile: () => {},
+    sessionId: 'session', openFile: () => {}, toolName:options.toolName??'fashion_image_generate',
     block: options.running ? {kind: 'tool-call'} : {kind: 'tool-result', content, isError: options.isError ?? false},
   }))
 }
@@ -60,4 +60,11 @@ test('generated fashion material still needs human review and retains original-f
   assert.match(html, /下载原图/)
   assert.match(html, /打开文件/)
   assert.doesNotMatch(html, /审核通过|保真通过/)
+})
+
+test('commerce images use product wording and local file actions instead of the fashion generation export',()=>{
+ const html=preview({status:'succeeded',imagePath:'commerce-output/example.png',requestId:'local-composition',previewKind:'commerce'},
+  {image:true,toolName:'commerce_image_compose'})
+ assert.match(html,/电商图片/);assert.match(html,/打开文件/);assert.match(html,/待审核/)
+ assert.doesNotMatch(html,/服装素材|下载原图/)
 })

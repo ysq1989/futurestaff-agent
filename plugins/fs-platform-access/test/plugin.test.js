@@ -107,7 +107,7 @@ test('client registers Settings access and a mandatory login gate', () => {
 
   applyClient({ slots,inject:(_services,callback)=>callback({effect:()=>{}}) })
 
-  assert.deepEqual(slotNames, ['sidebar.settings', 'sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'conversation.chat.turnTail', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
+  assert.deepEqual(slotNames, ['sidebar.settings', 'sidebar.workspaces', 'conversation.hero.workspace', 'sidebar', 'sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'conversation', 'conversation.view', 'conversation.hero.agentPreset', 'conversation.session.header.actions', 'settings.section', 'conversation.chat.node', 'settings.section', 'settings.section', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'shell.overlay', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview', 'conversation.chat.turnTail', 'shell.overlay', 'tool.call.toolview', 'conversation.chat.turnTail', 'tool.call.toolview', 'tool.call.toolview', 'tool.call.toolview','tool.call.toolview','tool.call.toolview','tool.call.toolview','tool.call.toolview','tool.call.toolview','tool.call.toolview','conversation.chat.turnTail'])
   assert.deepEqual(registrations, [
     { name: 'sidebar.brand.mark', priority: -100 },
     { name: 'sidebar.brand.name', priority: -100 },
@@ -134,6 +134,11 @@ test('client registers Settings access and a mandatory login gate', () => {
     { name: 'tool.call.toolview', key: 'fashion_image_process', priority: -100 },
     { name: 'tool.call.toolview', key: 'fashion_image_download', priority: -100 },
     { name: 'tool.call.toolview', key: 'fashion_detail_material', priority: -100 },
+    { name: 'tool.call.toolview', key: 'commerce_image_generate', priority: -100 },
+    { name: 'tool.call.toolview', key: 'commerce_image_compose', priority: -100 },
+    { name: 'tool.call.toolview', key: 'commerce_image_download', priority: -100 },
+    { name: 'tool.call.toolview', key: 'commerce_image_preview', priority: -100 },
+    { name: 'tool.call.toolview', key: 'creative_asset_download', priority: -100 },
     { name:'conversation.chat.turnTail',priority:-100,select:registrations.find(row=>row.name==='conversation.chat.turnTail'&&row.priority===-100).select },
   ])
   assert.ok(components.every(component => typeof component === 'function'))

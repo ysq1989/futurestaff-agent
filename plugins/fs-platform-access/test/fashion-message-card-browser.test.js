@@ -21,8 +21,11 @@ test('fashion message cards keep authorized images, source comparison and origin
   import{mountFashionPreviews}from'./plugins/fs-platform-access/src/client/fashion-preview.tsx';
   import{appearanceTokens}from'./plugins/fs-platform-access/src/client/appearance.ts';
   import{messageCardCss}from'./plugins/fs-platform-access/src/client/message-card.tsx';
-  const entries=[];window.imageReads=[];window.openedFiles=[];
-  mountFashionPreviews({inject:(_names,fn)=>fn({effect:fn=>fn(),uiConversation:{events:{register:()=>()=>{}},imageUrl:async(sessionId,attachment)=>{window.imageReads.push({sessionId,id:attachment.attachmentId});if(attachment.attachmentId==='unavailable')throw Error('not available');return '/image.svg?'+attachment.attachmentId}}}),slots:{inject:(_name,fn)=>fn(),register:(settings,component)=>{entries.push({settings,component});return()=>{}}}});
+  const entries=[],ownerListeners=new Set();window.imageReads=[];window.openedFiles=[];
+  let owner={phase:'ready',activeTenantId:'tenant',user:{userId:'member'}};
+  const changeOwner=value=>{owner=value;for(const listener of ownerListeners)listener()};
+  window.beginRestore=()=>changeOwner({phase:'restoring'});window.completeRestore=()=>changeOwner({phase:'ready',activeTenantId:'tenant',user:{userId:'member'}});window.revokeOwner=()=>changeOwner({phase:'ready',activeTenantId:'other',user:{userId:'member'}});
+  mountFashionPreviews({platformClientSession:{getSnapshot:()=>owner,subscribe:listener=>{ownerListeners.add(listener);return()=>ownerListeners.delete(listener)}},inject:(_names,fn)=>fn({effect:fn=>fn(),uiConversation:{events:{register:()=>()=>{}},imageUrl:async(sessionId,attachment)=>{window.imageReads.push({sessionId,id:attachment.attachmentId});if(attachment.attachmentId==='unavailable')throw Error('not available');return '/image.svg?'+attachment.attachmentId}}}),slots:{inject:(_name,fn)=>fn(),register:(settings,component)=>{entries.push({settings,component});return()=>{}}}});
   const style=document.createElement('style');style.textContent=messageCardCss;document.head.append(style);
   const theme=dark=>{for(const[key,value]of Object.entries(appearanceTokens))document.documentElement.style.setProperty(key,dark?value.dark:value.light)};theme(false);window.dark=()=>theme(true);
   const Tail=entries.find(entry=>entry.settings.name==='conversation.chat.turnTail').component;
@@ -31,6 +34,7 @@ test('fashion message cards keep authorized images, source comparison and origin
   const items=[{seq:1,callId:'generated',content:[{type:'text',text:JSON.stringify(receipt)},attachment('generated'),attachment('source')]},{seq:2,callId:'missing',content:[{type:'text',text:JSON.stringify({...receipt,requestId:'missing-request'})},attachment('unavailable')]}];
   const reactRoot=createRoot(document.getElementById('root'));
   window.render=()=>reactRoot.render(<Tail sessionId="original-session" openFile={file=>window.openedFiles.push(file)} matched={items}/>);window.render();
+  window.renderCommerce=()=>reactRoot.render(<Tail sessionId="original-session" openFile={file=>window.openedFiles.push(file)} matched={[{seq:7,callId:'commerce',toolName:'read_image',content:[{type:'text',text:JSON.stringify({status:'succeeded',imagePath:'commerce-output/existing.png',previewKind:'commerce'})},attachment('existing-commerce')]}]}/>);
  `},bundle:true,write:false,format:'iife',jsx:'automatic'})
  const server=createServer(async(req,res)=>{
   if(req.url.startsWith('/image.svg')){res.setHeader('content-type','image/svg+xml');return res.end('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="400" height="600" fill="#f8fafc"/><path d="M160 90h80l40 100-40 20 40 290H120l40-290-40-20z" fill="#c78b7d"/></svg>')}
@@ -81,6 +85,21 @@ test('fashion message cards keep authorized images, source comparison and origin
   await writeFile(path.join(output,'fashion-narrow-dark.png'),Buffer.from((await cdp.call('Page.captureScreenshot',{format:'png'})).data,'base64'))
   await cdp.evaluate(()=>{window.render();return true},null)
   assert.equal(exports.length,1,'replaying or rerendering the gallery does not repeat file actions')
+  await cdp.evaluate(()=>{window.beginRestore();window.renderCommerce();return true},null)
+  await waitFor(()=>document.querySelectorAll('[data-fashion-preview]').length===1)
+  assert.equal(await cdp.evaluate(()=>window.imageReads.some(read=>read.id==='existing-commerce'),null),false,'restoring identity cannot read image bytes')
+  await cdp.evaluate(()=>{window.completeRestore();return true},null)
+  await waitFor(()=>document.querySelectorAll('[data-fashion-preview]').length===1&&document.querySelector('[data-fashion-preview] img')?.naturalWidth>0)
+  assert.equal(await cdp.evaluate(()=>document.body.textContent.includes('电商图片')&&!document.body.textContent.includes('服装素材'),null),true)
+  assert.equal(await cdp.evaluate(()=>document.querySelector('[data-fashion-preview] img').naturalWidth>0,null),true)
+  assert.equal(await cdp.evaluate(()=>Boolean(document.querySelector('[aria-label="下载原图"]')),null),false)
+  await cdp.evaluate(()=>{[...document.querySelectorAll('button')].find(button=>button.textContent==='打开文件').click();return true},null)
+  assert.deepEqual(await cdp.evaluate(()=>window.openedFiles,null),['fashion-output/original.png','commerce-output/existing.png'])
+  assert.equal(exports.length,1,'commerce replay does not use remote fashion generation/export')
+  await writeFile(path.join(output,'commerce-history-narrow-dark.png'),Buffer.from((await cdp.call('Page.captureScreenshot',{format:'png'})).data,'base64'))
+  await cdp.evaluate(()=>{window.revokeOwner();return true},null)
+  await waitFor(()=>document.body.textContent.includes('登录身份已变化'))
+  assert.equal(await cdp.evaluate(()=>document.querySelectorAll('[data-fashion-preview] img').length,null),0)
  }catch(error){
   console.error(error)
   throw error

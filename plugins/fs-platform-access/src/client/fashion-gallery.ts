@@ -1,6 +1,8 @@
 import type {ConversationNodeDefinition,ToolResultNode} from '@deepseek-ai/dsh-client-ui-conversation/client'
-export interface FashionGalleryItem {seq:number;callId:string;content:ToolResultNode['content']}
-interface State {turn:number;calls:Map<string,string>;items:FashionGalleryItem[]}
+export interface FashionGalleryItem {seq:number;callId:string;toolName?:string;content:ToolResultNode['content']}
+export const previewImageTools=['fashion_image_generate','fashion_image_process','fashion_image_download','fashion_detail_material',
+ 'commerce_image_generate','commerce_image_compose','commerce_image_download','commerce_image_preview','creative_asset_download']
+interface State {turn:number;calls:Map<string,{name:string;imagePath?:string}>;items:FashionGalleryItem[]}
 declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
  interface ConversationTurnDataMap {'futurestaff-fashion-gallery':{items:FashionGalleryItem[]}}
 }
@@ -11,12 +13,21 @@ export const fashionGalleryDefinition:ConversationNodeDefinition={
  update:(context,match)=>{
   const state=context.state as State
   if(match.event.type==='tool/call'){
-   const calls=new Map(state.calls);calls.set(String(match.event.data.callId),match.event.data.name);return {...state,calls}
+   const calls=new Map(state.calls),name=match.event.data.name
+   let imagePath:string|undefined
+   if(name==='read_image')try{
+    const value=JSON.parse(match.event.data.arguments).file_path
+    if(typeof value==='string'&&value.startsWith('commerce-output/')&&!/[\\:\x00]/.test(value)
+      &&value.split('/').every(part=>part&&part!=='.'&&part!=='..'))imagePath=value
+   }catch{}
+   calls.set(String(match.event.data.callId),{name,...imagePath?{imagePath}:{}});return {...state,calls}
   }
   if(match.event.type!=='tool/result')return state
   const message=match.event.data.message,block=message.content[0],callId=String((message.source as {callId?:string}).callId)
-  if(block?.type!=='tool-result'||block.isError||!state.calls.get(callId)?.startsWith('fashion_')||!block.content.some((item:ToolResultNode['content'][number])=>item.type==='image'))return state
-  return {...state,items:[...state.items,{seq:match.event.seq,callId,content:block.content}]}
+  const call=state.calls.get(callId),restored=call?.name==='read_image'&&call.imagePath
+  if(block?.type!=='tool-result'||block.isError||!call||!previewImageTools.includes(call.name)&&!restored||!block.content.some((item:ToolResultNode['content'][number])=>item.type==='image'))return state
+  const content:ToolResultNode['content']=restored?[{type:'text',text:JSON.stringify({status:'succeeded',previewKind:'commerce',imagePath:call.imagePath,reviewStatus:'needs-review'})},...block.content.filter((item:ToolResultNode['content'][number])=>item.type==='image')]:block.content
+  return {...state,items:[...state.items,{seq:match.event.seq,callId,toolName:call.name,content}]}
  },
  buildLocationData:(context,scope,previous)=>{
   const state=context.state as State|undefined
