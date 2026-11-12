@@ -1,0 +1,48 @@
+name: futurestaff-agent-cloud
+services:
+  agent:
+    image: futurestaff/agent-cloud:${AGENT_IMAGE_TAG:-candidate}
+    build:
+      context: ./context
+    init: true
+    user: "1000:1000"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - /opt/futurestaff-agent-cloud/service.env
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3181"
+      AGENT_DATA_DIR: /data
+      AGENT_STATIC_DIR: /app/public
+      AGENT_TRUST_PROXY: "true"
+    ports:
+      - "127.0.0.1:3181:3181"
+    volumes:
+      - type: bind
+        source: /opt/futurestaff-agent-cloud/data
+        target: /data
+    tmpfs:
+      - /tmp:rw,nosuid,noexec,size=67108864,uid=1000,gid=1000,mode=0700
+    restart: unless-stopped
+    mem_limit: 1g
+    pids_limit: 256
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3181/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

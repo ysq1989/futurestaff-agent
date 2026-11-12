@@ -1,0 +1,14 @@
+{
+  "contractVersion": "1.0.0",
+  "authority": "FutureStaff-platform",
+  "sources": [
+    {
+      "path": "docs/contracts/ADMINISTRATION_AGENT_TOOLS_V1.json",
+      "sha256": "1653a4a417586f91b7621ddd13e8e716e3d5d386d70095391d24a09845ba5f08"
+    },
+    {
+      "path": "backend/app/contracts/administration_tool_aliases.v1.json",
+      "sha256": "595339c987432638dca094753be6c4c41152bdc278998f78050d74a256d4bdb9"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+**
+!Dockerfile
+!runtime/
+!runtime/package.json
+!runtime/package-lock.json
+!runtime/server.mjs
+!runtime/bundle-manifest.json
+!public/
+!public/**

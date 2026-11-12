@@ -6,6 +6,10 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {
+    "./cloud": {
+      "types": "./lib/cloud.d.ts",
+      "default": "./lib/cloud.js"
+    },
     ".": {
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"

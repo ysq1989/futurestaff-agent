@@ -496,7 +496,7 @@ export class PlatformDevApi extends PlatformApiClient {
     });
   }
   async authorizeModuleBrowser(accessToken: string, appId: string, input: import('./contracts.js').GeoBrowserAuthorization, signal?: AbortSignal): Promise<{redirectUrl:string}> {
-    if (!['erp','product_hub','vietnam_immigration','geo','web'].includes(appId)) throw this.mismatch('unsupported browser application')
+    if (!['erp','product_hub','vietnam_immigration','geo','web','aigc'].includes(appId)) throw this.mismatch('unsupported browser application')
     const body = await this.request(`/desktop/v1/apps/${appId}/browser-authorize`, { method: 'POST', ...(signal?{signal}:{}),
       headers: {...this.authorization(accessToken), 'Content-Type':'application/json'}, body: JSON.stringify(input) })
     return this.decode(() => {

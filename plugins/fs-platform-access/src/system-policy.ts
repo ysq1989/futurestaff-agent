@@ -33,7 +33,12 @@ export function decodeRequiredApplications(value: unknown): SystemApplicationId[
 /** Scope restricts a current human grant. Missing legacy scope grants no new application access. */
 export function scopeApplications(scope: unknown): SystemApplicationId[] {
   if (scope === undefined) return []
-  return decodeBusinessSystems(scope).map(system => system === 'product-hub' ? 'product_hub' : system === 'visa' ? 'vietnam_immigration' : system)
+  return decodeBusinessSystems(scope).map(system => {
+    // The legacy apps list cannot prove Administration access. Its Cloud
+    // consumer uses the dedicated online context bridge instead.
+    if (system === 'administration') throw Error('ADMINISTRATION_CONTEXT_AUTH_REQUIRED')
+    return system === 'product-hub' ? 'product_hub' : system === 'visa' ? 'vietnam_immigration' : system
+  })
 }
 export function applicationsAllowed(authority: ApplicationAuthority, required: readonly SystemApplicationId[]): boolean {
   const allowed = required.every(id => authority.applications?.some(app => app.appId === id && app.tenantId === authority.tenantId

@@ -11,6 +11,7 @@ import {commerceImageRecovery} from './commerce-recovery.js'
 import type { AgentModelPolicy } from './agents.js'
 import type {DiagnosticInput} from './diagnostics.js'
 import {markDiagnosticRequestReported} from './diagnostics-observers.js'
+import {administrationWire} from './administration-wire.js'
 
 export interface ChatCredentials {
   readonly accessToken: string
@@ -333,14 +334,17 @@ export class FutureStaffChatAdapter extends LlmAdapter {
       const selected=(await this.catalog()).find(m=>m.modelId===credentials.modelId)
       if(!selected?.supportsVision)throw new LlmError('当前模型不支持图片，请选择支持图片的模型。','FUTURESTAFF_IMAGES')
     }
-    const wireMessages=await messages(options,this.readImage,credentials.signal)
+    let toolWire:ReturnType<typeof administrationWire>,wireMessages:unknown[]
+    const convertedMessages=await messages(options,this.readImage,credentials.signal)
+    try {toolWire=administrationWire(options.tools??[]);wireMessages=toolWire.history(convertedMessages)}
+    catch {throw invalid()}
     const requestId = randomUUID()
     const requestStarted=Date.now()
     let httpStatus:number|undefined
     const body = JSON.stringify({ requestId, modelId: credentials.modelId,
       ...(agent ? { agentId: agent.agentId, agentVersion: agent.version,agentContractVersion:'1.1.0',...(agent.releaseVersion?{agentReleaseVersion:agent.releaseVersion}:{}),
         modelSelection:options.model==='default'?'agent-default':'session-explicit' } : {}),
-      messages: wireMessages, tools: options.tools ?? [], maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
+      messages: wireMessages, tools: toolWire.tools, maxTokens: Math.min(options.purpose==='session-title'?Math.max(options.maxTokens??32,512):options.maxTokens??4096, 8192) })
     const requestBytes=Buffer.byteLength(body)
     const abort = new AbortController()
     const timeout = setTimeout(() => abort.abort(), 130_000)
@@ -416,9 +420,11 @@ export class FutureStaffChatAdapter extends LlmAdapter {
             for (const call of event.toolCalls) {
               if (!record(call) || Object.keys(call).sort().join(',') !== 'arguments,id,name'
                 || typeof call.id !== 'string' || !/^[A-Za-z0-9_.:-]{1,200}$/u.test(call.id)
-                || ids.has(call.id) || typeof call.name !== 'string' || !offered.has(call.name)
+                || ids.has(call.id) || typeof call.name !== 'string'
                 || typeof call.arguments !== 'string' || call.arguments.length > 65536) throw invalid()
               try { if (!record(JSON.parse(call.arguments))) throw invalid() } catch { throw invalid() }
+              try { call.name=toolWire.inbound(call.name) } catch { throw invalid() }
+              if(!offered.has(call.name as string))throw invalid()
               ids.add(call.id)
             }
             if ((event.toolCalls.length > 0) !== (event.finishReason === 'tool-calls')) throw invalid()

@@ -1,0 +1,33 @@
+{
+  "name": "@futurestaff/agent-cloud",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test --test-concurrency=1 test/*.test.mjs",
+    "start": "node lib/cli.js"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-agent": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-agent-loop": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-llm": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-session": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-session-checkpoint-policy": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-session-persistence-jsonl": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-session-projection": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-system-prompt": "0.1.2-rc.1",
+    "@deepseek-ai/dsh-tools": "0.1.2-rc.1",
+    "@futurestaff/fs-platform-access": "0.1.0",
+    "sharp": "0.34.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=24.9.0"
+  }
+}

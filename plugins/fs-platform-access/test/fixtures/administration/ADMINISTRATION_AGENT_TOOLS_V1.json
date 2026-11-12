@@ -1,0 +1,16 @@
+{
+  "contract_version": "1.0.0",
+  "wire_name_contract": "../../backend/app/contracts/administration_tool_aliases.v1.json",
+  "status": "local-validated-consumer-registration-pending",
+  "authentication": "existing revocable desktop session; tenant and actor derived by Platform",
+  "scope": "self read and deterministic preview only",
+  "tools": [
+    { "name": "administration.leave.context.v1", "method": "GET", "path": "/desktop/v1/administration/context", "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false } },
+    { "name": "administration.leave.requests.v1", "method": "GET", "path": "/desktop/v1/administration/requests", "inputSchema": { "type": "object", "properties": { "after": { "type": "string", "format": "uuid" }, "size": { "type": "integer", "minimum": 1, "maximum": 100 } }, "additionalProperties": false } },
+    { "name": "administration.leave.ledger.v1", "method": "GET", "path": "/desktop/v1/administration/ledger", "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false } },
+    { "name": "administration.leave.policies.v1", "method": "GET", "path": "/desktop/v1/administration/policies", "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false } },
+    { "name": "administration.leave.operation.v1", "method": "GET", "path": "/desktop/v1/administration/operations/{operation_id}", "inputSchema": { "type": "object", "properties": { "operation_id": { "type": "string", "format": "uuid" } }, "required": ["operation_id"], "additionalProperties": false } },
+    { "name": "administration.leave.preview.v1", "method": "POST", "path": "/desktop/v1/administration/previews", "inputSchema": { "type": "object", "properties": { "kind": { "enum": ["annual", "compensatory"] }, "start": { "type": "string", "format": "date-time" }, "end": { "type": "string", "format": "date-time" }, "reason": { "type": "string", "minLength": 1, "maxLength": 1000 } }, "required": ["kind", "start", "end", "reason"], "additionalProperties": false }, "result": "owned expiring intent and fixed Platform human_confirmation_url; no confirmation_hash" }
+  ],
+  "human_actions": "Open human_confirmation_url in Platform's ordinary browser session. Submit, withdraw, decide and management are absent from model tools. Do not proxy arbitrary paths or methods."
+}

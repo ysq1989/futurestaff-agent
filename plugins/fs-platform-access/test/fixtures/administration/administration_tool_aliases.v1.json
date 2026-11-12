@@ -1,0 +1,11 @@
+{
+  "contract_version": "1.0.0",
+  "tools": [
+    {"canonical": "administration.leave.context.v1", "wire": "fs_administration_leave_context_v1"},
+    {"canonical": "administration.leave.requests.v1", "wire": "fs_administration_leave_requests_v1"},
+    {"canonical": "administration.leave.ledger.v1", "wire": "fs_administration_leave_ledger_v1"},
+    {"canonical": "administration.leave.policies.v1", "wire": "fs_administration_leave_policies_v1"},
+    {"canonical": "administration.leave.operation.v1", "wire": "fs_administration_leave_operation_v1"},
+    {"canonical": "administration.leave.preview.v1", "wire": "fs_administration_leave_preview_v1"}
+  ]
+}

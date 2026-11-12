@@ -1,0 +1,13 @@
+{
+  "name": "@futurestaff/agent-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {"react":"18.3.1","react-dom":"18.3.1"},
+  "devDependencies": {"@types/react":"~18.3.1","@types/react-dom":"^18.3.0","typescript":"^5.9.2","esbuild":"0.25.9"}
+}

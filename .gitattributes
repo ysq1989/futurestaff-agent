@@ -1,2 +1,9 @@
 # These vendored files are verified byte-for-byte against a pinned SHA-256 manifest.
 plugins/fs-geo/publishing-source/** text eol=lf
+# Mobile build fingerprints include source bytes; keep them identical on Windows/Linux.
+apps/agent-mobile/** text=auto eol=lf
+apps/agent-cloud/** text=auto eol=lf
+docker/agent-cloud/** text=auto eol=lf
+plugins/fs-platform-access/src/administration*.ts text eol=lf
+plugins/fs-platform-access/test/fixtures/administration/** text=auto eol=lf
+scripts/generate-administration-contract.mjs text eol=lf
