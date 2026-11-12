@@ -1,6 +1,6 @@
 # 行政FS助手 Cloud消费者发布
 
-2026-11-12。当前为**候选已通过，本次消费者生产尚待切换**。人已授权行政相关源码提交、推送及上线；不包含付费模型调用或真实员工请假/余额验收。
+2026-11-12。当前为**源码已提交推送、服务器候选smoke通过；消费者生产等待行政与Platform就绪**。用户已授权行政相关源码提交、推送及上线；不包含付费模型调用或真实员工请假/余额验收。
 
 ## 行为与边界
 
@@ -18,7 +18,9 @@ Cloud/PWA基础源码过去未提交，作为行政消费者可构建的必要�
 
 | 内容 | 候选证据 |
 | --- | --- |
+| 已提交推送的源码 | `5e185d8507d122c63f0ed294dc30b60b774e37b2` |
 | Cloud build | `0.1.0-a52cf521b9b4` |
+| 已构建候选image | `sha256:1e673759bb2a2c5be72b2f46acc280c88165a19bb74cf5571fb3cb0fc97771ef` |
 | sourceHash（server.mjs+index.html） | `a52cf521b9b4784ea6634990f58c96fc39c799434863a358b5d3f7a21930c0ed` |
 | server.mjs SHA256 | `78e96f9dff6414de5cf955fade60124e8427ecad63ea8768a232ff34052fecbb` |
 | Mobile | `cac9db9bb757`，10项静态资产与已上线034逐字相同 |
@@ -47,4 +49,8 @@ node scripts/prepare-agent-cloud.mjs dist/agent-cloud
 
 ## 生产回执
 
-待所属服务ready后补充实际镜像、备份恢复、切换时间、公网验证及提交号。APP仍使用[0.3.4下载](https://www.fsstory.net/downloads/android/FutureStaff-Agent-0.3.4.apk)，本次不重发APK。手机真实账户进入AIGC及语音验收仍由用户实机确认。
+服务器已暂存并校验19份发布文件，断网/只读/非root受限容器smoke通过：health/static 200、匿名目录401、错误Origin 403，Sharp/JSONL依赖可用。28个真实bundle输入从已提交的canonical字节重建，server产物与候选逐字相同。
+
+消费者尚未切换，原生产`0.1.0-8d45cce2e980`继续运行，未停服务、修改env或成员数据。依赖方仍在行政首次启动及Platform恢复演练/发布阶段，须收到两方明确ready后继续，无需再次请求用户发布权限。后续补实际备份恢复、切换时间及公网验收，不把候选smoke当作整条业务已在线。
+
+APP仍使用[0.3.4下载](https://www.fsstory.net/downloads/android/FutureStaff-Agent-0.3.4.apk)，本次不重发APK。手机真实账户进入AIGC及语音验收仍由用户实机确认。

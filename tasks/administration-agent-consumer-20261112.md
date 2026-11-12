@@ -13,3 +13,7 @@
 Cloud新增13项及原28项共41/41、typecheck/build通过，独立只读复核无阻断。SDK及聊天/原模型/会话归属相关94/94通过；Mobile31/31及受控浏览器主动打开本人确认链接通过，未改生产Mobile源码。证据位于`work/mobile-toolbar-sso-20261112/administration-{cloud-qa,mobile-qa}.md`；SDK公共生产者契约另有可独立执行的冻结测试夹具，生成器仍从Platform权威仓校验。
 
 原目录有无关未推送commerce文档提交和大量既有修改；使用`work/administration-agent-consumer-20261112/release-repo`的独立origin/main副本，仅纳入本任务及可构建Cloud所需已上线基础源码，不推送原目录无关工作。行政服务与Platform明确ready后才切换消费者；未创建真实员工Agent业务实例，不以404作为就绪。
+
+已提交推送`5e185d8507d122c63f0ed294dc30b60b774e37b2`。候选`0.1.0-a52cf521b9b4`，镜像`sha256:1e673759bb2a2c5be72b2f46acc280c88165a19bb74cf5571fb3cb0fc97771ef`已暂存并通过服务器断网smoke；生产仍`0.1.0-8d45cce2e980`，未停服务/改env。实际28个bundle输入从提交的canonical字节重建，server SHA`78e96f9dff6414de5cf955fade60124e8427ecad63ea8768a232ff34052fecbb`与候选相同。详情见[本次发布回执](../docs/releases/administration-agent-consumer-20261112.md)。
+
+原工作目录main仍保留`d6e2728969`及无关未提交工作，未为同步远端而reset/pull或覆盖。后续接续先定位独立发布副本及该提交，笔记本权威环境仍待原维护者接收。本轮不发布Windows桌面客户端。

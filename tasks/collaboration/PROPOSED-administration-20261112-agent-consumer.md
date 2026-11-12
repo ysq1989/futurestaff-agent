@@ -25,3 +25,5 @@ Mobile确认可沿现有动态目录及Markdown外链，无需改生产源码/03
 SDK/业务分类/Cloud装配已本地验证。供应商函数名使用[Platform唯一冻结映射](../../../FutureStaff-platform/docs/contracts/ADMINISTRATION_TOOL_WIRE_NAMES_V1.md)，保留canonical六工具和原模型策略，覆盖出入站/历史/未知拒绝及原作用域门禁。Cloud41/41、SDK相关94/94、Mobile31/31通过；无付费供应商调用。生产顺序由来源维护方协调：行政服务与固定双向桥接、Platform迁移/模板/权限就绪后再切换本消费者，App034前端保持。
 
 最终客户端装配、权限/隔离/未知恢复、受控模型及本地联合结果另记[实施任务](../administration-agent-consumer-20261112.md)。本仓通过、两服务通过、本地联合、生产和用户实机均分开记录。中央索引由Platform当前维护者串行关联，本仓不争写。
+
+消费者已按新增授权提交推送`5e185d8507d122c63f0ed294dc30b60b774e37b2`，候选`0.1.0-a52cf521b9b4`在服务器受限断网smoke通过；现网未切换，继续等行政服务与Platform明确ready。新候选保持034前端10项静态资产逐字相同，未重发APK或改Website。源码提交、166项验证、镜像及最终门禁见[消费者发布回执](../../docs/releases/administration-agent-consumer-20261112.md)。原工作目录的无关本地提交和其他工作未推送或清除。
