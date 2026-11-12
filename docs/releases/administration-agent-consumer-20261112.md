@@ -1,6 +1,6 @@
 # 行政FS助手 Cloud消费者发布
 
-2026-11-12。当前为**源码已提交推送、服务器候选smoke通过；消费者生产等待行政与Platform就绪**。用户已授权行政相关源码提交、推送及上线；不包含付费模型调用或真实员工请假/余额验收。
+任务始于2026-11-12；**2026-11-13 00:19:40（Asia/Shanghai）已发布上线并通过公网验证**。用户已授权行政相关源码提交、推送及上线；不包含付费模型调用或真实员工请假/余额验收。
 
 ## 行为与边界
 
@@ -16,11 +16,11 @@ canonical名称保持`administration.leave.*.v1`，仅按Platform权威契约中
 
 Cloud/PWA基础源码过去未提交，作为行政消费者可构建的必要依赖一并纳入：`apps/agent-cloud`、`apps/agent-mobile`、Cloud Docker运行清单及打包脚本。SDK仅增加Cloud导出、行政六工具/请求映射/分类，并保留已上线AIGC专用授权入口。未引入旧工作目录的桌面、Web技能或额外浏览器依赖改动。
 
-| 内容 | 候选证据 |
+| 内容 | 已发布证据 |
 | --- | --- |
 | 已提交推送的源码 | `5e185d8507d122c63f0ed294dc30b60b774e37b2` |
 | Cloud build | `0.1.0-a52cf521b9b4` |
-| 已构建候选image | `sha256:1e673759bb2a2c5be72b2f46acc280c88165a19bb74cf5571fb3cb0fc97771ef` |
+| 生产image | `sha256:1e673759bb2a2c5be72b2f46acc280c88165a19bb74cf5571fb3cb0fc97771ef` |
 | sourceHash（server.mjs+index.html） | `a52cf521b9b4784ea6634990f58c96fc39c799434863a358b5d3f7a21930c0ed` |
 | server.mjs SHA256 | `78e96f9dff6414de5cf955fade60124e8427ecad63ea8768a232ff34052fecbb` |
 | Mobile | `cac9db9bb757`，10项静态资产与已上线034逐字相同 |
@@ -51,6 +51,18 @@ node scripts/prepare-agent-cloud.mjs dist/agent-cloud
 
 服务器已暂存并校验19份发布文件，断网/只读/非root受限容器smoke通过：health/static 200、匿名目录401、错误Origin 403，Sharp/JSONL依赖可用。28个真实bundle输入从已提交的canonical字节重建，server产物与候选逐字相同。
 
-消费者尚未切换，原生产`0.1.0-8d45cce2e980`继续运行，未停服务、修改env或成员数据。依赖方仍在行政首次启动及Platform恢复演练/发布阶段，须收到两方明确ready后继续，无需再次请求用户发布权限。后续补实际备份恢复、切换时间及公网验收，不把候选smoke当作整条业务已在线。
+已收到两方明确生产READY：行政`0.1.0/g1`、source `b8d1f735`；Platform API/Web `1.15.1`、generation130、Schema16、source `f6f2e08a4f691b41345c8adfc4515587457e0a04`。Platform维护方报告生产四表强制RLS、active行政模板、六canonical全L1、回写定时器和三服务17项桥接/配置布尔检查通过。其恢复演练发现的迁移守卫和全局审计Actor外键问题已由所属维护者修正、回归及重新演练，不改变V1消费者契约。中央索引由所属维护者接续更新。
+
+消费者在旧image/build的CAS成立且无运行任务时切换。停写后实际备份并恢复27份数据文件，10份加密记录通过原密钥/AAD解密，文件哈希一致；没有会话格式或数据库迁移。备份在服务器`/opt/futurestaff-agent-cloud/releases/fs-assistant-ops-20261112-0.1.0-a52cf521b9b4/backup`，data归档SHA256为`554f3b2505db1ee46add9549df7341222227edad3ebfefa7b7c15e7ac042cef7`。原密钥和业务配置保持，仅更新Cloud build标识；旧兼容镜像保留。
+
+公网已验证精确build、10份静态制品SHA、实际`/`与冻结`index.html`相同；系统目录/行政会话/AIGC授权匿名请求401，错误Origin登录403，Platform行政context匿名401。独立维护子任务另以4个公开GET复核Cloud健康与版本、实际首页SHA、匿名目录401、行政健康200，全部通过。该匿名验证不替代已登录员工业务验收。
+
+最终运维证据保留在本机`work/administration-agent-consumer-20261112/{release-state,restore-passed,switched,public-verified}.json`。其中source/tree、runtime、镜像、数据恢复及公网状态分开记录。真实员工实例未自动创建，额度/制度未自动初始化或审核；真实员工模型调用和请假流程仍待配置后由用户验收。
 
 APP仍使用[0.3.4下载](https://www.fsstory.net/downloads/android/FutureStaff-Agent-0.3.4.apk)，本次不重发APK。手机真实账户进入AIGC及语音验收仍由用户实机确认。
+
+## 首次使用路径
+
+管理员从Platform“平台设置→主体→授权应用”开通“行政请假”，按实际情况完成公司初始化；当前员工和任职须有效。首次从Platform `/assistant-catalog`“选用平台助手”中选择“行政请假助手”并选用；原服务端入口会创建或复用当前主体的真实Agent，并跳转其设置。必须有有效主模型和专用`['administration']`范围。模板不是Agent，不由客户端伪造UUID或模型策略。
+
+新选用后先等待原后台完成初始化，再在APP刷新系统目录，选择“行政”并开始新会话。原入口会处理原生助手的自动发布；Mobile沿当前真实native Agent与snapshot准入，未新增手动发布步骤。未选用专用Agent、未开通企业应用或无当前成员授权时，行政入口会显示不可用；不自动创建员工实例或初始化额度。首次选用路径由Platform维护者在发布协调中确认，员工实机业务仍待授权配置后的验收。

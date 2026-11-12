@@ -1,5 +1,7 @@
 # FutureStaff Agent
 
+2026-11-13：行政FS助手 Cloud `0.1.0-a52cf521b9b4` 已发布，Platform1.15.1/g130/Schema16与行政0.1.0/g1已就绪；27文件实际备份恢复、166项本地及公网/独立复核通过。APP0.3.4/code17与10项前端资产保持，首次使用需企业开通行政并选用真实专用助手，员工业务仍待实测。 [正式回执](docs/releases/administration-agent-consumer-20261112.md)。
+
 新电脑开发请先阅读[换机交接](docs/development-handoff.md)与[文档导航](docs/README.md)。本仓库只保存桌面客户端；后端/Web 快照另存于私有仓库 `ysq1989/FutureStaff-Agent-web`。
 
 当前正式版本：**3.1.1**，回滚安装包 **3.1.0** 保留。视频 Agent 的真实原生聊天制作、修改、双版本完整播放和免费模型验收已通过，详见 [最新交付](tasks/agent-laptop-handoff-20261021.md)。更新源仍为 `https://fsstory.net/desktop-updates/stable.json`。
