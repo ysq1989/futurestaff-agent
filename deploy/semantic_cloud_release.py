@@ -19,7 +19,7 @@ BUILD = '0.1.0-b04f9ed4dc7a'
 BEFORE = '0.1.0-9d35a827f507'
 OLD_IMAGE = 'sha256:f5a6a964e1accca08f859b3377761b39e8264cf0cf096d5b481efff240a5d872'
 RELEASE = pathlib.Path(__file__).resolve().parent
-assert RELEASE.parent == ROOT/'releases' and RELEASE.name == BUILD+'-r2'
+assert RELEASE.parent == ROOT/'releases' and RELEASE.name == BUILD+'-r3'
 NAME = 'futurestaff-agent-cloud-agent-1'
 IMAGE = 'futurestaff/agent-cloud:'+BUILD
 OPS = RELEASE/'operations'
@@ -237,21 +237,32 @@ def stage():
         normalize_image,
         require_new_release_tag,
     )
-    require_new_release_tag(IMAGE)
     before=image_ids()
     # Reuse B's verified runtime/dependencies. An identical lock file does not
     # guarantee Docker retained the npm build cache, and staging stays offline.
     recipe=OPS/'Dockerfile.overlay'
     recipe.write_text('FROM '+OLD_IMAGE+'\nCOPY runtime/server.mjs runtime/bundle-manifest.json /app/\nCOPY public/ /app/public/\n')
-    process=subprocess.run(['docker','build','--network','none','--force-rm','-f',str(recipe),'-t',IMAGE,str(RELEASE/'context')],capture_output=True,check=False,env=dict(os.environ,DOCKER_BUILDKIT='0'))
-    (OPS/'build.private.log').write_bytes(process.stdout+process.stderr)
-    assert process.returncode==0,'Offline dependency-cache build failed'
+    resume=SPEC.get('resumeRawImage')
+    if resume:
+        assert output(['docker','image','inspect','--format','{{.Id}}',IMAGE]).strip()==resume
+        # An interrupted owned stage is resumed without rebuilding its tag.
+        expected={str(p.relative_to(RELEASE/'context/runtime')):sha(p) for p in (RELEASE/'context/runtime').glob('*') if p.name in ('server.mjs','bundle-manifest.json')}
+        expected.update({'public/'+str(p.relative_to(RELEASE/'context/public')):sha(p) for p in (RELEASE/'context/public').rglob('*') if p.is_file()})
+        probe="import fs from 'node:fs';import crypto from 'node:crypto';const expected="+json.dumps(expected)+";for(const [name,hash] of Object.entries(expected)){if(crypto.createHash('sha256').update(fs.readFileSync('/app/'+name)).digest('hex')!==hash)throw Error('resumed source mismatch')}"
+        run(['docker','run','--rm','--network','none','--read-only',resume,'node','--input-type=module','-e',probe],capture_output=True)
+        build_output=b''
+    else:
+        require_new_release_tag(IMAGE)
+        process=subprocess.run(['docker','build','--network','none','--force-rm','-f',str(recipe),'-t',IMAGE,str(RELEASE/'context')],capture_output=True,check=False,env=dict(os.environ,DOCKER_BUILDKIT='0'))
+        (OPS/'build.private.log').write_bytes(process.stdout+process.stderr)
+        assert process.returncode==0,'Offline dependency-cache build failed'
+        build_output=process.stdout
     raw=json.loads(output(['docker','image','inspect',IMAGE]))[0]
     baseline=json.loads(output(['docker','image','inspect',OLD_IMAGE]))[0]
     assert raw['RootFS']['Layers'][:len(baseline['RootFS']['Layers'])]==baseline['RootFS']['Layers']
-    assert raw['Config']==baseline['Config'], 'Overlay must retain the exact runtime configuration'
-    record=normalize_image(raw['Id'],raw['Id'],IMAGE)
-    cleanup_build_records(process.stdout,before,record['image'])
+    assert {k:v for k,v in raw['Config'].items() if k!='Image'}=={k:v for k,v in baseline['Config'].items() if k!='Image'}
+    record=normalize_image(raw['Id'],OLD_IMAGE,IMAGE)
+    cleanup_build_records(build_output,before,record['image'])
     NEW_IMAGE=record['image'];COMPATIBLE_IMAGES=[(IMAGE,NEW_IMAGE),('futurestaff/agent-cloud:'+BEFORE,OLD_IMAGE)]
     assert record['layers']<=18
     (OPS/'built.json').write_text(json.dumps({'imageId':NEW_IMAGE,'record':record,'sourceCommit':SPEC['sourceCommit']}))
