@@ -12,6 +12,7 @@ import type { AgentModelPolicy } from './agents.js'
 import type {DiagnosticInput} from './diagnostics.js'
 import {markDiagnosticRequestReported} from './diagnostics-observers.js'
 import {administrationWire} from './administration-wire.js'
+import {semanticWire} from './semantic-wire.js'
 
 export interface ChatCredentials {
   readonly accessToken: string
@@ -336,7 +337,7 @@ export class FutureStaffChatAdapter extends LlmAdapter {
     }
     let toolWire:ReturnType<typeof administrationWire>,wireMessages:unknown[]
     const convertedMessages=await messages(options,this.readImage,credentials.signal)
-    try {toolWire=administrationWire(options.tools??[]);wireMessages=toolWire.history(convertedMessages)}
+    try {const semantic=semanticWire(options.tools??[]),administration=administrationWire(semantic.tools);toolWire={tools:administration.tools,history:messages=>administration.history(semantic.history(messages)),inbound:name=>semantic.inbound(administration.inbound(name))};wireMessages=toolWire.history(convertedMessages)}
     catch {throw invalid()}
     const requestId = randomUUID()
     const requestStarted=Date.now()

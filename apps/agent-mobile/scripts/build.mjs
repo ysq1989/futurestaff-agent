@@ -10,7 +10,13 @@ const require = createRequire(path.join(process.cwd(), 'package.json'))
 const {build} = require('esbuild')
 const sourceNames = (await readdir(path.join(root, 'src'))).filter(name => /\.(tsx?|css)$/.test(name)).sort()
 const publicNames = (await readdir(path.join(root, 'public'))).sort()
-const sourceBytes = await Promise.all([...sourceNames.map(name => readFile(path.join(root, 'src', name))), ...publicNames.map(name => readFile(path.join(root, 'public', name)))])
+// Git text blobs use LF even when a Windows checkout uses CRLF. The content
+// identity must be reproducible from the committed source on either host.
+const canonicalText = bytes => Buffer.from(bytes.toString('utf8').replaceAll('\r\n','\n'))
+const sourceBytes = await Promise.all([
+  ...sourceNames.map(async name => canonicalText(await readFile(path.join(root,'src',name)))),
+  ...publicNames.map(async name => {const bytes=await readFile(path.join(root,'public',name));return /\.(html|js|css|svg|webmanifest)$/.test(name)?canonicalText(bytes):bytes}),
+])
 const version = createHash('sha256').update(Buffer.concat(sourceBytes)).digest('hex').slice(0, 12)
 const output = path.join(root, 'dist')
 await mkdir(output, {recursive: true})

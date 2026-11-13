@@ -14,7 +14,7 @@ export interface Gateway {
   agents(auth:Auth,signal:AbortSignal):Promise<AgentCard[]>
   snapshot(auth:Auth,id:string,signal:AbortSignal):Promise<AgentSnapshot>
   models(auth:Auth):Promise<readonly PlatformModel[]>
-  authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration',signal:AbortSignal):Promise<void|AdministrationBinding>
+  authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration'|'ecommerce-demo',signal:AbortSignal):Promise<void|AdministrationBinding>
   authorizeAigc?(auth:Auth,input:{state:string;codeChallenge:string},signal:AbortSignal):Promise<{redirectUrl:string}>
 }
 export class PlatformGateway implements Gateway {
@@ -29,7 +29,14 @@ export class PlatformGateway implements Gateway {
   agents(auth:Auth,signal:AbortSignal){return fetchAgentData(this.origin,this.credentials(auth,signal),undefined,this.fetcher) as Promise<AgentCard[]>}
   snapshot(auth:Auth,id:string,signal:AbortSignal){return fetchAgentData(this.origin,this.credentials(auth,signal),id,this.fetcher,'1.1.0') as Promise<AgentSnapshot>}
   async models(auth:Auth){return(await this.api.listModels(auth.session.accessToken,auth.tenantId,AbortSignal.timeout(15000))).items}
-  async authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration',signal:AbortSignal){
+  async authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration'|'ecommerce-demo',signal:AbortSignal){
+    if(systemId==='ecommerce-demo'){
+      const response=await this.fetcher(this.origin+'/desktop/v1/semantics/context',{headers:{Authorization:'Bearer '+auth.session.accessToken},signal,credentials:'omit',redirect:'error',cache:'no-store'})
+      if(!response.ok)throw new ApiError(response.status,'SEMANTIC_APPLICATION_DENIED','当前成员没有电商案例权限。')
+      const value=await response.json() as {contract_version?:string;tenant_id?:string;actor_id?:string;channels?:unknown[]}
+      if(value.contract_version!=='1.0.0'||value.tenant_id!==auth.tenantId||value.actor_id!==auth.user.userId||!Array.isArray(value.channels)||!value.channels.length||value.channels.length>4)throw new ApiError(403,'SEMANTIC_IDENTITY_CHANGED','电商案例权限无法确认。')
+      return
+    }
     if(systemId==='administration'){
       // The old applications directory does not grant administrative employee access.
       // Context is an online, owner-validated read under the current desktop session.

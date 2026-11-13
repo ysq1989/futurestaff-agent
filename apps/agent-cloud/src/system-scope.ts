@@ -1,7 +1,7 @@
 import type {AgentSnapshot} from '@futurestaff/fs-platform-access/cloud'
 import {ApiError} from './storage.js'
 
-export const chatSystemIds=['agent','erp','web','administration'] as const
+export const chatSystemIds=['agent','erp','web','administration','ecommerce-demo'] as const
 export type ChatSystemId=typeof chatSystemIds[number]
 export type SystemScope={kind:'system'}
 export function chatSystem(value:unknown):ChatSystemId {
@@ -23,4 +23,4 @@ export function systemScope(value:unknown):SystemScope {
 export function scopedFiles(snapshot:AgentSnapshot,system:ChatSystemId){
   return system==='agent'||snapshot.businessSystems?.length===1?snapshot.files:[]
 }
-export const systemNames:Record<ChatSystemId,string>={agent:'资料工作区',erp:'ERP',web:'Website',administration:'行政'}
+export const systemNames:Record<ChatSystemId,string>={agent:'资料工作区',erp:'ERP',web:'Website',administration:'行政','ecommerce-demo':'电商经营分析（合成案例）'}

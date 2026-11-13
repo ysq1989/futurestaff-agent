@@ -1,5 +1,7 @@
 /** Platform-owned Agent scope narrows existing human permissions; never grants them. */
-export const businessSystems=['shop','erp','product-hub','geo','visa','web','administration'] as const
+export const businessSystems=['shop','erp','product-hub','geo','visa','web','administration','ecommerce-demo'] as const
+import {semanticToolNames,semanticWireNames} from './semantic-contract.generated.js'
+const semantics:readonly string[]=[...semanticToolNames,...semanticWireNames]
 import {administrationToolNames} from './administration-contract.generated.js'
 export {administrationToolNames} from './administration-contract.generated.js'
 export type BusinessSystem=typeof businessSystems[number]
@@ -8,6 +10,7 @@ export function decodeBusinessSystems(value:unknown):BusinessSystem[]{
  return value as BusinessSystem[]
 }
 export function toolBusiness(name:string):BusinessSystem|undefined{
+ if(semantics.includes(name))return 'ecommerce-demo'
  if(administrationToolNames.includes(name as typeof administrationToolNames[number]))return 'administration'
  if(name.startsWith('website_'))return 'web'
  if(name==='call_erp_api'||name.startsWith('erp_'))return 'erp'
@@ -18,6 +21,7 @@ export function toolBusiness(name:string):BusinessSystem|undefined{
  return undefined
 }
 export function businessToolAllowed(name:string,scope:readonly BusinessSystem[]|undefined):boolean{
+ if(/^semantics[._]/i.test(name))return semantics.includes(name)&&scope?.length===1&&scope[0]==='ecommerce-demo'
  if(/^(?:administration\.|fs_administration)/i.test(name))return administrationToolNames.includes(name as typeof administrationToolNames[number])&&scope?.length===1&&scope[0]==='administration'
  if(name==='agent_message_card')return true
  const system=toolBusiness(name)
@@ -29,6 +33,7 @@ export function toolSystem(name:string):BusinessSystem|'agent'|undefined{
 }
 /** Recipe grants constrain system tools; native DSH tools retain composition-owned permissions. */
 export function templateToolAllowed(name:string,tools:readonly string[]|undefined,scope:readonly BusinessSystem[]):boolean{
+ if(/^semantics[._]/i.test(name))return semantics.includes(name)&&scope.length===1&&scope[0]==='ecommerce-demo'&&tools?.includes(name)===true
  if(/^(?:administration\.|fs_administration)/i.test(name))return administrationToolNames.includes(name as typeof administrationToolNames[number])&&scope.length===1&&scope[0]==='administration'&&tools?.includes(name)===true
  // A fixed, data-only interface capability is available to every managed role.
  // This does not authorize business tools or broaden any module prefix.

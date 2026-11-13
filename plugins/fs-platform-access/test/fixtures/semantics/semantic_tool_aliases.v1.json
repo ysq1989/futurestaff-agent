@@ -1,0 +1,17 @@
+{
+  "contract_version": "1.0.0",
+  "tools": [
+    {
+      "canonical": "semantics.resolve.v1",
+      "wire": "semantics_resolve_v1"
+    },
+    {
+      "canonical": "semantics.query.prepare.v1",
+      "wire": "semantics_query_prepare_v1"
+    },
+    {
+      "canonical": "semantics.query.execute.v1",
+      "wire": "semantics_query_execute_v1"
+    }
+  ]
+}

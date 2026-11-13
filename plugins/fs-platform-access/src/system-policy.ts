@@ -37,6 +37,7 @@ export function scopeApplications(scope: unknown): SystemApplicationId[] {
     // The legacy apps list cannot prove Administration access. Its Cloud
     // consumer uses the dedicated online context bridge instead.
     if (system === 'administration') throw Error('ADMINISTRATION_CONTEXT_AUTH_REQUIRED')
+    if (system === 'ecommerce-demo') throw Error('SEMANTIC_CONTEXT_AUTH_REQUIRED')
     return system === 'product-hub' ? 'product_hub' : system === 'visa' ? 'vietnam_immigration' : system
   })
 }

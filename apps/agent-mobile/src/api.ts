@@ -8,7 +8,7 @@ export interface Member {
 export interface Agent {agentId: string; displayName: string; name?: string; description?: string; available?: boolean; unavailableReason?: string | null}
 export interface BusinessSystem {systemId: string; displayName: string; available: boolean; unavailableReason?: string; agents: Agent[]; entryUrl?: string; mode: 'chat' | 'external'}
 export interface Attachment {id: string; url: string; mime: string; name: string}
-export interface Message {id: string; role: 'user' | 'assistant' | 'tool' | 'system'; text: string; time: number | string; attachments?: Attachment[]}
+export interface Message {id: string; role: 'user' | 'assistant' | 'tool' | 'system'; text: string; time: number | string; attachments?: Attachment[];semanticReceipt?:unknown}
 export interface Question {id: string; prompt: string; options?: string[]}
 export interface Conversation {
   id: string
