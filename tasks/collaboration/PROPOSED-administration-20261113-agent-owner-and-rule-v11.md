@@ -1,6 +1,6 @@
 # 行政V1.1身份绑定与无主管规则：消费端接收
 
-2026-11-13；system_id: agent。状态：**Cloud B已发布并通过新V1.1数据B→A兼容恢复、新鲜备份及公网后检；Platform最终C与真实业务验收由所属方接续**。Root为唯一实现写入方；测试/审查子任务只读或限定测试文件，不并行写实现。Platform和行政由各自维护者串行负责，本仓不修改其源码、权限或业务数据。接续[实施任务](../administration-agent-consumer-v11-20261113.md)及[B发布](../../docs/releases/administration-v11-cloud-b-20261113.md)。下方保留各阶段时点。
+2026-11-13；system_id: agent。状态：**Cloud B已发布并通过新V1.1数据B→A兼容恢复、新鲜备份及公网后检；Platform最终C及正常页面真实账号无主管半天申请已由所属方验收，Agent真实模型与手机仍待测**。Root为唯一实现写入方；测试/审查子任务只读或限定测试文件，不并行写实现。Platform和行政由各自维护者串行负责，本仓不修改其源码、权限或业务数据。接续[实施任务](../administration-agent-consumer-v11-20261113.md)及[B发布](../../docs/releases/administration-v11-cloud-b-20261113.md)。下方保留各阶段时点。
 
 ## 来源与边界
 
@@ -41,3 +41,5 @@
 Platform维护者在行政B g3/0.2.2实际完成后明确独立AgentB窗口；Cloud已于11:11:52上海时间切换源码37d7e1e/build0.1.0-9d35a827f507/image f5a6a964。真实固定镜像B→A新V1.1合成数据214/253检查、a52负控、发布器11tests及独立复核通过；新鲜28文件实际恢复/双镜像10密文解密、公网十静态/入口/权限全部通过。A为唯一兼容回退，保留当前新数据，不回旧a52或用旧备份覆盖。APP035保持。已通知两维护者窗口结束，Platform最终C/g133及真实员工/交互SSO由所属方接续。详情和精确哈希见[正式回执](../../docs/releases/administration-v11-cloud-b-20261113.md)。
 
 后续所属维护者已确认Platform最终C API/Web1.16.0/g133/schema17/source4e3e8524上线及197静态/54非目标/兼容恢复/timer后检通过，行政g3/0.2.2保持；三端软件发布窗口结束。真实主账号SSO/HR/员工业务和小米15仍待用户验收，无真实模型调用。依据和审计tag已补正式回执，不再另开跨系统切换。
+
+后续行政真实业务接续（来源验收提交4924466，已读取）更新上述待验状态：正常PKCE重新登录、显式任职及授权HR配置完成，唯一半天申请实际approved/system_rule，台账used240/reserved0，Platform applied/ack各一次，正常详情UI显示台账确认。后台primary通知1条不代表用户看到通知UI；本次不代表具名主管真人审批、Agent自然语言真实模型或035小米15语音验收。精确依据见[B正式回执](../../docs/releases/administration-v11-cloud-b-20261113.md)末节。仅文档接续，不切容器、不发APK/模型请求。

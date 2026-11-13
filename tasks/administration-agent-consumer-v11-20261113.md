@@ -1,6 +1,6 @@
 # 行政V1.1与独立页面：Agent消费端
 
-2026-11-13。**B正式候选已在11:11:52上海时间发布；新V1.1数据B→A恢复、28文件新鲜备份/实际恢复及公网后检通过。Platform最终C与真实业务验收由所属方接续。** Root为本仓唯一实现写入方。Platform与行政分别由其维护者实施，本任务只改SDK/Cloud和相关测试/回执。用户原始迁移/提交推送/发布授权已直接读取核验，来源ID见[接收回执](collaboration/PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)。当前生产Cloud为`0.1.0-9d35a827f507`，详情见[B正式回执](../docs/releases/administration-v11-cloud-b-20261113.md)。下方候选/A阶段段落保留历史时点。
+2026-11-13。**B正式候选已在11:11:52上海时间发布；新V1.1数据B→A恢复、28文件新鲜备份/实际恢复及公网后检通过。Platform最终C及正常页面真实账号无主管半天申请已由所属方验收；Agent真实模型与手机仍待测。** Root为本仓唯一实现写入方。Platform与行政分别由其维护者实施，本任务只改SDK/Cloud和相关测试/回执。用户原始迁移/提交推送/发布授权已直接读取核验，来源ID见[接收回执](collaboration/PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)。当前生产Cloud为`0.1.0-9d35a827f507`，详情见[B正式回执](../docs/releases/administration-v11-cloud-b-20261113.md)。下方候选/A阶段段落保留历史时点。
 
 ## 冻结契约
 
@@ -48,3 +48,5 @@ A阶段脚本的legacy恢复守卫专为a52→A，不可简单替换变量用于
 Platform维护者确认行政B实际g3/0.2.2后开放独立窗口。固定镜像以合成Platform/模型、network none运行真实CLI和JSONL，B214/A253检查通过；A使用同一份B新V1.1数据，旧a52负控502/零模型。专用发布器11tests及独立复核通过。实际切前A CAS/idle9，新鲜28文件归档f6ecf32b实际恢复逐SHA一致，A/B各10密文解密；11:11:52切B，公网十静态/入口/权限全部通过。窗口结束已通知两维护方，035清单全文SHA/公开长度保持。新数据兼容恢复与实际发布分别记录，未使用真实员工、付费模型或生产交互SSO，不冒充联合业务验收。见[B正式回执](../docs/releases/administration-v11-cloud-b-20261113.md)。
 
 Platform所属维护者最终回告C为API/Web1.16.0/g133/schema17/source4e3e8524，197静态/54非目标容器与配置/兼容恢复/timer检查通过；行政g3/0.2.2保持。三端软件发布已收尾，窗口已释放，不再另开切换。真实主账号SSO/HR/员工业务及小米15语音仍待用户验收，精确来源见B正式回执“Platform最终窗口回告”。
+
+后续真实业务接续已读取行政提交4924466的正常浏览器验收：用户重新完成PKCE登录及授权任职/期初/排班/知识v2/version1/规则rev1配置，唯一半天申请approved/system_rule，台账used240/reserved0，Platform applied/ack一次，正常详情显示台账确认。此项更新上一阶段主账号SSO/HR待验状态；后台primary完成通知1条不代表通知UI已送达。具名主管真人审批、Agent自然语言真实模型及035手机/语音仍未据此验收。仅文档接续，无新模型/容器/APK操作，见B正式回执末节。
