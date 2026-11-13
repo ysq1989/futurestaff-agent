@@ -1,5 +1,6 @@
 import {PlatformDevApi,fetchAgentData,AdministrationService,AdministrationError,type DesktopSession,type User,type AgentSnapshot,type AgentCard,type PlatformModel} from '@futurestaff/fs-platform-access/cloud'
 import {ApiError,Storage,Serial,opaque,digest,bounded,uuid} from './storage.js'
+import {administrationBinding,type AdministrationBinding} from '@futurestaff/fs-platform-access/cloud'
 
 export interface Auth {id:string;csrf:string;user:User;tenantId:string;session:DesktopSession;expiresAt:number;validUntil:number}
 export interface Gateway {
@@ -13,7 +14,7 @@ export interface Gateway {
   agents(auth:Auth,signal:AbortSignal):Promise<AgentCard[]>
   snapshot(auth:Auth,id:string,signal:AbortSignal):Promise<AgentSnapshot>
   models(auth:Auth):Promise<readonly PlatformModel[]>
-  authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration',signal:AbortSignal):Promise<void>
+  authorizeSystem(auth:Auth,systemId:'erp'|'web'|'administration',signal:AbortSignal):Promise<void|AdministrationBinding>
   authorizeAigc?(auth:Auth,input:{state:string;codeChallenge:string},signal:AbortSignal):Promise<{redirectUrl:string}>
 }
 export class PlatformGateway implements Gateway {
@@ -33,7 +34,7 @@ export class PlatformGateway implements Gateway {
       // The old applications directory does not grant administrative employee access.
       // Context is an online, owner-validated read under the current desktop session.
       const administration=new AdministrationService(this.origin,async()=>this.credentials(auth,signal),this.fetcher)
-      try{await administration.call('administration.leave.context.v1',{},signal);return}
+      try{const context=await administration.call('administration.leave.context.v1',{},signal);return administrationBinding(context,{tenantId:auth.tenantId,userId:auth.user.userId})}
       catch(error){if(error instanceof AdministrationError)throw new ApiError(error.status,error.code,error.status===401?'登录已失效，请重新登录。':error.status===403?'当前成员没有行政系统权限。':'行政服务暂时不可用，请稍后重试。');throw error}
     }
     const apps=await this.api.listApplications(auth.session.accessToken,auth.tenantId,signal)

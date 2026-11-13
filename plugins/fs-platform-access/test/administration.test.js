@@ -27,11 +27,13 @@ function fixture(overrides={}){
 test('six canonical names use fixed root desktop paths, fresh identity and minimal results',async()=>{
  const f=fixture(),inputs=[{},{after:id,size:2},{},{},{operation_id:operation},{kind:'annual',start,end,reason:'个人安排'}]
  for(let i=0;i<administrationToolNames.length;i++)await f.service.call(administrationToolNames[i],inputs[i])
- assert.deepEqual(f.calls.map(x=>new URL(x.url).pathname),['/desktop/v1/administration/context','/desktop/v1/administration/requests','/desktop/v1/administration/ledger','/desktop/v1/administration/policies','/desktop/v1/administration/operations/'+operation,'/desktop/v1/administration/previews'])
- assert.equal(f.authorizations,12)
- assert.deepEqual(f.calls.map(x=>x.init.method),['GET','GET','GET','GET','GET','POST'])
+ const business=f.calls.filter(x=>!x.url.endsWith('/context'))
+ assert.deepEqual(business.map(x=>new URL(x.url).pathname),['/desktop/v1/administration/requests','/desktop/v1/administration/ledger','/desktop/v1/administration/policies','/desktop/v1/administration/operations/'+operation,'/desktop/v1/administration/previews'])
+ assert.equal(f.calls.filter(x=>x.url.endsWith('/context')).length,11)
+ assert.equal(f.authorizations,f.calls.length*2)
+ assert.deepEqual(business.map(x=>x.init.method),['GET','GET','GET','GET','POST'])
  for(const call of f.calls){assert.equal(call.init.redirect,'error');assert.equal(call.init.headers.Authorization,'Bearer synthetic-private-token');assert.equal(call.init.headers.Cookie,undefined);assert.equal(call.init.headers.Origin,undefined)}
- assert.deepEqual(JSON.parse(f.calls.at(-1).init.body),inputs.at(-1))
+ assert.deepEqual(JSON.parse(business.at(-1).init.body),inputs.at(-1))
 })
 test('closed inputs and unknown write tools reject before any credential or HTTP work',async()=>{
  const f=fixture()
@@ -59,15 +61,15 @@ test('preview projects out hashes and private extras and renders only a fixed hu
  const result=await f.service.call(administrationToolNames[5],{kind:'annual',start,end,reason:'个人安排'})
  assert.equal(JSON.stringify(result).includes('secret'),false);assert.equal(JSON.stringify(result).includes('confirmation_hash'),false);assert.equal(JSON.stringify(result).includes('calendar_hash'),false)
  const rendered=renderAdministrationResult(administrationToolNames[5],result)
- assert.ok(rendered.includes('[前往Platform核对并本人确认]('+origin+'/administration?intent='+id+')'));assert.ok(rendered.includes('尚未提交'));assert.equal(rendered.includes('](<'),false)
+ assert.ok(rendered.includes('[前往行政应用核对并本人确认]('+origin+'/administration?intent='+id+')'));assert.ok(rendered.includes('尚未提交'));assert.equal(rendered.includes('](<'),false)
  for(const url of ['https://evil.invalid/administration?intent='+id,origin+'/administration?intent='+id+'&confirmation_hash=x',origin+'/administration?intent='+manager,origin+'/administration?intent='+id+'#fragment'])await assert.rejects(()=>fixture({project:v=>({...v,human_confirmation_url:url})}).service.call(administrationToolNames[5],{kind:'annual',start,end,reason:'个人安排'}))
 })
 test('unknown POST outcome is one attempt, and raw peer errors or credentials never surface',async()=>{
- const f=fixture({fetcher:async()=>{throw Error('synthetic-private-token')}})
+ const f=fixture({fetcher:async url=>{if(String(url).endsWith('/context'))return Response.json(context);throw Error('synthetic-private-token')}})
  await assert.rejects(()=>f.service.call(administrationToolNames[5],{kind:'annual',start,end,reason:'个人安排'}),e=>e.code==='ADMINISTRATION_PREVIEW_OUTCOME_UNKNOWN'&&e.unknownOutcome&&!e.message.includes('synthetic-private-token'))
- assert.equal(f.calls.length,1)
+ assert.equal(f.calls.length,2)
  await assert.rejects(()=>f.service.call(administrationToolNames[5],{kind:'annual',start,end,reason:'个人安排'}),/ALREADY_ATTEMPTED/)
- assert.equal(f.calls.length,1)
+ assert.equal(f.calls.length,2)
 })
 test('changed identity, revocation after response and oversized receipts fail closed',async()=>{
  const owner=fixture({authorize:(count,identity)=>count===1?identity:{...identity,userId:manager}})

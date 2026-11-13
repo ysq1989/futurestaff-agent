@@ -42,7 +42,7 @@ class Gateway {
  async logout(token){this.tokens.delete(token)}
  async agents(){return[...this.snapshots.values()].map(s=>({agentId:s.agentId,name:s.name,description:'合成',available:true,unavailableReason:null}))}
  async snapshot(_auth,id){const s=this.snapshots.get(id);if(!s)throw new ApiError(403,'AGENT_UNAVAILABLE','配置已撤销');return structuredClone(s)}
- async authorizeSystem(auth,id,signal){signal.throwIfAborted();this.checks.push(id);if(!this.allowed.has(id))throw new ApiError(403,'SYSTEM_NOT_AUTHORIZED','应用已撤权')}
+ async authorizeSystem(auth,id,signal){signal.throwIfAborted();this.checks.push(id);if(!this.allowed.has(id))throw new ApiError(403,'SYSTEM_NOT_AUTHORIZED','应用已撤权');if(id==='administration')return{principalUserId:auth.user.userId,tenantId:auth.tenantId,employeeId:auth.user.userId,organizationRevision:'org-1',contractVersion:'1.0.0'}}
  async models(){return[{modelId:model,displayName:'合成模型',supportsVision:true}]}
 }
 async function fixture(t,script=[text('合成完成')],options={}){
@@ -50,7 +50,7 @@ async function fixture(t,script=[text('合成完成')],options={}){
  const fetcher=async(input,init={})=>{
   const url=new URL(String(input));assert.equal(url.origin,platform);http.push({url,init})
   assert.equal(init.redirect,'error');assert.equal(init.cache,'no-store')
-  if(options.fetcher)return options.fetcher(url,init)
+  if(options.fetcher)return url.pathname.endsWith('/context')&&!options.interceptContext?Response.json(context):options.fetcher(url,init)
   if(url.pathname==='/desktop/v1/chat')return new Response(JSON.stringify({type:'result',content:'真实适配器合成响应',toolCalls:[],finishReason:'stop'})+'\n',{headers:{'content-type':'application/x-ndjson','x-futurestaff-chat-contract':'0.1.0'}})
   assert.equal(new Headers(init.headers).get('authorization')?.startsWith('Bearer '),true)
   const part=url.pathname.split('/').at(-1)
@@ -75,6 +75,81 @@ async function fixture(t,script=[text('合成完成')],options={}){
  return{dir,gateway,adapters,http,service,endpoint,request,login,create,send,wait,close,get cookie(){return cookie},get csrf(){return csrf}}
 }
 
+test('employee mapping changes isolate the original history while ordinary revision changes keep its owner',async t=>{
+ const f=await fixture(t,undefined,{retain:true});await f.login()
+ const original=f.gateway.authorizeSystem.bind(f.gateway)
+ let employee=otherMember,revision='org-1'
+ f.gateway.authorizeSystem=async(auth,id,signal)=>{await original(auth,id,signal);if(id==='administration')return{principalUserId:auth.user.userId,tenantId:auth.tenantId,employeeId:employee,organizationRevision:revision,contractVersion:'1.1.0'}}
+ const s=await f.create();revision='org-2'
+ assert.equal((await f.request('/sessions/'+s.id)).status,200)
+ await f.close()
+ const restored=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway});await restored.login()
+ assert.equal((await restored.request('/sessions/'+s.id)).status,200)
+ employee=randomUUID()
+ assert.equal((await restored.request('/sessions/'+s.id)).status,403)
+ const list=await restored.request('/sessions?systemId=administration');assert.equal(list.status,200);assert.equal(list.value.items.some(row=>row.id===s.id),false)
+ assert.equal((await restored.send(s)).status,403)
+})
+test('legacy administration history without an employee binding is retained but never silently adopted',async t=>{
+ const f=await fixture(t,undefined,{retain:true});await f.login();const s=await f.create()
+ const auth=await f.service.auth.load(f.cookie.split('=')[1]),group='members/'+f.service.auth.owner(auth)+'/sessions'
+ await f.close();const raw=await f.service.auth.store.read(group,s.id);delete raw.administrationBinding;await f.service.auth.store.write(group,s.id,raw)
+ const r=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway});await r.login()
+ assert.equal((await r.request('/sessions/'+s.id)).status,403);assert.equal((await r.send(s)).status,403)
+ assert.equal((await r.service.auth.store.read(group,s.id)).administrationBinding,undefined)
+})
+
+test('a restored administrative history never downgrades after its online binding has advanced to V1.1',async t=>{
+ const f=await fixture(t,undefined,{retain:true});await f.login()
+ let version='1.0.0';const original=f.gateway.authorizeSystem.bind(f.gateway)
+ f.gateway.authorizeSystem=async(auth,id,signal)=>{const binding=await original(auth,id,signal);return id==='administration'?{...binding,contractVersion:version}:binding}
+ const s=await f.create();version='1.1.0'
+ assert.equal((await f.request('/sessions?systemId=administration')).status,200)
+ const auth=await f.service.auth.load(f.cookie.split('=')[1]),group='members/'+f.service.auth.owner(auth)+'/sessions'
+ assert.equal((await f.service.auth.store.read(group,s.id)).administrationBinding.contractVersion,'1.1.0')
+ await f.close();const r=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway});await r.login()
+ assert.equal((await r.request('/sessions/'+s.id)).status,200);version='1.0.0'
+ assert.equal((await r.request('/sessions/'+s.id)).status,403);assert.equal((await r.send(s)).status,403)
+ assert.equal((await r.request('/sessions?systemId=administration')).value.items.some(row=>row.id===s.id),false)
+})
+
+test('a concurrent history read cannot downgrade while a V1.1 protocol advance is being persisted',async t=>{
+ const f=await fixture(t,undefined,{retain:true});await f.login();const s=await f.create(),auth=await f.service.auth.load(f.cookie.split('=')[1])
+ const group='members/'+f.service.auth.owner(auth)+'/sessions';await f.close()
+ let version='1.1.0';const authorize=f.gateway.authorizeSystem.bind(f.gateway)
+ f.gateway.authorizeSystem=async(auth,id,signal)=>{const binding=await authorize(auth,id,signal);return id==='administration'?{...binding,contractVersion:version}:binding}
+ const r=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway});await r.login()
+ let entered,release,reads=0;const started=new Promise(resolve=>entered=resolve),gate=new Promise(resolve=>release=resolve)
+ const read=r.service.auth.store.read.bind(r.service.auth.store)
+ r.service.auth.store.read=async(...args)=>{if(args[0]===group&&args[1]===s.id&&++reads===2){entered();await gate}return read(...args)}
+ const listing=r.request('/sessions?systemId=administration');await started;version='1.0.0'
+ let status
+ try{status=(await r.request('/sessions/'+s.id)).status}finally{release();await listing}
+ assert.equal(status,403)
+ assert.equal((await r.request('/sessions/'+s.id)).status,403)
+})
+
+test('saving an interrupted stale document cannot erase a concurrent durable V1.1 protocol fence',async t=>{
+ const f=await fixture(t,undefined,{retain:true});await f.login();const s=await f.create(),auth=await f.service.auth.load(f.cookie.split('=')[1])
+ const group='members/'+f.service.auth.owner(auth)+'/sessions';await f.close()
+ const raw=await f.service.auth.store.read(group,s.id);raw.status='running';await f.service.auth.store.write(group,s.id,raw)
+ let version='1.1.0';const authorize=f.gateway.authorizeSystem.bind(f.gateway)
+ f.gateway.authorizeSystem=async(auth,id,signal)=>{const binding=await authorize(auth,id,signal);return id==='administration'?{...binding,contractVersion:version}:binding}
+ const r=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway,retain:true});await r.login()
+ let entered,release,loaded,reads=0;const started=new Promise(resolve=>entered=resolve),gate=new Promise(resolve=>release=resolve),oldLoaded=new Promise(resolve=>loaded=resolve)
+ const read=r.service.auth.store.read.bind(r.service.auth.store)
+ r.service.auth.store.read=async(...args)=>{
+  if(args[0]===group&&args[1]===s.id){reads++;if(reads===2){entered();await gate}else if(reads===3){const old=await read(...args);loaded();return old}}
+  return read(...args)
+ }
+ const listing=r.request('/sessions?systemId=administration');await started
+ const reading=r.request('/sessions/'+s.id);await oldLoaded;await new Promise(resolve=>setImmediate(resolve));version='1.0.0';release();await listing
+ assert.equal((await reading).status,403)
+ assert.equal((await read(group,s.id)).administrationBinding.contractVersion,'1.1.0')
+ await r.close();const restored=await fixture(t,undefined,{dir:f.dir,gateway:f.gateway});await restored.login()
+ assert.equal((await restored.request('/sessions/'+s.id)).status,403)
+})
+
 test('administration gateway admits by validated fixed context and never by the old apps directory',async()=>{
  const calls=[],signal=AbortSignal.timeout(1000),auth={session:{accessToken:'synthetic-only'},tenantId:tenant,user:{userId:member}}
  const gateway=new PlatformGateway(platform,async(url,init)=>{calls.push({url,init});assert.equal(url,platform+'/desktop/v1/administration/context');return Response.json(context)})
@@ -86,6 +161,37 @@ test('administration gateway admits by validated fixed context and never by the 
  }
  const foreign=new PlatformGateway(platform,async()=>Response.json({...context,employee_id:otherMember}))
  await assert.rejects(()=>foreign.authorizeSystem(auth,'administration',signal))
+})
+
+test('the real Platform gateway binds an effective employee without replacing the authenticated principal',async()=>{
+ const auth={session:{accessToken:'synthetic-principal-token'},tenantId:tenant,user:{userId:member}},signal=AbortSignal.timeout(1000)
+ const ctx={...context,contract_version:'1.1.0',principal_user_id:member,employee_id:otherMember}
+ const gateway=new PlatformGateway(platform,async(url,init)=>{
+  assert.equal(url,platform+'/desktop/v1/administration/context');assert.equal(new Headers(init.headers).get('authorization'),'Bearer synthetic-principal-token');return Response.json(ctx)
+ })
+ assert.deepEqual(await gateway.authorizeSystem(auth,'administration',signal),{principalUserId:member,tenantId:tenant,employeeId:otherMember,organizationRevision:'org-1',contractVersion:'1.1.0'})
+ assert.equal(auth.user.userId,member);assert.equal(auth.session.accessToken,'synthetic-principal-token')
+ for(const change of [{principal_user_id:otherMember},{principal_user_id:undefined},{contract_version:undefined}]){
+  const denied=new PlatformGateway(platform,async()=>Response.json({...ctx,...change}));await assert.rejects(()=>denied.authorizeSystem(auth,'administration',signal))
+ }
+})
+
+test('a mapped no-manager DSH turn retains its original model and exposes only the new human confirmation link',async t=>{
+ const rule={code:'missing_manager_auto_approve',revision:1},ctx={...context,contract_version:'1.1.0',principal_user_id:member,employee_id:otherMember,manager_id:null,approval_rule:rule}
+ const prepared=preview();prepared.preview={...prepared.preview,manager_id:null,approval_rule:rule};prepared.human_confirmation_url='https://administration.fsstory.net/leave?intent='+prepared.intent_id
+ const f=await fixture(t,[tool(administrationToolNames[5],previewInput),options=>{
+  const encoded=JSON.stringify(options);assert.ok(encoded.includes(prepared.human_confirmation_url));assert.ok(encoded.includes('尚未提交'));assert.ok(!encoded.includes('PRIVATE_HASH_MUST_NOT_LEAK'));return text('预览尚未提交，请本人登录行政应用确认。')
+ }],{interceptContext:true,fetcher:async url=>Response.json(url.pathname.endsWith('/context')?ctx:prepared)})
+ const authorize=f.gateway.authorizeSystem.bind(f.gateway)
+ f.gateway.authorizeSystem=async(auth,id,signal)=>{await authorize(auth,id,signal);if(id==='administration')return{principalUserId:auth.user.userId,tenantId:auth.tenantId,employeeId:otherMember,organizationRevision:'org-1',contractVersion:'1.1.0'}}
+ await f.login();const s=await f.create(),auth=await f.service.auth.load(f.cookie.split('=')[1])
+ const stored=await f.service.auth.store.read('members/'+f.service.auth.owner(auth)+'/sessions',s.id)
+ assert.equal(stored.snapshot.modelPolicy.primaryModelId,model);assert.equal(stored.administrationBinding.principalUserId,member);assert.equal(stored.administrationBinding.employeeId,otherMember)
+ await f.send(s);const done=await f.wait(s)
+ assert.equal(done.status,'idle');assert.equal(f.http.filter(c=>c.init.method==='POST').length,1)
+ const modelInput=JSON.stringify(f.adapters[0].calls[0]);assert.ok(modelInput.includes('工具返回的本人确认链接'));assert.ok(!modelInput.includes('Platform本人确认链接'));assert.ok(!modelInput.includes('仅返回Platform人工核对入口'))
+ assert.ok(done.messages.some(m=>m.role==='tool'&&m.text.includes('[前往行政应用核对并本人确认]('+prepared.human_confirmation_url+')')))
+ assert.ok(!Object.hasOwn((await f.request('/sessions/'+s.id)).value.session,'administrationBinding'))
 })
 
 test('administration directory and creation require an exclusively dedicated publication and its real model policy',async t=>{
@@ -117,8 +223,9 @@ test('a real DSH administration turn registers exactly six canonical business to
  const schemas=f.adapters[0].calls[0].tools,names=schemas.map(x=>x.name)
  assert.deepEqual(names.filter(n=>n.startsWith('administration.')).sort(),[...administrationToolNames].sort());assert.ok(!names.includes('erp_query'));assert.ok(!names.includes('website_read'))
  for(const contract of administrationContracts){const actual=schemas.find(x=>x.name===contract.name).parameters;assert.equal(actual.additionalProperties,false);assert.deepEqual(Object.keys(actual.properties).sort(),Object.keys(contract.inputSchema.properties).sort());assert.deepEqual(actual.required??[],contract.inputSchema.required??[])}
- assert.deepEqual(f.http.map(c=>c.url.pathname),['/desktop/v1/administration/context','/desktop/v1/administration/requests','/desktop/v1/administration/ledger','/desktop/v1/administration/policies','/desktop/v1/administration/operations/'+operation,'/desktop/v1/administration/previews'])
- assert.equal(f.http.filter(c=>c.init.method==='POST').length,1);assert.ok(done.messages.some(m=>m.role==='tool'&&m.text.includes('[前往Platform核对并本人确认]('+platform+'/administration?intent=')))
+ assert.deepEqual(f.http.filter(c=>!c.url.pathname.endsWith('/context')).map(c=>c.url.pathname),['/desktop/v1/administration/requests','/desktop/v1/administration/ledger','/desktop/v1/administration/policies','/desktop/v1/administration/operations/'+operation,'/desktop/v1/administration/previews'])
+ assert.equal(f.http.filter(c=>c.url.pathname.endsWith('/context')).length,11)
+ assert.equal(f.http.filter(c=>c.init.method==='POST').length,1);assert.ok(done.messages.some(m=>m.role==='tool'&&m.text.includes('[前往行政应用核对并本人确认]('+platform+'/administration?intent=')))
  assert.ok(!JSON.stringify(done).includes('confirmation_hash'));assert.ok(!JSON.stringify(done).includes('PRIVATE_HASH_MUST_NOT_LEAK'))
 })
 
@@ -147,7 +254,7 @@ test('administration history restores only in its original owner and system with
 
 test('restart never replays an accepted request whose preview outcome was unknown',async t=>{
  const f=await fixture(t,[tool(administrationToolNames[5],previewInput),text('原预览结果未确认')],{retain:true,fetcher:async()=>{throw Error('synthetic disconnected POST')}});await f.login();const s=await f.create(),requestId=randomUUID()
- await f.send(s,'准备预览',requestId);await f.wait(s);assert.equal(f.http.length,1);await f.close()
+ await f.send(s,'准备预览',requestId);await f.wait(s);assert.equal(f.http.filter(c=>c.init.method==='POST').length,1);await f.close()
  const r=await fixture(t,[text('不会被调用')],{dir:f.dir,gateway:f.gateway});await r.login()
  assert.equal((await r.send(s,'准备预览',requestId)).status,202);assert.equal(r.http.length,0);assert.equal(r.adapters.length,0)
  const restored=(await r.request('/sessions/'+s.id)).value.session;assert.ok(JSON.stringify(restored).includes('ADMINISTRATION_PREVIEW_OUTCOME_UNKNOWN'))
@@ -160,9 +267,9 @@ test('switching tenant cancels an in-flight preview and a late receipt never ent
  await f.send(s);const signal=await started
  const switched=f.request('/tenant',{tenantId:otherTenant})
  if(!signal.aborted)await new Promise(resolve=>signal.addEventListener('abort',resolve,{once:true}))
- release();assert.equal((await switched).status,200);assert.equal(f.http.length,1)
+ release();assert.equal((await switched).status,200);assert.equal(f.http.filter(c=>c.init.method==='POST').length,1)
  const stored=await f.service.auth.store.read('members/'+oldOwner+'/sessions',s.id)
- assert.equal(stored.status,'stopped');assert.ok(!JSON.stringify(stored).includes('human_confirmation_url'));assert.ok(!JSON.stringify(stored).includes('[前往Platform核对并本人确认]'));assert.ok(!JSON.stringify(stored).includes('PRIVATE_HASH_MUST_NOT_LEAK'))
+ assert.equal(stored.status,'stopped');assert.ok(!JSON.stringify(stored).includes('human_confirmation_url'));assert.ok(!JSON.stringify(stored).includes('[前往行政应用核对并本人确认]'));assert.ok(!JSON.stringify(stored).includes('PRIVATE_HASH_MUST_NOT_LEAK'))
  assert.equal((await f.request('/sessions/'+s.id)).status,404);assert.deepEqual((await f.request('/sessions?systemId=administration')).value.items,[])
 })
 
@@ -174,7 +281,7 @@ test('application or publication revocation blocks administration history and ex
 })
 
 test('a revoked owner cannot receive a late administration result',async t=>{
- const f=await fixture(t,[tool(administrationToolNames[0]),text('不披露撤权后的内容')],{fetcher:async()=>{f.gateway.allowed.delete('administration');return Response.json({...context,employee_name:'LATE_PRIVATE_EMPLOYEE'})}})
+ const f=await fixture(t,[tool(administrationToolNames[0]),text('不披露撤权后的内容')],{interceptContext:true,fetcher:async()=>{f.gateway.allowed.delete('administration');return Response.json({...context,employee_name:'LATE_PRIVATE_EMPLOYEE'})}})
  await f.login();const s=await f.create();await f.send(s)
  let settled=false
  for(let i=0;i<100;i++){const raw=await f.service.auth.store.read('members/'+f.service.auth.owner(await f.service.auth.load(f.cookie.split('=')[1]))+'/sessions',s.id);if(raw.status==='idle'||raw.status==='error'){assert.ok(!JSON.stringify(raw).includes('LATE_PRIVATE_EMPLOYEE'));settled=true;break}await pause(20)}

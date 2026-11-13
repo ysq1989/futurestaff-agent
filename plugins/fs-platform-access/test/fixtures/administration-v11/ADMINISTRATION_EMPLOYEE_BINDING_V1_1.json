@@ -1,0 +1,52 @@
+{
+  "contract_version": "1.1.0",
+  "status": "frozen-for-local-implementation-not-deployed",
+  "unchanged_tool_inputs": "ADMINISTRATION_AGENT_TOOLS_V1.json",
+  "unchanged_wire_names": "../../backend/app/contracts/administration_tool_aliases.v1.json",
+  "context_binding": {
+    "contract_version": "1.1.0",
+    "principal_user_id": "authenticated login/desktop User UUID",
+    "employee_id": "server-resolved active current-tenant User UUID for the same real Identity",
+    "organization_revision": "current nonempty organization revision string",
+    "legacy": "Only absent contract_version and absent principal_user_id can use V1; employee_id must equal authenticated User UUID",
+    "history_boundary": ["principal_user_id", "tenant_id", "employee_id"],
+    "revalidate_before_and_after_each_tool": true,
+    "mapping_change": "fail closed and isolate prior employee context; never silently rebind history"
+  },
+  "approval_rule": {
+    "type": ["object", "null"],
+    "additionalProperties": false,
+    "required": ["code", "revision"],
+    "properties": {
+      "code": {"const": "missing_manager_auto_approve"},
+      "revision": {"type": "integer", "minimum": 1}
+    },
+    "only_when": "manager_id=null and current persisted employment has no manager and current tenant explicitly enables the same rule revision"
+  },
+  "automatic_decision": {
+    "decision": "approved",
+    "approver_id": null,
+    "decision_source": "system_rule",
+    "rule_code": "missing_manager_auto_approve",
+    "rule_revision": "positive integer exactly matching the request approval_rule.revision",
+    "resolved_by": null
+  },
+  "public_request_fields": {
+    "new_state": "pending_system_approval; only automatic-rule requests awaiting the system decision; never a supervisor pending state",
+    "manager_id": "UUID for ordinary requests; null only with valid nonnull approval_rule",
+    "approval_rule": "null or the closed approval_rule object above",
+    "decision_source": "null, human, or system_rule; system_rule only approved automatic requests",
+    "rule_code": "null or missing_manager_auto_approve",
+    "rule_revision": "null or positive integer matching approval_rule when system_rule"
+  },
+  "operation_envelope": {
+    "top_level_fields_unchanged": ["intent_id", "submission_state", "operation_id", "expires_at", "preview", "result", "error_code"],
+    "approval_rule_location": "preview.approval_rule and result.approval_rule only",
+    "decision_fields_location": "result.decision_source, result.rule_code, result.rule_revision only",
+    "null_result_is_not_a_submission": true,
+    "examples": "examples/administration-v1.1-operations.json"
+  },
+  "new_internal_prefix": "/api/internal/approvals/v1.1/administration",
+  "human_confirmation_required": true,
+  "model_write_permissions_added": false
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "field": "human_confirmation_url",
+  "intent_id": "11111111-1111-4111-8111-111111111111",
+  "accepted": [
+    "https://administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111",
+    "https://platform.fsstory.net/administration?intent=11111111-1111-4111-8111-111111111111"
+  ],
+  "rejected": [
+    "http://administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111",
+    "https://administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111#confirm",
+    "https://administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111&next=https://example.com",
+    "https://administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111&intent=11111111-1111-4111-8111-111111111111",
+    "https://user:password@administration.fsstory.net/leave?intent=11111111-1111-4111-8111-111111111111",
+    "https://administration.example.com/leave?intent=11111111-1111-4111-8111-111111111111",
+    "https://administration.fsstory.net/management?intent=11111111-1111-4111-8111-111111111111",
+    "https://administration.fsstory.net/leave?intent=not-a-uuid"
+  ]
+}

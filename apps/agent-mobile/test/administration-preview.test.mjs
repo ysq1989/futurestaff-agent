@@ -42,6 +42,16 @@ test('rendering a preview does not fetch, authorize or submit its human link', t
   assert.equal(requests, 0)
 })
 
+test('the unchanged Markdown renderer displays the independent administration confirmation link', t => {
+  const previous = globalThis.location
+  globalThis.location = {origin: 'https://agent.fsstory.net'}
+  t.after(() => {if (previous === undefined) delete globalThis.location; else globalThis.location = previous})
+  const target = `https://administration.fsstory.net/leave?intent=${intent}`
+  const html = render(`预览已准备，尚未提交。\n\n[前往行政应用核对并本人确认](${target})`)
+  assert.ok(html.includes(`href="${target}" target="_blank" rel="noopener noreferrer"`))
+  assert.doesNotMatch(html, /<form|<iframe|<script/)
+})
+
 test('preview reuse does not widen the existing Markdown URL policy', t => {
   const previous = globalThis.location
   globalThis.location = {origin: 'https://agent.fsstory.net'}

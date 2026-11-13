@@ -1,0 +1,101 @@
+{
+  "contract_version": "1.1.0",
+  "synthetic_only": true,
+  "approved_operation": {
+    "intent_id": "10000000-0000-4000-8000-000000000007",
+    "submission_state": "accepted",
+    "operation_id": "10000000-0000-4000-8000-000000000008",
+    "expires_at": "2026-11-14T18:20:00+08:00",
+    "preview": {
+      "preview_id": "10000000-0000-4000-8000-000000000001",
+      "expires_at": 1794651600,
+      "kind": "annual",
+      "start": "2026-11-16T09:00:00+08:00",
+      "end": "2026-11-16T13:00:00+08:00",
+      "reason": "合成联调",
+      "minutes": 240,
+      "year": 2026,
+      "account_revision": 1,
+      "policy_id": "10000000-0000-4000-8000-000000000002",
+      "policy_ref": "synthetic:reviewed-policy-v1",
+      "policy_title": "合成流程",
+      "min_minutes": 240,
+      "available_before_minutes": 4800,
+      "available_after_minutes": 4560,
+      "calendar_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manager_id": null,
+      "organization_revision": "8",
+      "job_id": null,
+      "job_name": null,
+      "grade_id": null,
+      "grade_name": null,
+      "approval_rule": {
+        "code": "missing_manager_auto_approve",
+        "revision": 1
+      }
+    },
+    "result": {
+      "tenant_id": "10000000-0000-4000-8000-000000000003",
+      "employee_id": "10000000-0000-4000-8000-000000000004",
+      "request_id": "10000000-0000-4000-8000-000000000005",
+      "manager_id": null,
+      "organization_revision": "8",
+      "kind": "annual",
+      "start": "2026-11-16T09:00:00+08:00",
+      "end": "2026-11-16T13:00:00+08:00",
+      "minutes": 240,
+      "reason": "合成联调",
+      "policy_ref": "synthetic:reviewed-policy-v1",
+      "state": "approved",
+      "revision": 3,
+      "approval_id": "10000000-0000-4000-8000-000000000006",
+      "decision_reason": "按企业无主管规则自动通过",
+      "resolved_by": null,
+      "resolved_at": "2026-11-13T08:00:00+08:00",
+      "approval_rule": {
+        "code": "missing_manager_auto_approve",
+        "revision": 1
+      },
+      "decision_source": "system_rule",
+      "rule_code": "missing_manager_auto_approve",
+      "rule_revision": 1
+    },
+    "error_code": null
+  },
+  "not_accepted_operation": {
+    "intent_id": "10000000-0000-4000-8000-000000000007",
+    "submission_state": "not_accepted",
+    "operation_id": "10000000-0000-4000-8000-000000000008",
+    "expires_at": "2026-11-14T18:20:00+08:00",
+    "preview": {
+      "preview_id": "10000000-0000-4000-8000-000000000001",
+      "expires_at": 1794651600,
+      "kind": "annual",
+      "start": "2026-11-16T09:00:00+08:00",
+      "end": "2026-11-16T13:00:00+08:00",
+      "reason": "合成联调",
+      "minutes": 240,
+      "year": 2026,
+      "account_revision": 1,
+      "policy_id": "10000000-0000-4000-8000-000000000002",
+      "policy_ref": "synthetic:reviewed-policy-v1",
+      "policy_title": "合成流程",
+      "min_minutes": 240,
+      "available_before_minutes": 4800,
+      "available_after_minutes": 4560,
+      "calendar_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manager_id": null,
+      "organization_revision": "8",
+      "job_id": null,
+      "job_name": null,
+      "grade_id": null,
+      "grade_name": null,
+      "approval_rule": {
+        "code": "missing_manager_auto_approve",
+        "revision": 1
+      }
+    },
+    "result": null,
+    "error_code": "PREVIEW_STALE"
+  }
+}
