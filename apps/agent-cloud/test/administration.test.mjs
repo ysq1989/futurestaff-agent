@@ -190,6 +190,7 @@ test('a mapped no-manager DSH turn retains its original model and exposes only t
  await f.send(s);const done=await f.wait(s)
  assert.equal(done.status,'idle');assert.equal(f.http.filter(c=>c.init.method==='POST').length,1)
  const modelInput=JSON.stringify(f.adapters[0].calls[0]);assert.ok(modelInput.includes('工具返回的本人确认链接'));assert.ok(!modelInput.includes('Platform本人确认链接'));assert.ok(!modelInput.includes('仅返回Platform人工核对入口'))
+ assert.ok(modelInput.includes('pending_system_approval表示等待系统决定'));assert.ok(modelInput.includes('不得虚构人类审批人'))
  assert.ok(done.messages.some(m=>m.role==='tool'&&m.text.includes('[前往行政应用核对并本人确认]('+prepared.human_confirmation_url+')')))
  assert.ok(!Object.hasOwn((await f.request('/sessions/'+s.id)).value.session,'administrationBinding'))
 })

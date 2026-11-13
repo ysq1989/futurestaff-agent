@@ -22,4 +22,8 @@ Platform `docs/contracts/ADMINISTRATION_PLATFORM_V1_1.md`、`ADMINISTRATION_EMPL
 
 A支持全部V1.1数据/URL和中性本人确认提示，拟作为验证后的兼容回退；B仅在A上增加自动规则状态的明确模型解释提示。两候选都必须有各自来源、运行与恢复证明。**旧a52禁止作为V1.1数据后的安全回退**。候选A此前未生产，不冒称已生产稳定版本。
 
-当前候选路径`work/administration-agent-consumer-v11-20261113/compatibility-a`；日志`sdk-a.log/cloud-a.log/mobile-a.log`。镜像构建、兼容恢复、联合验证、提交推送及发布结果后续补齐；三端READY之前不切生产。真实SSO/本人确认/主管或规则执行及Knowledge审核由对应授权方分别验收。
+兼容A源码已在隔离main本地提交`9730ec569d339d6e3e3234405aded36894612f4b`，从Git规范LF归档重新构建的`compatibility-a-from-commit`与工作区候选的build/source hash完全相同，十份静态资产与已发布版本相同。构建依赖使用隔离仓的Cloud-local sharp0.34.3；不使用根目录其他版本。
+
+正式B在A上仅补模型对系统规则的解释提示，避免把`pending_system_approval`说成人类主管待审、把null resolved_by虚构成人类审批，或把批准等同外部ack已确认。根目录及隔离仓Cloud48项通过；SDK104/Mobile32输入未变。B工作区候选build`0.1.0-9d35a827f507`、source hash`9d35a827f507e9b0162d09b922ec6cc1d064db60d9c018415e01bac3cef9364f`。B规范归档重建/镜像/恢复证据及正式状态待补。
+
+候选及日志在`work/administration-agent-consumer-v11-20261113/`；A镜像隔离构建/无网络smoke中，尚未切Cloud。兼容恢复、联合验证、推送及发布结果后续补齐；三端READY之前不切生产。真实SSO/本人确认/主管或规则执行及Knowledge审核由对应授权方分别验收。
