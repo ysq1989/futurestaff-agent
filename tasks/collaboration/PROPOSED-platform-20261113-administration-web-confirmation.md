@@ -2,7 +2,7 @@
 
 2026-11-13，system_id=agent。来源为已获用户允许协调的Platform会话`01a1cead-c568-7183-85c7-21f813c86086`和行政会话`01a1cf22-18c2-7963-a316-78340a14526e`。两方要求SDK/Cloud在V1.1候选中兼容新旧本人确认URL；原六工具/七字段操作envelope和模型写权限不变。
 
-状态：**消费端新旧URL及V1.1候选READY，未切生产，三端联合验证待完成**。这是来源配合接收记录，不另发总事项编号；复用已有[行政V1.1接收任务](PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)，不争写中央索引。Android035语音修复已独立发布，见[正式回执](../../docs/releases/android-voice-0.3.5-20261113.md)；该APK未包含SDK/Cloud V1.1，不据APK发布宣称行政消费端上线。
+状态：**消费端新旧URL及V1.1的A兼容基线已发布，B及三端独立页面迁移尚未完成**。这是来源配合接收记录，不另发总事项编号；复用已有[行政V1.1接收任务](PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)，不争写中央索引。Android035语音修复已独立发布，其APK保持；行政消费端状态以[Cloud A实际发布回执](../../docs/releases/administration-v11-cloud-a-20261113.md)为准，不据APK发布推断。
 
 来源提出新URL为`https://administration.fsstory.net/leave?intent=<同一个小写UUID>`，旧精确Platform URL继续识别并兼容跳转。拒绝userinfo、fragment、其他路径、额外query、重复intent和任意origin；测试注入不扩大production允许域名。最终以所属仓版本化契约与合成样例为准。
 

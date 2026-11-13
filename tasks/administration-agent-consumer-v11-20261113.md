@@ -1,6 +1,6 @@
 # 行政V1.1与独立页面：Agent消费端
 
-2026-11-13。**本仓候选READY，源码已提交推送，双镜像隔离运行和既有备份恢复预检通过；未切生产Cloud，待三端联合就绪与切换时新鲜备份恢复。** Root为本仓唯一实现写入方。Platform与行政分别由其维护者实施，本任务只改SDK/Cloud和相关测试/回执。用户原始迁移/提交推送/发布授权已直接读取核验，来源ID见[接收回执](collaboration/PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)。生产Cloud仍`0.1.0-a52cf521b9b4`。
+2026-11-13。**A兼容基线已在10:09:18上海时间发布，28文件新鲜备份/实际恢复及公网后检通过；B尚未切换，三端独立页面迁移仍待最终窗口。** Root为本仓唯一实现写入方。Platform与行政分别由其维护者实施，本任务只改SDK/Cloud和相关测试/回执。用户原始迁移/提交推送/发布授权已直接读取核验，来源ID见[接收回执](collaboration/PROPOSED-administration-20261113-agent-owner-and-rule-v11.md)。当前生产Cloud为`0.1.0-7f4f73e000cd`，A发布详情见[正式回执](../docs/releases/administration-v11-cloud-a-20261113.md)。
 
 ## 冻结契约
 
@@ -20,19 +20,25 @@ Platform `docs/contracts/ADMINISTRATION_PLATFORM_V1_1.md`、`ADMINISTRATION_EMPL
 
 隔离release仓基线`844942936305f2d3b5165c600d41ba50b1062b6f`，GitHub main已只读核对一致。只复制13份SDK/Cloud/测试/合同文件，不包含根目录其他脏工作或Android035源码。隔离仓同样104/48/32通过；A候选build `0.1.0-7f4f73e000cd`，源hash`7f4f73e000cd5e6b0943a440bde020dcd78c0b2ad31c459be20bf4df12b4bdae`。前端沿用034十份资产，不重建或改变正在手机测试的035。
 
-A支持全部V1.1数据/URL和中性本人确认提示，拟作为验证后的兼容回退；B仅在A上增加自动规则状态的明确模型解释提示。两候选都必须有各自来源、运行与恢复证明。**旧a52禁止作为V1.1数据后的安全回退**。候选A此前未生产，不冒称已生产稳定版本。
+A支持全部V1.1数据/URL和中性本人确认提示，现已实际发布，可作为后续B的兼容回退基线；B仅增加自动规则状态的明确模型解释提示。两者均有各自来源、隔离运行与恢复证明。**旧a52禁止作为V1.1数据后的安全回退**；A上线不等于新生产者功能或真实业务已验收。
 
 兼容A源码已在隔离main本地提交`9730ec569d339d6e3e3234405aded36894612f4b`，从Git规范LF归档重新构建的`compatibility-a-from-commit`与工作区候选的build/source hash完全相同，十份静态资产与已发布版本相同。构建依赖使用隔离仓的Cloud-local sharp0.34.3；不使用根目录其他版本。
 
-正式B在A上仅补模型对系统规则的解释提示，避免把`pending_system_approval`说成人类主管待审、把null resolved_by虚构成人类审批，或把批准等同外部ack已确认。根目录及隔离仓Cloud48项通过；SDK104/Mobile32输入未变。B工作区候选build`0.1.0-9d35a827f507`、source hash`9d35a827f507e9b0162d09b922ec6cc1d064db60d9c018415e01bac3cef9364f`。B规范归档重建/镜像/恢复证据及正式状态待补。
+正式B在A上仅补模型对系统规则的解释提示，避免把`pending_system_approval`说成人类主管待审、把null resolved_by虚构成人类审批，或把批准等同外部ack已确认。根目录及隔离仓Cloud48项通过；SDK104/Mobile32输入未变。B build`0.1.0-9d35a827f507`、source hash`9d35a827f507e9b0162d09b922ec6cc1d064db60d9c018415e01bac3cef9364f`，规范归档重建、镜像和恢复均通过；B实际发布仍待下一窗口。
 
 ## 候选READY回执
 
 - 兼容A：源码`9730ec569d339d6e3e3234405aded36894612f4b`；build`0.1.0-7f4f73e000cd`；image`sha256:ec65fa743671e0c2c0b3a7bdb4ccd7856096fd8ca9ca5fe0c47bc9db4c7e7ee9`。
 - 正式B：源码`37d7e1e638313938bdbae952be2c28aef9d528e5`；build`0.1.0-9d35a827f507`；image`sha256:f5a6a964e1accca08f859b3377761b39e8264cf0cf096d5b481efff240a5d872`。
-- 两提交已从隔离main推送，并只读核对GitHub main=B。规范Git源码归档重建均与已测试工作区的build/source hash一致。原保留副本工作树和索引未重置/拉取，Android035及桌面原有工作保留；后续同步勿直接覆盖该副本。
-- 两镜像均以nonroot、只读、无网络、无真实用户数据的临时容器通过health200、静态200、匿名401、错误Origin403、sharp及DSH JSONL加载；没有启动新生产容器或改变service.env。
+- 两个源码提交已从隔离main推送并只读核验可达，后续回执另作纯文档提交。规范Git源码归档重建均与已测试工作区的build/source hash一致。原保留副本工作树和索引未重置/拉取，Android035及桌面原有工作保留；后续同步勿直接覆盖该副本。
+- 两镜像均以nonroot、只读、无网络、无真实用户数据的临时容器通过health200、静态200、匿名401、错误Origin403、sharp及DSH JSONL加载；该候选阶段未动生产，后续A实际发布见下段。
 - 双镜像对**既有发布前已验证备份**完成实际解包逐文件SHA和AES-GCM解密，27文件、10加密记录均通过，备份SHA`554f3b2505db1ee46add9549df7341222227edad3ebfefa7b7c15e7ac042cef7`。这是历史备份格式恢复预检，**不是当前生产新鲜恢复**；正式切换仍须停写后采集当时数据、实际恢复，并保持原密钥和全部记录。不得恢复旧备份覆盖新业务。
-- 兼容回退只用A，保留同协议/员工围栏、新旧URL和规则DTO；A此前未生产，不称已生产稳定版本。a52不具备新围栏，出现V1.1历史后不得恢复到它。
+- 后续B兼容回退只用已发布A，保留同协议/员工围栏、新旧URL和规则DTO。a52不具备新围栏，出现V1.1历史后不得恢复到它。
 
 候选及日志在`work/administration-agent-consumer-v11-20261113/`，规范候选为`compatibility-a-from-commit`和`production-b-from-commit`；source证明`a-canonical-proof.json/b-canonical-proof.json`，镜像smoke和`restore-preflight.log`分别记录边界。三端候选及联合验证就绪后再串行安排切换：须先让Cloud具备消费兼容，再由生产者启用新URL/规则事实。真实SSO/本人确认/主管或规则执行及Knowledge审核由对应授权方分别验收，本回执不冒充整体已上线。
+
+## A实际发布接续
+
+Platform维护者在原人类授权下明确允许独立Cloud A窗口，保持其生产旧V1不变。Root已完成A源码9730ec5、build7f4、imageec65的实际切换；切前a52/1e673 CAS、idle9，通过10项发布器异常测试和独立复核。停止后新鲜28文件归档`f8e2f2e0054336af36f02d40e6ec5308578f63bd2708a67067508b4fc4b1f468`实际恢复、双镜像各10密文解密通过，数据/密钥保留；公网十静态及权限后检通过。窗口结束已通知两维护方，APK035保持。此接续取代上方候选阶段“未发布”的历史状态；B及真实三端/业务仍待。
+
+A阶段脚本的legacy恢复守卫专为a52→A，不可简单替换变量用于B→A。后续B回退目标A本身支持V1.1，需独立验证保留新数据的兼容恢复，不能仍按“仅V1可恢复”误阻止A，也不得用旧备份覆盖新数据。
