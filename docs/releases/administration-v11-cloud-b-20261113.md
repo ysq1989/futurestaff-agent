@@ -32,3 +32,7 @@ B 完成 214 个检查，A 直接使用**同一份 B 新数据**完成 253 个�
 Android 仍 **0.3.5/code18**，APK `6cc0243b359e1f8cc354dd7e534e89dac3a13c87cc035986a0319cc3c5d14a08`/130996200 字节。更新清单全文 SHA `be6a56e111745bc1c2f73e0d2992c80c06aaa59db4858d1f80ce55b47c6d0c62` 及 no-store、公开 APK HEAD 长度已重验；手机语音仍待用户小米15真机验收。前端沿用十份原资产，未改变正在测试的 APK。
 
 证据：[闭环](../../work/administration-agent-consumer-v11-20261113/b-release-closure.json)、[新数据恢复](../../work/administration-agent-consumer-v11-20261113/b-to-a-proof.json)、[实际新鲜恢复](../../work/administration-agent-consumer-v11-20261113/fresh-restore-b.json)、[切换日志](../../work/administration-agent-consumer-v11-20261113/switch-b-live.log)、[公网](../../work/administration-agent-consumer-v11-20261113/public-b-verified.json)、[发布器测试](../../work/administration-agent-consumer-v11-20261113/switch-b-tests.log)。
+
+## Platform 最终窗口回告
+
+所属维护者随后确认最终 C 已上线：Platform API/Web **1.16.0/g133/schema17/source4e3e8524**；197 静态全文 SHA、54 个非目标容器/其他配置、兼容 current+1/四全档及审批 timer enabled/lastsuccess 检查通过。审计 tag `deploy/platform/prod-administration-workspace-1.16.0-4e3e8524` 已推送，完整依据在 Platform `output/administration-workspace-20261113/release-receipt.json`。行政 **g3/0.2.2/source6419130d** 的公网/PKCE/边界通过，目录和旧链接指向 `administration.fsstory.net`。本仓据所属维护者回告登记，未自行切换其他系统；本次软件运维窗口已结束，不再另开容器切换。真实主账号 SSO、HR 和员工端到端业务仍待用户正常登录验收，无真实模型调用。
