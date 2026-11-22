@@ -197,7 +197,10 @@ describe('bundled FutureStaff Profile', () => {
         if (mode === 'custom-code') writeFileSync(join(actual, 'lib/index.js'), 'custom code')
         if (mode === 'custom-package') writeFileSync(join(actual, 'package.json'), 'custom package metadata')
         if (mode === 'extra-file') writeFileSync(join(actual, 'lib/custom.js'), 'custom helper')
-        if (mode === 'linked-child') symlinkSync(join(actual, 'package.json'), join(actual, 'lib/linked.json'), 'file')
+        if (mode === 'linked-child') {
+          symlinkSync(join(actual, 'package.json'), join(actual, 'lib/linked.json'), process.platform === 'win32' ? 'junction' : 'file')
+          expect(lstatSync(join(actual, 'lib/linked.json')).isSymbolicLink()).toBe(true)
+        }
         const before = readFileSync(join(actual, 'lib/index.js'), 'utf8')
         expect(planBundledFutureStaffProfile(value).workspaces).toEqual(mode === 'valid' ? [{ profile: name, package: 'fs-video' }] : [])
         expect(readFileSync(join(actual, 'lib/index.js'), 'utf8')).toBe(before)

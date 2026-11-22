@@ -145,7 +145,7 @@ test('output checks reject traversal, outside files and symlink descendants', as
   const outsideFile = path.join(outside, 'movie.mp4'); await writeFile(outsideFile, 'outside')
   await assert.rejects(safeVideoOutput(f.root, outsideFile), /VIDEO_OUTPUT_UNSAFE/)
   const link = path.join(f.root, 'linked')
-  try { await symlink(outside, link, 'junction') } catch (error) { if (error.code === 'EPERM') return; throw error }
+  await symlink(outside, link, 'junction')
   await assert.rejects(safeVideoOutput(f.root, path.join(link, 'movie.mp4')), /VIDEO_OUTPUT_UNSAFE/)
   f.engine.status = async () => ({ status: 'succeeded', projectId, jobId, result: { videoPath: outsideFile } })
   await assert.rejects(f.host.execute('video_project_status', { projectId, jobId }, 'session', signal()), /VIDEO_OUTPUT_UNSAFE/)
@@ -233,6 +233,7 @@ test('preview rejects expired, changed owner, cross-origin, unsafe outputs and i
   now+=600001;assert.equal((await fetch(v.preview)).status,403)
   now=1000;f.setIdentity({agentVersion:'b'.repeat(64)});assert.equal((await fetch(v.preview)).status,403)
   f.setIdentity({agentVersion:'a'.repeat(64)});assert.equal((await fetch(v.preview)).status,200)
-  await rm(v.file);await symlink(path.join(f.root,'missing-target.mp4'),v.file,process.platform==='win32'?'file':undefined)
+  // Junctions need no Windows symlink privilege and still exercise real link rejection.
+  await rm(v.file);await symlink(path.join(f.root,'missing-target.mp4'),v.file,process.platform==='win32'?'junction':undefined)
   assert.equal((await fetch(v.preview)).status,403)
 })

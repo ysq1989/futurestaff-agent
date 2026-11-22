@@ -1,6 +1,7 @@
 import {lstat,mkdir,readFile,realpath,rename,writeFile,open,unlink} from 'node:fs/promises'
 import path from 'node:path'
 import {randomUUID} from 'node:crypto'
+import {setTimeout as delay} from 'node:timers/promises'
 import {VideoError} from './contracts.js'
 
 export async function safeDirectory(directory:string){
@@ -16,11 +17,23 @@ export async function existingFile(root:string,file:string){
  return target
 }
 export async function readJson<T>(root:string,file:string):Promise<T>{try{return JSON.parse(await readFile(await existingFile(root,file),'utf8')) as T}catch(e){if((e as NodeJS.ErrnoException).code==='ENOENT')throw new VideoError('VIDEO_NOT_FOUND');throw e}}
+// Windows readers/scanners can briefly deny replacement. Never delete the old
+// file or fall back to an in-place write: readers must see a complete snapshot.
+export async function renameWithRetry(source:string,target:string,replace:typeof rename=rename,platform:NodeJS.Platform=process.platform){
+ for(let attempt=0;;attempt++){
+  try{await replace(source,target);return}
+  catch(error){
+   if(platform!=='win32'||!['EPERM','EACCES','EBUSY'].includes((error as NodeJS.ErrnoException).code??'')||attempt>=5)throw error
+   await delay(20*2**attempt)
+  }
+ }
+}
 export async function atomicJson(root:string,file:string,value:unknown){
  await safeDirectory(path.dirname(file));const relative=path.relative(await realpath(root),await realpath(path.dirname(file)))
  if(relative.startsWith('..')||path.isAbsolute(relative))throw new VideoError('VIDEO_PATH_UNSAFE')
  try{if((await lstat(file)).isSymbolicLink())throw new VideoError('VIDEO_PATH_UNSAFE')}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
- const temporary=file+'.'+randomUUID()+'.tmp';await writeFile(temporary,JSON.stringify(value,null,2),{flag:'wx',mode:0o600});await rename(temporary,file)
+ const temporary=file+'.'+randomUUID()+'.tmp';await writeFile(temporary,JSON.stringify(value,null,2),{flag:'wx',mode:0o600})
+ try{await renameWithRetry(temporary,file)}catch(error){await unlink(temporary).catch(()=>{});throw error}
 }
 export async function fileLock<T>(directory:string,operation:()=>Promise<T>):Promise<T>{
  const file=path.join(directory,'.write.lock');let handle
