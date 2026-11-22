@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-22",
+  "passed": true,
+  "base": "ffd243a6bf18536319fdd78d80da8cf141b1781a",
+  "codeCommit": "6b80c17db9d5de1417120e78a6f15d33f8b29078",
+  "verifiedSourceTree": "e2a97a071c78494c373dc9279ce1f1a869bd0a1b",
+  "sourcePaths": [
+    "desktop-shell/dsh-plugin-desktop/tests/futurestaff-profile.spec.ts",
+    "desktop-shell/futurestaff-desktop-variants.json",
+    "plugins/fs-video/src/storage.ts",
+    "plugins/fs-video/test/host.test.mjs",
+    "plugins/fs-video/test/storage.test.mjs"
+  ],
+  "node": "v24.18.1",
+  "yarn": "4.18.0",
+  "canonicalCandidateCheck": {
+    "command": "npm run check",
+    "exitCode": 0,
+    "desktopFoundation": true,
+    "workspaceTypesTestsBuilds": true,
+    "stableAndBetaDesktopCheck": true,
+    "rootTests": true,
+    "isolatedMainSnapshot": true,
+    "ownLockedDependencies": true,
+    "unchangedPinnedDSH": "a66e4702047846cdaa10c66c9d3df3951f5ea70d"
+  },
+  "video": {
+    "tests": 107,
+    "passed": 105,
+    "failed": 0,
+    "conditionalSkips": 2,
+    "conditions": [
+      "FS_EDITOR_TEST_RUNTIME_ROOT locked media binaries",
+      "FUTURESTAFF_VIDEO_TEST_RUNTIME_ROOT embedded Python fixture"
+    ],
+    "typecheckExit": 0
+  },
+  "originalRenameCases": {
+    "runs": 20,
+    "originalCasesPerRun": 2,
+    "failed": 0
+  },
+  "desktopReview": {
+    "existingCommit": "2988754d77",
+    "oldReviewedCommit": "14e0da8b25",
+    "stableInputRepins": 3,
+    "stableOnlyExistingDeclaration": "runtime-diagnostics.ts",
+    "betaUnchanged": true,
+    "verifierUnchanged": true,
+    "diagnosticsAndRuntimeTestsPassed": 82,
+    "layoutContractTestsPassed": 7,
+    "profileTestsPassed": 68
+  },
+  "agentAigcJoint": {
+    "passed": true,
+    "consumerGitRef": "0b85a10b822446bde04f8a4d3683bc99e22a2240",
+    "consumerInputs": {
+      "internal/agent/yingceagent/client.go": "sha256:eca623a2c2ae7cc5c78f427fea24e6a806cd621fbd94dc0b6650d0464f6d923c",
+      "internal/agent/runtime/runtime.go": "sha256:61610741acc54b1893dfb234518db75ecf846a01e325e9927865b22938a0aded"
+    },
+    "server": "sha256:53588bd06ad6f865b9320ea8e1fb155e3bf76d5b4b7d9f9195231983cadf2abd",
+    "tests": "sha256:df1c440f3fa66f5b00ca0eaadf92a007ecf6e4c0bdcae47cff56dacb6a2ef65b",
+    "binaryDigest": "sha256:9bf0af86c47b7105574ccf1d2c1534440e7a5c0682817bec9292d3ebe5972ee7",
+    "temporaryWorkspaceRemoved": true,
+    "productionActivated": false,
+    "externalModelCallsExecuted": 0
+  },
+  "localPreservedWorkingTreeCheck": {
+    "exitCode": 1,
+    "workspaceChecksPassed": true,
+    "desktopFailure": "Desktop variant reviewed source changed: electron-runtime.ts",
+    "existingUncommittedDesktopDraftsPreserved": true,
+    "unrelatedEditsExcludedFromCommit": true
+  },
+  "review": {
+    "correctness": "Only transient Windows sharing errors retry; six attempts, original error and old snapshot retained on failure. AtomicJson cleans only its own temporary path.",
+    "architecture": "Existing fs-video storage owner; no public package exports, schemas, dependencies or platform interfaces changed.",
+    "security": "Original owner, traversal, identity, expiry, origin and link checks retained. Removed an EPERM early return from a security test; real ordinary-permission junction required.",
+    "readability": "Existing module style and small internal retry seam; no unrelated refactor.",
+    "performance": "Success fast path stays one rename; error-only async delays bounded at 620ms.",
+    "deadCode": "None introduced or orphaned."
+  },
+  "logDigests": {
+    "check-candidate-final-pass.log": "sha256:75fa77fe0429a463af87e8abdb1bf1d0b31810d23751f1e342f61c7ab9b38e84",
+    "video-green.log": "sha256:49b80e5fca3360380cd6e3e8fd95fa4beaac4933a26a94d15d3b384def6b4920",
+    "video-typecheck.log": "sha256:24362a6ea381356b545f8b06ed9a98b1edb41e015c038660f42f1e4fd8fce791",
+    "storage-red.log": "sha256:c231fccb727315ed09b9b4181fc59b60abaf099541184ae7191fd9119296225a",
+    "engine-repeat.log": "sha256:55ceecfb8592f13056940887e9252a5dff518c7b20d9f2d7e03f3f5ce60a265f",
+    "bridge-joint.log": "sha256:2d6a7cc39f52cf03c563ddbed378e8729ae7b68a8bf975eec40435e31804d480",
+    "layout-green-r2.log": "sha256:ab928edc169267d422b2fd0f30a0bf7fe1742b2fd7870fc309a9b159324e2320",
+    "diagnostics-review-tests.log": "sha256:3affa0e89bec1fc402882ab3e6702ce5dabe5a2f50a0e491b5e3480e15eebe55",
+    "check-local.log": "sha256:b685336fdf7ff8d09e242809be3714e575947f8c93ad93d033d1db8558994f5e",
+    "desktop-complete.log": "sha256:909a1cbd14ac78c95523ac51e7ca6b139ace9f2aa22606b89fc3a907e2473c63",
+    "root-complete.log": "sha256:f96c434ac4e608e593a5c5e204616ef3976ef7b46c04298ccfd00f0d6389b201",
+    "profile-green.log": "sha256:b5ebb6bb53a064a1234e4c67493a54697c84919a764bec114294735fad194285"
+  },
+  "externalModelCallsExecuted": 0,
+  "productionDeploymentExecuted": false,
+  "desktopTestResults": {
+    "market": {
+      "passed": 261,
+      "skipped": 0
+    },
+    "stable": {
+      "passed": 1244,
+      "skipped": 13
+    },
+    "beta": {
+      "passed": 1032,
+      "skipped": 13
+    },
+    "root": {
+      "passed": 75,
+      "skipped": 0
+    }
+  }
+}
